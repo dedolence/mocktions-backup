@@ -1,0 +1,47 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg bg-light navbar-light sticky-top border-bottom">
+    <div class="container">
+
+        <a class="navbar-brand" href="{% url 'index' %}" aria-label="Gavel Logo for the Auctions website">
+            <!-- Gavel Logo downloaded from https://www.iconfinder.com/ -->
+            <img src="{% static 'auctions/images/gavel_icon.png' %}" width="30" height="30" class="m-1" alt="Gavel Logo">
+            <span class="align-middle">Mocktions</span>
+        </a>
+
+        <button class="navbar-toggler navbar-toggler-right" type="button" data-bs-toggle="collapse" data-bs-target="#header-nav" aria-label="Click to expand navigation menu.">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse justify-content-end" id="header-nav" role="navigation">
+            <ul class="navbar-nav">
+                <li class="nav-item p-2">
+                    <a href="{% url 'index' %}" class="nav-link">Logged in as: <em>{{ request.user }}</em></a>
+                </li>
+                <li class="nav-item p-2">
+                    <a href="{% url 'all_listings' %}" class="nav-link">All Listings</a>
+                </li>
+                <li class="nav-item p-2">
+                    <a href="{% url 'create_listing' %}" class="nav-link">Create Listing</a>
+                </li>
+                <li class="nav-item p-2">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'logout' %}" class="nav-link">
+                            Logout
+                        </a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="nav-link">
+                        Login
+                    </a>
+                    {% endif %}
+                </li>
+                <li class="nav-item p-2 me-0">
+                    <form class="d-flex" action="search/" method="GET">
+                        {% csrf_token %}
+                        <input type="text" class="form-control me-2" placeholder="Search" aria-label="Search">
+                        <button type="submit" class="btn btn-outline-primary">Search</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>  
+</nav>

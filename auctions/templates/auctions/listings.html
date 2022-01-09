@@ -1,0 +1,40 @@
+{% extends 'auctions/layout.html' %}
+
+{% load listings_tags %}
+
+{% block title %}
+    All Listings
+{% endblock title %}
+
+
+{% block body %}
+
+    {% block breadcrumb %}
+        {% include 'auctions/includes/breadcrumb.html' with page='All Listings' %}
+    {% endblock breadcrumb %}
+
+    {% block control_block_upper %}
+        {% url 'all_listings' as control_url %}
+        {% include 'auctions/includes/listingControls.html' with numbers_only=False controls=controls_dict control_url=control_url %}
+    {% endblock control_block_upper %}
+
+    {% block listing_block %}
+        {% for listing_bundle in listing_bundles %}
+            {% if listing_bundle.listing.owner == request.user %}
+                {% include 'auctions/includes/listing_single.html' with listing=listing_bundle.listing expiration=listing_bundle.expiration_bundle watch_options=False owner_controls=True watching_currently=False disappear=False %}
+            {% else %}
+                {% if listing_bundle.watching_currently == True %}
+                    {% include 'auctions/includes/listing_single.html' with listing=listing_bundle.listing expiration=listing_bundle.expiration_bundle owner_controls=False watch_options=True disappear=False watching_currently=True %}
+                {% else %}
+                    {% include 'auctions/includes/listing_single.html' with listing=listing_bundle.listing expiration=listing_bundle.expiration_bundle watch_options=True watching_currently=False owner_controls=False disappear=False %}
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+    {% endblock listing_block %}
+    
+    {% block control_block_lower %}
+        {% url 'all_listings' as control_url %}
+        {% include 'auctions/includes/listingControls.html' with numbers_only=True controls=controls_dict total_objects=total_objects control_url=control_url %}
+    {% endblock control_block_lower %}
+
+{% endblock %}

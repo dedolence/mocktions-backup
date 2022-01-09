@@ -1,0 +1,11 @@
+{% comment %}
+    notifications = queryset
+{% endcomment %}
+{% for notification in notifications %}
+        {% autoescape off %}
+            <div class="alert alert-{{notification.type}} alert-dismissible" role="alert" id="notification-{{notification.id}}">
+                {{notification.content}}
+                <input type="button" class="btn-close" aria-label="Close" onclick="ajax('{% url 'ajax' 'dismiss' notification.id %}', true)">
+            </div>
+        {% endautoescape %}
+{% endfor %}

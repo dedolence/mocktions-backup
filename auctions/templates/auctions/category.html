@@ -1,0 +1,30 @@
+{% extends "auctions/listings.html" %}
+
+{% block breadcrumb %}
+    {% include 'auctions/includes/breadcrumb.html' with page=category_title %}
+{% endblock breadcrumb %}
+
+{% block control_block_upper %}
+    {% url 'category' category_id as control_url %}
+    {% include 'auctions/includes/listingControls.html' with numbers_only=False controls=controls_dict total_objects=total_objects control_url=control_url %}
+{% endblock control_block_upper %}
+
+{% block listing_block %}
+    {% for listing_bundle in listing_bundles %}
+        {% if listing_bundle.listing.user == request.user %}
+            {% include 'auctions/includes/listing_single.html' with listing=listing_bundle.listing expiration=listing_bundle.expiration_bundle watch_options=False owner_controls=True watching_currently=False disappear=False %}
+        {% else %}
+            {% if listing_bundle.watching_currently == True %}
+                {% include 'auctions/includes/listing_single.html' with listing=listing_bundle.listing expiration=listing_bundle.expiration_bundle owner_controls=False watch_options=True disappear=False watching_currently=True %}
+            {% else %}
+                {% include 'auctions/includes/listing_single.html' with listing=listing_bundle.listing expiration=listing_bundle.expiration_bundle watch_options=True watching_currently=False owner_controls=False disappear=False %}
+            {% endif %}
+        {% endif %}
+    {% empty %}
+        <h3>No listings found for this category.</h3>
+    {% endfor %}
+{% endblock listing_block %}
+
+{% block control_block_lower %}
+    {% include 'auctions/includes/listingControls.html' with numbers_only=True controls=controls_dict total_objects=total_objects %}
+{% endblock control_block_lower %}

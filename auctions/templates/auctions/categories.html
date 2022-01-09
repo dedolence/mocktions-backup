@@ -1,0 +1,14 @@
+{% extends 'auctions/layout.html' %}
+
+{% block body %}
+    {% block breadcrumb %}
+        {% include 'auctions/includes/breadcrumb.html' with page='All Categories' %}
+    {% endblock breadcrumb %}
+
+    
+    <ol>
+    {% for category in categories %}
+        <li>{{ category }}</li>
+    {% endfor %}
+    </ol>
+{% endblock %}

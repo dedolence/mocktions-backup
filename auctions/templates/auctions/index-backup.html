@@ -1,0 +1,49 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    
+    {% if message %}
+        <div class="alert alert-{{message.1}}">{% autoescape off %}{{ message.0 }}{% endautoescape %}</div>
+    {% endif %}
+
+    {% include 'auctions/includes/notifications.html' with notifications=notifications %}
+
+    <div class="container-fluid mb-5">
+        
+        {% block breadcrumb %}
+            <h5 class="mb-4">Welcome back, {{ request.user }}.</h5>
+        {% endblock breadcrumb %}
+        
+        <h2>Your Active Listings</h2>
+        {% if user.is_authenticated %}
+            {# Display the user's active listings #}
+            {% for listing_bundle in listings %}
+                {% if listing_bundle.listing.active %}
+                    {% include 'auctions/includes/listing_single.html' with listing=listing_bundle.listing expiration=listing_bundle.expiration_bundle owner_controls=True watch_options=False  %}
+                {% endif %}
+            {% empty %}
+                <em>You have no active listings.</em>
+            {% endfor %}
+        {% else %}
+            {% if message %}
+                <p><em>{{ message }}</em></p>
+            {% endif %}
+            <p><a href="{% url 'login' %}">Click here to login</a> to see your listings.</p>
+            <p><a href="{% url 'all_listings' %}">Click here to see all listings</a> without logging in.</p>
+            <p>Or, <a href="{% url 'register' %}">click here to register</a> for a free account.
+        {% endif %}
+    </div>
+    <div class="container-fluid mb-5">
+        <h2>Watchlist</h2>
+        {# Display user's watchlist #}
+        {% if user.is_authenticated %}
+            {% for listing_bundle in watchlist %}
+                {% include 'auctions/includes/listing_single.html' with listing=listing_bundle.listing expiration=listing_bundle.expiration_bundle owner_controls=False watch_options=True disappear=True watching_currently=True %}
+            {% endfor %}
+        {% else %}
+            <p><small>You must be logged in to see your watchlist.</small></p>
+            <p><small><a href="{% url 'login' %}">Click here to login</a></small></p>
+        {% endif %}
+    </div>
+
+{% endblock %}

@@ -1,0 +1,128 @@
+9/212/21
+    Just deleted everything after working on it all day. Too many errors. Learning new frameworks is so frustrating because at this point at a conceptual, abstract level, I know exactly what
+    I need to do, but the syntax doesn't allow me to just whip it up. Wish this was in any other language, but I have no love for the "friendly" syntax of Python.
+
+    The models had become congested and complicated - which ultimately they kinda need to be! At one point I added a timestamp field to a model. Persistant issues with default values where
+    the field wasn't explicitly created as a nullable field (which that alone I suppose I can understand, but the error message insisted that it couldn't handle this because of a conflict with
+    existing rows BUT THERE WERE NO ROWS IT WAS A BRAND NEW TABLE). so i set a default value as 0. then got a value error because 0 isn't the kinda default value a datetime field expected. 
+    fair enough. delete the field to try again but i kept getting the error. deleted the entire model class. still getting it. loaded the database into sqlite, DROPPED THE TABLE, 
+
+
+                            STILL
+                            GETTING
+                            THE
+                            ERROR
+    
+    somehow it was still coming up with a malformatted default datetime value even after the table had been manually dropped from the entire g'damn database.
+
+    since i was still in the beginning, i let my frustration take over and started over from scratch. clearly i need to build things up from simpler basics.
+
+
+9/13
+    it turns out the problem i was experiencing regarding using foreignkeys on a model before the foreignkey class has been defined is known but has an easy solution; simply encase the
+    class name in '' as a string; officially supported by Django docs, seemingly not a hack.
+    (the datetime error i've no idea)
+
+So once again:
+    - Create new listing:
+        - Title
+        - Description
+        - Starting bid
+        - Images
+        - Category
+    - Close listing
+        - Adds message for winner
+    - (Delete listing - not actually required)
+    - Add comments to listings
+    - Add/remove listings to watchlist
+    - Bid on item
+    - Watchlist page
+    - Categories page
+    - Django admin page
+
+    DB Structure:
+    Listings:   ID    title             description       starting_bid(FK)    current_bid(FK)    winning_bid(FK)   user_id(FK)   winner_id(FK)   category_id(FK)    timestamp
+    Bids:       ID    amount            listing_id(FK)    user_id(FK)    timestamp
+    (Watchlist:  ID    listing_id(FK)    user_id(FK))
+    Comments:   ID    content           listing_id(FK)    user_id(FK)    timestamp
+    Categories: ID    content
+    Listings_   ID    listing_id(FK)    category_id(FK)
+        Categories:
+
+    User class now has a watchlist field that is many-to-many with Listings.
+    
+    The specifications require a table for Bids, which I suppose makes sense, but a scaled-up version of this should probably archive bids somewhere else as that table would probably
+    get huge quickly. I guess that goes for many tables, so I wonder how archival works.
+
+    I guess all these html layouts just implicitly get access to user...
+
+    TODO: active listings should be accessed via category; URI looks like /category/listing_id
+        /listings           - show all listings
+        /listings/3         - show specific listing with id=3
+        /categories         - show all categories
+        /categories/books   - show all listings in the book category
+
+    9/19
+        switch to trello boards for further dev
+        
+
+    11/20
+        coming back to this and figuring out what's going wrong has been a chore. but basically what i did last time i worked on this was change the way listings are included
+        via a template, and that's cascaded across a few other templates. before, i included a template with a loop to generate each listing; then changed it so that the loop
+        happens in the parent template, and the included template is for a single listing. i don't know if there's any better way to do it, but it was simplified so i'll stick
+        with what i changed.
+
+        however, this leads to another question. index.html should display the user's page when they are logged in (a login redirect otherwise). the question is whether to
+        rerout to a users/<name> rout, or use index.html to generate the user's page. i'm leaning towards index.html being a specific home user page that can include options
+        that otherwise wouldn't appear on a users/<name> rout. 
+
+        simply CANNOT get {% url 'view_user' listing.user %} to work within the listing_block.html template. "listing.user" DOES work when the url is removed, so this template
+        very definitively has access both to listing and listing.user property. simply {% url 'view_user' %} has no route attached to it.
+
+        workaround that may have to suffice. not using {% url %}, but instead "hard-coding" in <a href="users/{{ listing.user }}">. i'd so much rather use {% url %} because the
+        route to "users/" could change. 
+
+    11/21
+        better workaround is to send along an additional username variable so that i don't have to access the user property of the listing with the dot notation, which is
+        what i think is causing the issue.
+
+    11/26
+        for the sake of getting this project done, i am going to cancel image upload as a feature. with the way django works i would feel more comfortable doing a separate test
+        project to get a feel for how django does it. for now it seems just outside the scope of the project (and the project rubrik not only doesn't require it but does require
+        a link to a media url instead).
+
+    11/27
+        new listing path:
+            create_listing:
+                if GET: display form for new listing
+                if POST: validate form, render form for preview, POST either back to create_listing or to submit_listing
+
+    1/5
+        A lot has happened, trying to document more in Trello than here. But now it's clear I need to refactor the models somewhat, to take advantage of Django's builtin
+        through table functions via ManyToMany fields. For some reason I am finding this conceptually very difficult to grasp. I understand this:
+            User and Listing relate in two ways.
+            1) A Listing has a Single owner. One User has many Listings. One-to-Many.
+            2) A Listing may have several Watchers. One Watcher may be watching several Listings. Many-to-Many.
+        The Listing-to-Owner relationship seems straightforward, a ForeignKey field.
+        Parsing the M2M field seems more difficult. I think part of the problem is understanding whether what I want is possible, nevermind implementing it.
+        What I want:
+            user = Users.objects.get(id=X)
+            users_watchlist = user.watchlist.all() -> QuerySet of all the Listings that the user is watching.
+            users_listings = user.listings.all() -> QuerySet of all the listings that the user owns.
+        and/or:
+            listing = Listings.objects.get(id=X)
+            listings_watchers = listing.watchers.all() -> QuerySet of all the Users that are watching this listing.
+            listings_owner = listing.owner.get() -> A single instance of a User who owns this listing.
+        
+        I *have* accomplished the latter, I think, by adding a M2M field to the Listing model. I was able to add a user to a listing's watchers field
+        by calling:
+            listing.watchers.add(user)
+        Then if I call:
+            listings.watchers.all()
+        It produces a QuerySet that includes the user. Ultimately though I think the reverse will be more useful since everything sort of revolves around
+        the request.user object. Therefore being able to call user.watchlist.all() and user.listings.all() will be very convenient.
+
+        I don't know why this was so hard. Leave any sort of "watching" field off of Listing; just keep the ForeignKey field "owner".
+        Simply have a M2M field called "watchlist" on User. No related_names seem to even be necessary here.
+        Just do: user.watchlist.add(listing), or user.watchlist.all(). Why was this so difficult?
+        

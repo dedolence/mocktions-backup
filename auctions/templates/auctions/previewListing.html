@@ -1,0 +1,26 @@
+{% extends "auctions/layout.html" %}
+
+{% load static %}
+
+{% block body %}
+
+    {% block breadcrumb %}
+        {% include 'auctions/includes/breadcrumb.html' with page='Preview listing' %}
+    {% endblock breadcrumb %}
+
+    {% if user.is_authenticated %}
+        <div class="container w-75 ml-0 p-0">
+
+            {% include 'auctions/includes/listing_single.html' with listing=listing expiration=listing_bundle.expiration_bundle watch_options=False owner_controls=False watching_currently=False disappear=False %}
+
+            {% include 'auctions/includes/listingForm.html' with listing_form=form preview_listing=True %}
+        </div>
+
+    {% else %}
+
+        <p>You must be logged in to create a listing.</p>
+        <p><a href="{% url 'login' %}">Click here to login</a></p>
+    
+    {% endif %}
+
+{% endblock %}

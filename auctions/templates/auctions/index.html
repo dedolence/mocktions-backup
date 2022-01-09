@@ -1,0 +1,49 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    
+
+    <div class="container-fluid mb-5">
+        
+        {% if not request.user.is_authenticated %}
+                <h1>Welcome to Mocktions</h1>
+                <p>You are not currently logged in.</p>
+                <nav>
+                    <ul class="nav flex-column">
+                        <li class="nav-item py-2"><a href="{% url 'login' %}">Click here</a> to log in.</li>
+                        <li class="nav-item py-2"><a href="{% url 'all_listings' %}">Click here</a> to view listings without logging in.</li>
+                        <li class="nav-item py-2"><a href="{% url 'register' %}">Click here</a> to register for a free account.</li>
+                    </ul>
+                </nav>
+            </div>
+        {% else %}
+            {% include 'auctions/includes/notifications.html' with notifications=notifications %}
+            <h5 class="mb-4">Welcome back, {{ request.user }}.</h5>
+            
+            {% block tabcontent %}
+                <nav>
+                    <ul class="nav nav-tabs">
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="{% url 'index' %}">Your Listings</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'watchlist' %}">Your Watchlist</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'view_user' request.user %}">Your Profile</a>
+                        </li>
+                    </ul>
+                </nav>
+                <div class="tab-content mt-5" id="indexTabContent">
+                    {% url 'index' as control_url %}
+                    {% include 'auctions/includes/listingControls.html' with numbers_only=False controls=listing_controls control_url=control_url %}
+
+                    {% for listing_bundle in listing_bundles %}
+                        {% include 'auctions/includes/listing_single.html' with listing=listing_bundle.listing expiration=listing_bundle.expiration_bundle watch_options=False owner_controls=True watching_currently=False disappear=False %}
+                    {% empty %}
+                        <h5>No listings were found.</h5>
+                    {% endfor %}
+                </div>    
+            {% endblock tabcontent %}
+        {% endif %}
+{% endblock %}

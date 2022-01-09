@@ -1,0 +1,41 @@
+{% load static %}
+
+<section class="row mt-4" id="commentBlock">
+    <div class="col-lg-9">
+        <a name="commentInput" id="commentInputAnchor">
+            <h5 class="my-4">Comments</h5>
+        </a>
+        
+        <form id="newCommentForm" action="{% url 'comment' %}" method="POST">
+            {% csrf_token %}
+            
+            <div id="reply_block" class="d-none mx-5 my-3 px-3 py-2 bg-light border-start border-end">
+                <p class="small"><span id="reply_author"></span> posted:</p>
+                <p class="my-2 fst-italic" id="reply_original_comment"></p>
+            </div>
+            <input type="hidden" name="reply_to" id="replyTo">
+            <input type="hidden" name="comment_id" id="commentId">
+            <input type="hidden" name="listing_id" value="{{ listing_id }}">
+            <div class="form-floating">
+                <textarea id="commentInput" name="content" class="form-control" placeholder="Leave a comment here"></textarea>
+                <label for="commentInput" id="commentInputLabel">Add a comment</label>
+            </div>
+            <div class="d-flex flex-row justify-content-between mt-2 mb-4">
+                <span>
+                    {% url 'ajax' 'generate_comment' 0 as ajax_url %}
+                    <input id="randomCommentButton" type="button" value="Generate a random comment" class="btn btn-outline-primary" onclick="ajax('{{ajax_url}}')">
+                </span>
+                <span>
+                    <input id="commentSubmitButton" type="submit" class="btn btn-primary" value="Submit">
+                </span>
+            </div>
+        </form>
+        <hr/>
+
+        {% for comment in comments %}
+            {% include 'auctions/includes/comment_single.html' with comment=comment %}
+        {% endfor %}
+        
+    </div>
+    <div class="col-lg-3"></div>
+</section>

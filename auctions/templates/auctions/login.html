@@ -1,0 +1,38 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+    {% block breadcrumb %}
+        {% include 'auctions/includes/breadcrumb.html' with page='Login' %}
+    {% endblock breadcrumb %}
+
+    {% if message %}
+        <div>{{ message }}</div>
+    {% endif %}
+
+    <form action="{% url 'login' %}" method="post" class="container my-5 p-0">
+        {% csrf_token %}
+        <div class="row mb-3">
+            <div class="col-sm-4">
+                <div class="form-floating">
+                    <input id="usernameInput" class="form-control" type="text" name="username" placeholder="Username">
+                    <label for="usernameInput">Username</label>
+                </div>
+            </div>
+            <div class="col-sm-8"></div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-sm-4">
+                <div class="form-floating">
+                    <input id="emailInput" class="form-control" type="password" name="password" placeholder="Password">
+                    <label for="emailInput">Password</label>
+                </div>
+            </div>
+            <div class="col-sm-8"></div>
+        </div>
+        <input class="btn btn-primary" type="submit" value="Login">
+    </form>
+
+    <p>Don't have an account? <a href="{% url 'register' %}">Register here.</a></p>
+
+{% endblock %}

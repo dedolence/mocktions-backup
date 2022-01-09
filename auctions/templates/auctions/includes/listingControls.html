@@ -1,0 +1,140 @@
+{% load listings_tags %}
+{% comment %}
+    Parameters:
+    numbers_only = boolean; whether to only display the page numbers, no other controls.
+    controls = a dict, passed by the view to the template as controls_dict, containing the values for each control
+    control_url = for convenience, the generated url for which view will handle these controls 
+{% endcomment %}
+{% comment %} <script>
+    console.log("Total listings: {{ total_objects }}");
+    console.log("Current page: {{ controls.current_page }}");
+    console.log("Previous page: {{ controls.previous_page }}");
+    console.log("Next page: {{ controls.next_page }}");
+    console.log("Next next page: {{ controls.next_next_page }}");
+    console.log("Last page: {{ controls.last_page }}")
+    console.log("Show expired? {{ controls.show_expired }}");
+</script> {% endcomment %}
+
+{% comment %}
+    the make_query_string order of arguments: control_url, per_page, page, order_by, show_expired, selected_category
+{% endcomment %}
+<div class="container mb-1" id="listingControls">
+    <div class="row">
+        <nav aria-label="Listing display options" class="p-0 btn-toolbar d-flex {% if not numbers_only %}justify-content-between{% else %}justify-content-center{% endif %}">
+        {% if not numbers_only %}
+            <div class="btn-group">
+                <ul class="pagination pagination-sm">
+                    <li class="page-item disabled"><span class="page-link">Listings per page:</span></li>
+                    {% make_query_string control_url 10 1 controls.order_by controls.show_expired controls.selected_category as url %}
+                    <li class="page-item {% if controls.per_page == 10 %}active{% endif %}"><a href="{{url}}" class="page-link">10</a></li>
+
+                    {% make_query_string control_url 25 1 controls.order_by controls.show_expired controls.selected_category as url %}
+                    <li class="page-item {% if controls.per_page == 25 %}active{% endif %}"><a href="{{url}}" class="page-link">25</a></li>
+
+                    {% make_query_string control_url 50 1 controls.order_by controls.show_expired controls.selected_category as url %}
+                    <li class="page-item {% if controls.per_page == 50 %}active{% endif %}"><a href="{{url}}" class="page-link">50</a></li>
+
+                    {% make_query_string control_url 75 1 controls.order_by controls.show_expired controls.selected_category as url %}
+                    <li class="page-item {% if controls.per_page == 75 %}active{% endif %}"><a href="{{url}}" class="page-link">75</a></li>
+                </ul>
+            </div>
+        {% endif %}
+            <div class="btn-group">
+                <ul class="pagination">
+
+                    {% make_query_string control_url controls.per_page controls.previous_page controls.order_by controls.show_expired controls.selected_category as url %}
+                    <li class="page-item {% if controls.current_page == 1 %}disabled{% endif %}"><a href="{{url}}" class="page-link">Previous</a></li>
+                    
+                    {% make_query_string control_url controls.per_page 1 controls.order_by controls.show_expired controls.selected_category as url %}
+                    <li class="page-item {% if controls.current_page == 1 %}disabled{% endif %} "><a href="{{url}}" class="page-link">First</a></li>
+                    
+                    {% if controls.previous_page > 0 %}
+                        {% make_query_string control_url controls.per_page controls.previous_page controls.order_by controls.show_expired controls.selected_category as url %}
+                        <li class="page-item"><a href="{{url}}" class="page-link">{{ controls.previous_page }}</a></li>
+                    {% endif %}
+                    
+                    {% make_query_string control_url controls.per_page controls.current_page controls.order_by controls.show_expired controls.selected_category as url %}
+                    <li class="page-item active"><a href="{{url}}" class="page-link">{{ controls.current_page }}</a></li>
+                    
+                    {% if controls.next_page != 0 %}
+                        {% make_query_string control_url controls.per_page controls.next_page controls.order_by controls.show_expired controls.selected_category as url %}
+                        <li class="page-item"><a href="{{url}}" class="page-link">{{ controls.next_page }}</a></li>
+                    
+                        {% if controls.next_next_page <= controls.last_page %}
+                            {% make_query_string control_url controls.per_page controls.next_next_page controls.order_by controls.show_expired controls.selected_category as url %}
+                            <li class="page-item"><a href="{{url}}" class="page-link">{{ controls.next_next_page }}</a></li>
+                        {% endif %}
+                    
+                        {% endif %}
+                    
+                    {% make_query_string control_url controls.per_page controls.last_page controls.order_by controls.show_expired controls.selected_category as url %}
+                    <li class="page-item {% if controls.current_page == controls.last_page %}disabled{% endif %}"><a href="{{url}}" class="page-link">Last</a></li>
+
+                    {% make_query_string control_url controls.per_page controls.next_page controls.order_by controls.show_expired controls.selected_category as url %}
+                    <li class="page-item {% if controls.current_page == controls.last_page %}disabled{% endif %}"><a href="{{url}}" class="page-link">Next</a></li>
+                    
+                </ul>
+            </div>
+        {% if not numbers_only %}
+        <div class="dropdown dropstart">
+            <button class="btn btn-outline-primary dropdown-toggle" type="button" id="sortByDropdownButton" data-bs-toggle="dropdown" aria-expanded="false">
+              Order by
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="sortByDropdownButton">
+                <li><h6 class="dropdown-header">Date created:</h6></li>
+
+                {% make_query_string control_url controls.per_page controls.current_page 'newest' controls.show_expired controls.selected_category as url %}
+                <li><a class="dropdown-item {% if controls.order_by == 'newest' %}active{% endif %}" href="{{url}}">Newest first</a></li>
+
+                {% make_query_string control_url controls.per_page controls.current_page 'oldest' controls.show_expired controls.selected_category as url %}
+                <li><a class="dropdown-item {% if controls.order_by == 'oldest' %}active{% endif %}" href="{{url}}">Oldest first</a></li>
+
+                <li><hr class="dropdown-divider"></li>
+                
+                <li><h6 class="dropdown-header">Title:</h6></li>
+                
+                {% make_query_string control_url controls.per_page controls.current_page 'atoz' controls.show_expired controls.selected_category as url %}
+                <li><a class="dropdown-item {% if controls.order_by == 'atoz' %}active{% endif %}" href="{{url}}">A to Z</a></li>
+
+                {% make_query_string control_url controls.per_page controls.current_page 'ztoa' controls.show_expired controls.selected_category as url %}
+                <li><a class="dropdown-item {% if controls.order_by == 'ztoa' %}active{% endif %}" href="{{url}}">Z to A</a></li>
+
+                <li><hr class="dropdown-divider"></li>
+                
+                <li><h6 class="dropdown-header">Current price:</h6></li>
+                
+                {% make_query_string control_url controls.per_page controls.current_page 'priceUp' controls.show_expired controls.selected_category as url %}
+                <li><a class="dropdown-item {% if controls.order_by == 'priceUp' %}active{% endif %}" href="{{url}}">Low to high</a></li>
+
+                {% make_query_string control_url controls.per_page controls.current_page 'priceDown' controls.show_expired controls.selected_category as url %}
+                <li><a class="dropdown-item {% if controls.order_by == 'priceDown' %}active{% endif %}" href="{{url}}">High to low</a></li>
+            </ul>
+            </div>
+        </nav>
+        <div class="btn-group d-flex justify-content-between mb-3 p-0">
+            <div class="dropdown">
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="categoryDropdownButton" data-bs-toggle="dropdown" aria-expanded="false">
+                    Category
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="categoryDropdownButton">
+                    {% make_query_string control_url controls.per_page controls.current_page controls.order_by controls.show_expired 0 as url %}
+                    <li><a class="dropdown-item" href="{{url}}">All</a></li>
+                    {% for cat in controls.categories %}
+                        {% make_query_string control_url controls.per_page controls.current_page controls.order_by controls.show_expired cat.id as url %}
+                        <li><a class="dropdown-item" href="{{url}}">{{ cat.content }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <span>
+                {% if controls.show_expired %}
+                    {% make_query_string control_url controls.per_page 1 controls.order_by False controls.selected_category as url %}
+                    <a href="{{url}}" class="small btn btn-outline-primary m-0">Hide expired listings</a>
+                {% else %}
+                    {% make_query_string control_url controls.per_page 1 controls.order_by True controls.selected_category as url %}
+                    <a href="{{url}}" class="small btn btn-outline-primary m-0">Show expired listings</a>
+                {% endif %}
+            </span>
+        </div>
+        {% endif %}
+    </div>
+</div>
