@@ -25,7 +25,7 @@ function ajax(full_url, disappear = false) {
                     comment_input.style.height = comment_input.scrollHeight + 10 + "px";
                     break;
                 case 'reply_comment':
-                    reply_comment(r, id);
+                    reply_comment(r);
                     break;
                 case 'edit_comment':
                     editComment(id);
@@ -73,26 +73,22 @@ function editComment(id) {
     })
 }
 
-function reply_comment(r, id) {
-    let r_b = document.getElementById("reply_block");
-    let reply_quote = document.getElementById("reply_original_comment");
-    let reply_author = document.getElementById("reply_author");
-    let comment_box = document.getElementById("commentInput");
-    let comment_label = document.getElementById("commentInputLabel");
-    let replyToId = document.getElementById("replyTo");
+function reply_comment(r) {
+    const orig_comment = (JSON.parse(r.comment))[0];
+        // author is not part of the serialized model data, added separately
+    const orig_author = r.author; 
+    const modalElement = document.getElementById("replyModal");
+    const originalCommentId = document.getElementById("originalCommentId");
+    const modal = new bootstrap.Modal(modalElement);
 
-    res = (JSON.parse(r.comment))[0];
-    orig_author = r.author; // author is not part of the serialized model data, added separately
-    orig_content = res.fields.content;
-    orig_listing_id = res.pk;
-
-    comment_label.innerText = "Reply to " + orig_author + ":";
-    reply_quote.innerText = orig_content;
-    reply_author.innerText = orig_author;
-    replyToId.value = orig_listing_id;
-
-    r_b.classList.remove("d-none");
-    comment_box.focus();
+        // This works fine, but...
+    originalCommentId.value = orig_comment.pk;
+        // ...for some unimaginable reason, jquery is the only thing that works.
+        // Calls to innerHTML or innerText simply do not apply. No idea why.
+    $("#originalCommentAuthor").html(orig_author);
+    $("#originalCommentContent").html(orig_comment.fields.content);
+    $("#commentInputLabel").html("Reply to " + orig_author + ": ");
+    modal.show();
 }
 
 function watchListing(res, id, disappear) { 
@@ -103,13 +99,13 @@ function watchListing(res, id, disappear) {
     let toastIcon = document.getElementById("toast-icon-" + id);
 
     toastBody.innerHTML = res.message;
-    // toggle icon and text
+        // toggle icon and text
     if (!res.undo) {
         toastIcon.classList.toggle("bi-heart");
         toastIcon.classList.toggle("bi-heart-fill");
         buttonText.innerHTML = res.button_text;
     }
-    // create Toast instance
+        // create Toast instance
     let toast = new bootstrap.Toast(toastElement);
     // display Toast
     toast.show();

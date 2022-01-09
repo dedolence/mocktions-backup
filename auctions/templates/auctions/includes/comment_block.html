@@ -5,15 +5,38 @@
         <a name="commentInput" id="commentInputAnchor">
             <h5 class="my-4">Comments</h5>
         </a>
+            
         
         <form id="newCommentForm" action="{% url 'comment' %}" method="POST">
             {% csrf_token %}
-            
-            <div id="reply_block" class="d-none mx-5 my-3 px-3 py-2 bg-light border-start border-end">
-                <p class="small"><span id="reply_author"></span> posted:</p>
-                <p class="my-2 fst-italic" id="reply_original_comment"></p>
+            {# Comment reply modal #}
+            <div class="modal fade" id="replyModal" tabindex="-1" aria-labelledby="replyModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                            <div class="modal-header">
+                            <h5 class="modal-title" id="replyModalLabel"><i class="bi bi-chat-quote"></i> Reply</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="m-3 border-start border-end bg-light p-2">
+                                <p class="small"><span id="originalCommentAuthor"></span> wrote:</p>
+                                <p id="originalCommentContent"></p>
+                            </div>
+                            <div class="form-floating">
+                                <textarea id="replyInput" name="reply_content" class="form-control" placeholder="Leave a reply here"></textarea>
+                                <label for="replyInput" id="commentInputLabel"></label>
+                            </div>
+                            <input type="hidden" name="original_comment_id" id="originalCommentId">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Reply</button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <input type="hidden" name="reply_to" id="replyTo">
+            {# /Comment reply modal #}
+
             <input type="hidden" name="comment_id" id="commentId">
             <input type="hidden" name="listing_id" value="{{ listing_id }}">
             <div class="form-floating">
