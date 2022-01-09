@@ -130,8 +130,9 @@ def comment(request):
         listing = Listing.objects.get(pk=request.POST["listing_id"])
         user = request.user
         
-        if 'reply_to' in request.POST:
-            replyTo = Comment.objects.get(pk=request.POST["reply_to"])
+        if 'original_comment_id' in request.POST:
+            replyTo = Comment.objects.get(pk=request.POST["original_comment_id"])
+            content = request.POST["reply_content"]
         else:
             replyTo = None
 
@@ -203,7 +204,7 @@ def create_listing(request):
 
 @login_required
 def delete_listing(request, listing_id):
-    listing_bundle = getListing(request, id=listing_id)
+    listing_bundle = get_listing(request, id=listing_id)
     if request.user != listing_bundle["listing"].owner:
         notification = generate_notification(
             request.user, 
@@ -233,7 +234,7 @@ def delete_listing(request, listing_id):
 @login_required
 def edit_listing(request, listing_id):
     raw_listing = Listing.objects.get(id=listing_id)
-    listing_bundle = getListing(request, None, raw_listing)
+    listing_bundle = get_listing(request, None, raw_listing)
     if request.user != raw_listing.owner:
         message = MESSAGE_LISTING_EDIT_PROHIBITED.format(raw_listing.title)
         notification = generate_notification(
@@ -246,7 +247,7 @@ def edit_listing(request, listing_id):
     else:
         # When first accessed, must check to make sure editing is allowed.
         if request.method == "GET":
-            highest_bid = getHighestBid(raw_listing)
+            highest_bid = get_highest_bid(raw_listing)
             if (
                 (highest_bid and 
                 highest_bid.amount != raw_listing.starting_bid)
@@ -264,7 +265,7 @@ def edit_listing(request, listing_id):
             
             else:
                 edit_form = NewListingForm(instance=raw_listing)
-                listing_bundle = getListing(request, None, raw_listing)
+                listing_bundle = get_listing(request, None, raw_listing)
                 return render(request, 'auctions/editListing.html', {
                     'listing_bundle': listing_bundle,
                     'edit_listing_form': edit_form
@@ -309,7 +310,7 @@ def index(request):
 
 def listing_page(request, listing_id):
     notifications = get_notifications(request.user, 'listing_page')
-    listing_bundle = getListing(request, listing_id)
+    listing_bundle = get_listing(request, listing_id)
     comments = listing_bundle["listing"].listings_comments.all().order_by('-timestamp')
     return render(request, "auctions/viewListing.html", {
         'listing_bundle': listing_bundle,
@@ -377,7 +378,7 @@ def place_bid(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         listing_id = request.POST["listing-id"]
-        listing_bundle = getListing(request, listing_id)
+        listing_bundle = get_listing(request, listing_id)
         if listing_bundle['expiration_bundle']['expired'] == True:
             generate_notification(
                     request.user,
@@ -422,7 +423,7 @@ def place_bid(request):
                     user=request.user, 
                     listing=listing_bundle["listing"])
                 new_bid.save()
-                listing_bundle = getListing(request, listing_id)
+                listing_bundle = get_listing(request, listing_id)
                 generate_notification(
                     request.user,
                     ALERT_SUCCESS,
@@ -516,7 +517,7 @@ def purge_listings(request):
         expiration = check_expiration(listing)
         if expiration["expired"] and listing.active:
             listing.active = False
-            highest_bid = getHighestBid(listing)
+            highest_bid = get_highest_bid(listing)
             if highest_bid:
                 listing.winning_bid = highest_bid.amount
                 listing.winner = highest_bid.user
@@ -526,17 +527,32 @@ def purge_listings(request):
                 obj.delete()
             listing.save()
 
+""" 
+def format_comment(raw_comment) -> dict:
+    formatted_comment = {
+        "content": raw_comment.content,
+        "listing": raw_comment.listing,
+        "user": raw_comment.user,
+        "replyTo": raw_comment.replyTo }
+    if raw_comment.replyTo:
+        formatted_comment["originalContent"] = raw_comment.replyTo.content
 
-def getHighestBid(listing) -> Bid:
+
+def get_comments(raw_listing) -> QuerySet:
+    raw_comments = raw_listing.listings_comments.all().order_by('-timestamp')
+    return map(format_comment, raw_comments)
+
+"""
+def get_highest_bid(listing) -> Bid:
     bids = Bid.objects.filter(listing=listing).order_by('-amount')
     return bids.first()
 
 
-def getListing(request, id=None, listing=None) -> dict:
+def get_listing(request, id=None, listing=None) -> dict:
     if not listing:
         listing = Listing.objects.get(pk=id)
 
-    highest_bid = getHighestBid(listing)
+    highest_bid = get_highest_bid(listing)
     listing.current_bid = highest_bid.amount if highest_bid else listing.starting_bid
     owner_controls = True if listing.owner == request.user else False
     watch_options = True if owner_controls == False else True
@@ -617,7 +633,7 @@ def get_page(request, raw_listings) -> tuple:
     controls_dict['last_page'] = pager.num_pages
 
     formatted_listings = [
-        getListing(request, id=None, listing=listing) 
+        get_listing(request, id=None, listing=listing) 
         for listing in current_page.object_list
         ]
 

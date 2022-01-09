@@ -8,6 +8,15 @@
         </div>
         <div class="col-md-10 col-xl-11 p-0 m-0">
             <div class="card-body">
+                {% if comment.replyTo %}
+                    <div class="m-3 border-start border-end bg-light p-2">
+                        <p class="small">
+                            <i class="bi bi-chat-quote"></i> 
+                            <a href="{% url 'view_user' comment.replyTo.user %}" class="link-dark">{{ comment.replyTo.user }}</a> wrote:
+                        </p>
+                        <p>{{ comment.replyTo.content }}</p>
+                    </div>
+                {% endif %}
                 <p class="card-text" id="commentText-{{comment.id}}">
                     {{ comment.content }}
                 </p>
