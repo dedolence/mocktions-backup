@@ -35,9 +35,9 @@
                     {% endif %}
                 </li>
                 <li class="nav-item p-2 me-0">
-                    <form class="d-flex" action="search/" method="GET">
+                    <form class="d-flex" action="{% url 'search' %}" method="GET">
                         {% csrf_token %}
-                        <input type="text" class="form-control me-2" placeholder="Search" aria-label="Search">
+                        <input name="search_query" type="text" class="form-control me-2" placeholder="Search" aria-label="Search">
                         <button type="submit" class="btn btn-outline-primary">Search</button>
                     </form>
                 </li>

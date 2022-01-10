@@ -470,7 +470,25 @@ def register(request):
 
 
 def search(request):
-    return render(request, "auctions/index.html")
+    page = {}
+    query = request.GET.get("search_query", '')
+    if query is not None:
+        res_titles = Listing.objects.filter(title__icontains=query)
+        res_descr = Listing.objects.filter(description__icontains=query)
+        full_res = res_titles.union(res_descr)
+        # cannot immediately call get_page because it uses a filter and 
+        # that is "not supported" after usion union() >__<
+        # so what follows is some obnoxious gymnastics to make this work.
+        # i do not like this.
+        ids = [listing.id for listing in full_res]
+        raw_listings = Listing.objects.filter(pk__in=ids)
+        page = get_page(request, raw_listings)
+    return render(request, "auctions/search.html", {
+        'controls_dict': page[0],
+        'listing_bundles': page[1],
+        'search_query': query
+    })
+    
 
 
 def shopping_cart(request):
