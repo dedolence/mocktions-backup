@@ -9,6 +9,7 @@
         <div class="col-md-10 col-xl-11 p-0 m-0">
             <div class="card-body">
                 {% if comment.replyTo %}
+                    <input type="hidden" name="original_comment_id" id="originalCommentId" value="{{ comment.replyTo }}">
                     <div class="m-3 border-start border-end bg-light p-2">
                         <p class="small">
                             <i class="bi bi-chat-quote"></i> 

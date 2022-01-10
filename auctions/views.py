@@ -130,13 +130,16 @@ def comment(request):
         listing = Listing.objects.get(pk=request.POST["listing_id"])
         user = request.user
         
-        if 'original_comment_id' in request.POST:
-            replyTo = Comment.objects.get(pk=request.POST["original_comment_id"])
+        # this will only be set if creating a new reply to another comment
+        original_comment_id = request.POST.get("original_comment_id", None)
+        if original_comment_id:
+            replyTo = Comment.objects.get(pk=original_comment_id)
             content = request.POST["reply_content"]
         else:
             replyTo = None
 
-        comment_id = request.POST["comment_id"]
+        # this will only be set if editing an existing comment
+        comment_id = request.POST.get("comment_id", None)
         if comment_id:
             comment = Comment.objects.get(pk=comment_id)
             comment.content = content
@@ -148,6 +151,7 @@ def comment(request):
                 user=user,
                 replyTo=replyTo
             )
+        
         return HttpResponseRedirect(
             reverse("view_listing", args=[request.POST["listing_id"]])
             )

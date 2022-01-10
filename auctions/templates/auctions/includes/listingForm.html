@@ -45,7 +45,10 @@
     {% endfor %}
 
     <div class="row mb-4">
-        <div class="col-sm-9 offset-sm-3">
+        <div class="col-sm-3">
+            <a href="{% url 'index' %}" class="btn btn-danger">Cancel</a>
+        </div>
+        <div class="col-sm-9">
             {% if new_listing %}
                 <input type="submit" class="btn btn-primary" value="Preview Listing" name="preview">
             {% elif preview_listing %}

@@ -2,9 +2,9 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path("", views.index, name="index"),        # the user's page
+    path("", views.index, name="index"),
     path("accounts/<str:username>", views.view_user, name="view_user"),
-    path("ajax/<str:action>/<int:id>", views.ajax, name="ajax"),     # AJAX view
+    path("ajax/<str:action>/<int:id>", views.ajax, name="ajax"),
     path("bid", views.place_bid, name="place_bid"),
     path("cart", views.shopping_cart, name="shopping_cart"),
     path("categories", views.categories, name="categories"),
@@ -13,7 +13,7 @@ urlpatterns = [
     path("create", views.create_listing, name="create_listing"),
     path("delete/<int:listing_id>", views.delete_listing, name="delete_listing"),
     path("edit/<int:listing_id>", views.edit_listing, name="edit_listing"),
-    path("listings", views.listings, name="all_listings"),     # django automatically appends a / if it's left out, which is convenient. so /listings works as well as /listings/
+    path("listings/", views.listings, name="all_listings"),
     path("listings/view/<int:listing_id>", views.listing_page, name="view_listing"),
     path("login", views.login_view, name="login"),
     path("logout", views.logout_view, name="logout"),

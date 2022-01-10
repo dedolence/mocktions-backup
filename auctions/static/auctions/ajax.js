@@ -65,12 +65,6 @@ function editComment(id) {
     comment_box.focus();
     anchor.scrollIntoView();
 
-    // reset on losing focus
-    comment_box.addEventListener("focusout", function() {
-        comment_box.innerHTML = "";
-        submit_button.value = "Submit";
-        hidden_id.removeAttribute("value");
-    })
 }
 
 function reply_comment(r) {

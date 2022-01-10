@@ -37,10 +37,10 @@
             </div>
             {# /Comment reply modal #}
 
-            <input type="hidden" name="comment_id" id="commentId">
+            <input type="hidden" name="comment_id" id="commentId" autocomplete="off">
             <input type="hidden" name="listing_id" value="{{ listing_id }}">
             <div class="form-floating">
-                <textarea id="commentInput" name="content" class="form-control" placeholder="Leave a comment here"></textarea>
+                <textarea id="commentInput" name="content" class="form-control" placeholder="Leave a comment here" autocomplete="off"></textarea>
                 <label for="commentInput" id="commentInputLabel">Add a comment</label>
             </div>
             <div class="d-flex flex-row justify-content-between mt-2 mb-4">
