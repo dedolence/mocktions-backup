@@ -25,6 +25,14 @@ class Comment(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
 
+class Image(models.Model):
+    owner = models.ForeignKey("User", on_delete=CASCADE, blank=True)
+    image = models.ImageField(upload_to="%Y/%m/%d/", 
+        width_field="pp_width", height_field="pp_height", blank=True)
+    pp_width = models.IntegerField(blank=True)
+    pp_height = models.IntegerField(blank=True)
+
+
 class Listing(models.Model):
     image_url = models.CharField(max_length=200, null=True, blank=False)
     title = models.CharField(max_length=64, null=True, blank=False)
@@ -59,4 +67,3 @@ class Notification(models.Model):
 
 class User(AbstractUser):
     watchlist = models.ManyToManyField('Listing', blank=True)
-    pass

@@ -1,0 +1,51 @@
+{% extends 'auctions/index.html' %}
+
+{% block tabcontent %}
+    <nav>
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'index' %}">Your Listings</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'watchlist' %}">Your Watchlist</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page"  href="{% url 'settings' %}">Your Profile</a>
+            </li>
+        </ul>
+    </nav>
+    <div class="tab-content mt-5" id="indexTabContent">
+        <form action="{% url 'settings' %}" method="POST">
+            <div class="row my-5">
+                <h3>Settings</h3>
+            </div>
+            <div class="row-my-5">
+                <div class="col-md-8">
+                    <p class="lead">Change your profile picture</p>
+                    <div class="row my-3">
+                        <label for="profilePictureUploadInput" class="col-md-4 col-form-label">
+                            Upload an image:
+                        </label>
+                        <div class="col-md-8">
+                            <input id="profilePictureUploadInput" type="file" class="form-control">
+                        </div>
+                    </div>
+                    <div class="row my-3">
+                        <label for="profilePictureUrlInput" class="col-md-4 col-form-label">
+                            Or enter URL of an image:
+                        </label>
+                        <div class="col-md-8">
+                            <input id="profilePictureUrlInput" type="text" class="form-control">
+                        </div>
+                    </div>
+                    <div class="row my-3">
+                        <div class="col">
+                            <input type="submit" class="btn btn-primary" value="Save changes" name="submit">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4"></div>
+            </div>
+        </form>
+    </div>
+{% endblock tabcontent %}

@@ -19,7 +19,7 @@ from django.views.decorators.csrf import \
     csrf_exempt  # to make the watchlist AJAX request work, which doesn't use a CSRF token
 
 from . import wordlist
-from .forms import NewListingForm
+from .forms import NewImageForm, NewListingForm
 from .globals import *
 from .models import Bid, Category, Comment, Listing, Notification, User
 from .notifications import *
@@ -490,21 +490,32 @@ def search(request):
     })
     
 
+def settings(request):
+    if not request.user.is_authenticated:
+        return render(request, reverse("index"))
+    else:
+        profile_picture_form = NewImageForm()
+        return render(request, "auctions/settings.html", {
+            'profile_picture_form': profile_picture_form
+        })
+
+
 
 def shopping_cart(request):
     return HttpResponseRedirect(reverse('index'))
 
 
 def view_all_users(request):
-    return HttpResponseRedirect(reverse(''))
+    return HttpResponseRedirect(reverse('index'))
 
 
 def view_user(request, username):
     user = User.objects.get(username=username)
-    listings = Listing.objects.filter(owner_id=user.id)
+    raw_listings = Listing.objects.filter(owner=user)
+    listings = [get_listing(listing) for listing in raw_listings]
     return render(request, "auctions/user.html", {
-        "user": user,
-        "listings": listings
+        "listings": listings,
+        'user': user
     })
 
 def watchlist(request):
