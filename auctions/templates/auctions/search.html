@@ -7,6 +7,7 @@
 
     {% if search_query %}
         <h3>Results for "{{search_query}}"</h3>
+        <hr class="my-5"/>
     {% else %}
         <form action="{% url 'search' %}" method="GET">
             {% csrf_token %}
