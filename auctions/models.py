@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models.deletion import CASCADE, PROTECT
+import uuid
 
 
 class Bid(models.Model):
@@ -25,12 +26,14 @@ class Comment(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
 
 
+# note: i was initially concerned about filename conflicts, but it looks like Django
+# appends random characters to filenames if there is a conflict.
 class Image(models.Model):
     owner = models.ForeignKey("User", on_delete=CASCADE, blank=True)
     image = models.ImageField(upload_to="%Y/%m/%d/", 
-        width_field="pp_width", height_field="pp_height", blank=True)
-    pp_width = models.IntegerField(blank=True)
-    pp_height = models.IntegerField(blank=True)
+        width_field="pp_width", height_field="pp_height", blank=True)   
+    pp_width = models.IntegerField(blank=True, null=True)
+    pp_height = models.IntegerField(blank=True, null=True)
 
 
 class Listing(models.Model):

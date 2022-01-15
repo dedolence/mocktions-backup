@@ -15,7 +15,8 @@
         </ul>
     </nav>
     <div class="tab-content mt-5" id="indexTabContent">
-        <form action="{% url 'settings' %}" method="POST">
+        <form action="{% url 'settings' %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
             <div class="row my-5">
                 <h3>Settings</h3>
             </div>
@@ -23,12 +24,21 @@
                 <div class="col-md-8">
                     <p class="lead">Change your profile picture</p>
                     <div class="row my-3">
-                        <label for="profilePictureUploadInput" class="col-md-4 col-form-label">
-                            Upload an image:
-                        </label>
-                        <div class="col-md-8">
-                            <input id="profilePictureUploadInput" type="file" class="form-control">
-                        </div>
+                        {% for field in profile_picture_form %}
+                            <label for="{{ field.id_for_label }}" class="col-md-4 col-form-label">
+                                {{ field.label }}
+                            </label>
+                            <div class="col-md-8">
+                                {{ field }}
+                                <div class="text-danger text-small">
+                                    <ul class="ml-0">
+                                        {% for error in field.errors  %}
+                                            <li class="text-danger small">{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        {% endfor %}
                     </div>
                     <div class="row my-3">
                         <label for="profilePictureUrlInput" class="col-md-4 col-form-label">

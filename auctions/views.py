@@ -21,7 +21,7 @@ from django.views.decorators.csrf import \
 from . import wordlist
 from .forms import NewImageForm, NewListingForm
 from .globals import *
-from .models import Bid, Category, Comment, Listing, Notification, User
+from .models import Bid, Category, Comment, Image, Listing, Notification, User
 from .notifications import *
 from .strings import *
 
@@ -494,10 +494,27 @@ def settings(request):
     if not request.user.is_authenticated:
         return render(request, reverse("index"))
     else:
-        profile_picture_form = NewImageForm()
-        return render(request, "auctions/settings.html", {
-            'profile_picture_form': profile_picture_form
-        })
+        if request.method == "POST":
+            profile_picture_form = NewImageForm(request.POST, request.FILES)
+            if profile_picture_form.is_valid():
+                newImg = Image(
+                    owner = request.user,
+                    image = request.FILES['image']
+                )
+                newImg.save()
+                return render(request, "auctions/settings.html", {
+                    'profile_picture_form': profile_picture_form,
+                    'pic': newImg
+                })
+            else:
+                return render(request, "auctions/settings.html", {
+                    'message': "upload failed"
+                })
+        else:
+            profile_picture_form = NewImageForm()
+            return render(request, "auctions/settings.html", {
+                'profile_picture_form': profile_picture_form
+            })
 
 
 
