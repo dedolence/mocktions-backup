@@ -23,6 +23,10 @@
             <div class="row-my-5">
                 <div class="col-md-8">
                     <p class="lead">Change your profile picture</p>
+
+                    <div class="alert alert-info">{{ message }}</div>
+                    <img src="{{ pic.image.src }}">
+                    
                     <div class="row my-3">
                         {% for field in profile_picture_form %}
                             <label for="{{ field.id_for_label }}" class="col-md-4 col-form-label">
@@ -39,14 +43,6 @@
                                 </div>
                             </div>
                         {% endfor %}
-                    </div>
-                    <div class="row my-3">
-                        <label for="profilePictureUrlInput" class="col-md-4 col-form-label">
-                            Or enter URL of an image:
-                        </label>
-                        <div class="col-md-8">
-                            <input id="profilePictureUrlInput" type="text" class="form-control">
-                        </div>
                     </div>
                     <div class="row my-3">
                         <div class="col">

@@ -18,6 +18,7 @@
             </div>
         {% else %}
             {% include 'auctions/includes/notifications.html' with notifications=notifications %}
+            
             <h5 class="mb-4">Welcome back, {{ request.user }}.</h5>
             
             {% block tabcontent %}
