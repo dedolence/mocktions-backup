@@ -28,7 +28,7 @@ class Comment(models.Model):
 
 # note: i was initially concerned about filename conflicts, but it looks like Django
 # appends random characters to filenames if there is a conflict.
-class Image(models.Model):
+class User_Image(models.Model):
     owner = models.ForeignKey("User", on_delete=CASCADE, blank=True)
     image = models.ImageField(upload_to="%Y/%m/%d/", 
         width_field="pp_width", height_field="pp_height", blank=True)   
