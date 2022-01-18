@@ -1,7 +1,11 @@
+import math
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models.deletion import CASCADE, PROTECT
-import uuid
+from .globals import THUMBNAIL_SIZE
+from PIL import Image
+from django.core import files
+from io import BytesIO
 
 
 class Bid(models.Model):
@@ -31,9 +35,16 @@ class Comment(models.Model):
 class User_Image(models.Model):
     owner = models.ForeignKey("User", on_delete=CASCADE, blank=True)
     image = models.ImageField(upload_to="%Y/%m/%d/", 
-        width_field="pp_width", height_field="pp_height", blank=True)   
+        width_field="pp_width", height_field="pp_height", blank=True)
     pp_width = models.IntegerField(blank=True, null=True)
     pp_height = models.IntegerField(blank=True, null=True)
+    thumbnail = models.ImageField(upload_to="%Y/%m/%d/", blank=True)
+
+    # this method and make_thumbnail() from:
+    # Bharat Chauhan https://bit.ly/3GDQOKS
+    def save_thumbnail(self, *args, **kwargs):
+        self.thumbnail = make_thumbnail(self.image)
+        super().save(*args, **kwargs)
 
 
 class Listing(models.Model):
@@ -70,3 +81,34 @@ class Notification(models.Model):
 
 class User(AbstractUser):
     watchlist = models.ManyToManyField('Listing', blank=True)
+
+
+# //////////////////////////////////////////////////////
+# UTILITY MODEL FUNCTIONS
+# //////////////////////////////////////////////////////
+
+
+def make_thumbnail(image, size=THUMBNAIL_SIZE):
+    """ Format a thumbnail image for storage in DB. 
+    This function and the corresponding model method are
+    originally from Bharat Chauhan https://bit.ly/3GDQOKS
+    """
+    img_pil = Image.open(image)
+    img_pil.convert("RGB")
+
+    # crop to a square.
+    width = img_pil.size[0]
+    height = img_pil.size[1]
+    if width != height:
+        dif = abs(width-height)/2
+        if width > height:
+            (left, top, right, bottom) = (dif, 0, width-dif, height)
+        else:
+            (left, top, right, bottom) = (0, dif, width, height-dif)
+        img_pil = img_pil.crop((left, top, right, bottom))
+        
+    img_pil.thumbnail(size)
+    thumb_io = BytesIO()
+    img_pil.save(thumb_io, "JPEG")
+    thumb = files.images.ImageFile(thumb_io, name=image.name)
+    return thumb
