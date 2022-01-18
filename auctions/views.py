@@ -212,12 +212,13 @@ def create_listing(request):
 def delete_listing(request, listing_id):
     listing_bundle = get_listing(request, id=listing_id)
     if request.user != listing_bundle["listing"].owner:
-        notification = generate_notification(
+        notification = build_notification(
             request.user, 
             TYPE_DANGER, 
             ICON_DANGER, 
             MESSAGE_LISTING_DELETE_PROHIBITED,
             True)
+        notification.save()
         return HttpResponseRedirect(reverse("index"))
     else:
         if request.method == "GET":
@@ -227,13 +228,14 @@ def delete_listing(request, listing_id):
         else:
             listing = Listing.objects.get(pk=listing_id)
             listing.delete()
-            notification = generate_notification(
+            notification = build_notification(
                 request.user,
                 TYPE_INFO,
                 ICON_GENERIC,
                 MESSAGE_USER_LISTING_DELETED.format(listing.title),
                 True
             )
+            notification.save()
             return HttpResponseRedirect(reverse("index"))
 
 
@@ -243,12 +245,13 @@ def edit_listing(request, listing_id):
     listing_bundle = get_listing(request, None, raw_listing)
     if request.user != raw_listing.owner:
         message = MESSAGE_USER_LISTING_EDIT_PROHIBITED.format(raw_listing.title)
-        notification = generate_notification(
+        notification = build_notification(
             request.user, 
             TYPE_DANGER, 
             ICON_DANGER, 
             message, 
             True)
+        notification.save()
         return HttpResponseRedirect(reverse("index"))
     else:
         # When first accessed, must check to make sure editing is allowed.
@@ -258,13 +261,14 @@ def edit_listing(request, listing_id):
                 (highest_bid and 
                 highest_bid.amount != raw_listing.starting_bid)
             ):
-                notification = generate_notification(
+                notification = build_notification(
                     request.user, 
                     TYPE_DANGER, 
                     ICON_DANGER, 
                     MESSAGE_USER_LISTING_EDIT_PROHIBITED.format(raw_listing.title),
                     True,
                     'listing_page')
+                notification.save()
                 return HttpResponseRedirect(
                     reverse("listing_page", args=[listing_id])
                     )
@@ -287,13 +291,14 @@ def edit_listing(request, listing_id):
             
             else:
                 edited_form.save()
-                generate_notification(
+                notification = build_notification(
                     request.user,
                     TYPE_SUCCESS,
                     ICON_SUCCESS,
                     MESSAGE_LISTING_EDIT_SUCCESSFUL,
                     True,
                     'listing_page')
+                notification.save()
                 return HttpResponseRedirect(
                     reverse("view_listing", rgs=[raw_listing.id]))
 
@@ -386,7 +391,7 @@ def place_bid(request):
         listing_id = request.POST["listing-id"]
         listing_bundle = get_listing(request, listing_id)
         if listing_bundle['expiration_bundle']['expired'] == True:
-            generate_notification(
+            notification = build_notification(
                     request.user,
                     TYPE_WARNING,
                     ICON_WARNING,
@@ -394,10 +399,11 @@ def place_bid(request):
                     True,
                     'listing_page'
                 )
+            notification.save()
         else:
             bid = request.POST["bid"]
             if not bid.isdigit():
-                generate_notification(
+                notification = build_notification(
                     request.user,
                     TYPE_WARNING,
                     ICON_WARNING,
@@ -405,8 +411,9 @@ def place_bid(request):
                     True,
                     'listing_page'
                 )
+                notification.save()
             elif int(bid) > 99999:
-                generate_notification(
+                notification = build_notification(
                     request.user,
                     TYPE_WARNING,
                     ICON_WARNING,
@@ -414,8 +421,9 @@ def place_bid(request):
                     True,
                     'listing_page'
                 )
+                notification.save()
             elif int(bid) <= listing_bundle["listing"].current_bid:
-                generate_notification(
+                notification = build_notification(
                     request.user,
                     TYPE_WARNING,
                     ICON_WARNING,
@@ -423,6 +431,7 @@ def place_bid(request):
                     True,
                     'listing_page'
                 )
+                notification.save()
             else:
                 new_bid = Bid.objects.create(
                     amount=decimal.Decimal(bid), 
@@ -430,7 +439,7 @@ def place_bid(request):
                     listing=listing_bundle["listing"])
                 new_bid.save()
                 listing_bundle = get_listing(request, listing_id)
-                generate_notification(
+                notification = build_notification(
                     request.user,
                     TYPE_SUCCESS,
                     ICON_SUCCESS,
@@ -438,6 +447,7 @@ def place_bid(request):
                     True,
                     'listing_page'
                 )
+                notification.save()
                 
 
         return HttpResponseRedirect(
@@ -540,26 +550,28 @@ def settings(request):
                     img_mod.save_thumbnail()
                     img_mod.save()
 
-                    generate_notification(
+                    notification = build_notification(
                         request.user,
                         TYPE_SUCCESS,
                         ICON_SUCCESS,
                         MESSAGE_USER_PICTURE_UPLOAD_SUCCESS,
                         True
                     )
+                    notification.save()
 
                     return render(request, "auctions/settings.html", {
                         'profile_picture_form': profile_picture_form,
                         'img': img_mod.thumbnail.url
                     })
                 else:
-                    generate_notification(
+                    notification = build_notification(
                         request.user,
                         TYPE_WARNING,
                         ICON_WARNING,
                         MESSAGE_USER_PICTURE_UPLOAD_FAILURE,
                         True
                     )
+                    notification.save()
                     return render(request, "auctions/settings.html")
 
             elif random_setting1:
