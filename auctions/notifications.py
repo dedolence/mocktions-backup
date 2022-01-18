@@ -4,20 +4,18 @@ from .models import Notification
 from django.urls import reverse
 
 
-def generate_notification(user, type, icon, message, autodelete=False, page="index") -> Notification:
+def build_notification(user, type, icon, message, autodelete=False, page="index") -> Notification:
     """Generate and return an alert box. 'Type' and 'icon' are string values
     corresponding to the Bootstrap 5.0 'alert-' and 'bi-' classes. 'Page'
     is the view on which the notification should appear, defaults to index.
     """
     content = (strings.MESSAGE_GENERIC_TEMPLATE).format(icon=icon, message=message)
-    notification = Notification.objects.create(
+    return Notification(
         user=user, 
         content=content, 
         type=type, 
         autodelete=autodelete,
         page=page)
-    notification.save()
-    return notification
 
 
 def get_notifications(user, page) -> list:
@@ -40,6 +38,6 @@ def notify_winner(user, listing) -> None:
     message = (strings.MESSAGE_NOTIFY_WINNER).format(
         listing_url=listing_url, listing_title=listing_title, 
         shopping_cart_url=shopping_cart_url)
-    generate_notification(user, 'success', 'none', message)
+    build_notification(user, 'success', 'none', message)
 
 
