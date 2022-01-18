@@ -1,5 +1,5 @@
 import decimal
-from io import StringIO
+from io import BytesIO, StringIO
 import random
 from datetime import timedelta
 from math import floor
@@ -520,22 +520,25 @@ def settings(request):
                     if img_url:
                         # source for saving image to temp file:
                         # Mayank Jain https://medium.com/@jainmickey
-                        filename = img_url.split('/')[-1]
+                        filename = img_url.split('/')[-1].split('.')[0] + ".jpg"
                         res = requests.get(img_url, stream=True)
                         img_temp = tempfile.NamedTemporaryFile(delete=True)
                         for block in res.iter_content(1024 * 8):
                             if not block:
                                 break
                             img_temp.write(block)
-                        img_source = files.File(img_temp, name=filename)
+                            # convert to ImageFile?
+                        img_source = files.images.ImageFile(img_temp, name=filename)
                     else:
                         img_source = img_upload
                     
-                    newImg = User_Image(
-                        owner = request.user,
-                        image = img_source
+
+                    img_mod = User_Image(
+                        owner=request.user,
+                        image=img_source
                     )
-                    newImg.save()
+                    img_mod.save_thumbnail()
+                    img_mod.save()
 
                     generate_notification(
                         request.user,
@@ -547,7 +550,7 @@ def settings(request):
 
                     return render(request, "auctions/settings.html", {
                         'profile_picture_form': profile_picture_form,
-                        'pic': newImg
+                        'img': img_mod.thumbnail.url
                     })
                 else:
                     generate_notification(
@@ -616,9 +619,8 @@ def watchlist(request):
 
 
 # //////////////////////////////////////////////////////
-# UTILITY FUNCTIONS
+# UTILITY VIEW FUNCTIONS
 # //////////////////////////////////////////////////////
-
 
 def purge_listings(request):
     """Since this isn't being run on a real server that can purge things in real time,
