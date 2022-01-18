@@ -9,7 +9,7 @@ def generate_notification(user, type, icon, message, autodelete=False, page="ind
     corresponding to the Bootstrap 5.0 'alert-' and 'bi-' classes. 'Page'
     is the view on which the notification should appear, defaults to index.
     """
-    content = (strings.MESSAGE_GENERIC).format(icon=icon, message=message)
+    content = (strings.MESSAGE_GENERIC_TEMPLATE).format(icon=icon, message=message)
     notification = Notification.objects.create(
         user=user, 
         content=content, 

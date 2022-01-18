@@ -126,6 +126,6 @@ STATIC_URL = '/static/'
 
 LOGIN_URL = '/login'
 
-MEDIA_ROOT = os.path.join(BASE_DIR, '/images/user_uploads/')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'auctions/images/user_uploads/')
 
-MEDIA_URL = 'images/'
+MEDIA_URL = 'images/user_uploads/'

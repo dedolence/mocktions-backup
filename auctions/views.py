@@ -1,14 +1,16 @@
 import decimal
+from io import BytesIO, StringIO
 import random
 from datetime import timedelta
 from math import floor
+import tempfile
 
 import requests
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
-from django.core import serializers
+from django.core import serializers, files
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
 from django.http.response import JsonResponse
@@ -17,11 +19,11 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import \
     csrf_exempt  # to make the watchlist AJAX request work, which doesn't use a CSRF token
-
+from PIL import Image
 from . import wordlist
 from .forms import NewImageForm, NewListingForm
 from .globals import *
-from .models import Bid, Category, Comment, Listing, Notification, User
+from .models import Bid, Category, Comment, User_Image, Listing, Notification, User
 from .notifications import *
 from .strings import *
 
@@ -212,9 +214,9 @@ def delete_listing(request, listing_id):
     if request.user != listing_bundle["listing"].owner:
         notification = generate_notification(
             request.user, 
-            ALERT_DANGER, 
+            TYPE_DANGER, 
             ICON_DANGER, 
-            MESSAGE_DELETE_PROHIBITED,
+            MESSAGE_LISTING_DELETE_PROHIBITED,
             True)
         return HttpResponseRedirect(reverse("index"))
     else:
@@ -227,9 +229,9 @@ def delete_listing(request, listing_id):
             listing.delete()
             notification = generate_notification(
                 request.user,
-                ALERT_INFO,
+                TYPE_INFO,
                 ICON_GENERIC,
-                MESSAGE_LISTING_DELETED.format(listing.title),
+                MESSAGE_USER_LISTING_DELETED.format(listing.title),
                 True
             )
             return HttpResponseRedirect(reverse("index"))
@@ -240,10 +242,10 @@ def edit_listing(request, listing_id):
     raw_listing = Listing.objects.get(id=listing_id)
     listing_bundle = get_listing(request, None, raw_listing)
     if request.user != raw_listing.owner:
-        message = MESSAGE_LISTING_EDIT_PROHIBITED.format(raw_listing.title)
+        message = MESSAGE_USER_LISTING_EDIT_PROHIBITED.format(raw_listing.title)
         notification = generate_notification(
             request.user, 
-            ALERT_DANGER, 
+            TYPE_DANGER, 
             ICON_DANGER, 
             message, 
             True)
@@ -258,9 +260,9 @@ def edit_listing(request, listing_id):
             ):
                 notification = generate_notification(
                     request.user, 
-                    ALERT_DANGER, 
+                    TYPE_DANGER, 
                     ICON_DANGER, 
-                    MESSAGE_LISTING_EDIT_PROHIBITED.format(raw_listing.title),
+                    MESSAGE_USER_LISTING_EDIT_PROHIBITED.format(raw_listing.title),
                     True,
                     'listing_page')
                 return HttpResponseRedirect(
@@ -287,9 +289,9 @@ def edit_listing(request, listing_id):
                 edited_form.save()
                 generate_notification(
                     request.user,
-                    ALERT_SUCCESS,
+                    TYPE_SUCCESS,
                     ICON_SUCCESS,
-                    MESSAGE_EDIT_SUCCESSFUL,
+                    MESSAGE_LISTING_EDIT_SUCCESSFUL,
                     True,
                     'listing_page')
                 return HttpResponseRedirect(
@@ -386,7 +388,7 @@ def place_bid(request):
         if listing_bundle['expiration_bundle']['expired'] == True:
             generate_notification(
                     request.user,
-                    ALERT_WARNING,
+                    TYPE_WARNING,
                     ICON_WARNING,
                     MESSAGE_LISTING_EXPIRED,
                     True,
@@ -397,27 +399,27 @@ def place_bid(request):
             if not bid.isdigit():
                 generate_notification(
                     request.user,
-                    ALERT_WARNING,
+                    TYPE_WARNING,
                     ICON_WARNING,
-                    MESSAGE_BID_FORMATTING,
+                    MESSAGE_LISTING_BID_FORMATTING,
                     True,
                     'listing_page'
                 )
             elif int(bid) > 99999:
                 generate_notification(
                     request.user,
-                    ALERT_WARNING,
+                    TYPE_WARNING,
                     ICON_WARNING,
-                    MESSAGE_BID_TOO_HIGH,
+                    MESSAGE_LISTING_BID_TOO_HIGH,
                     True,
                     'listing_page'
                 )
             elif int(bid) <= listing_bundle["listing"].current_bid:
                 generate_notification(
                     request.user,
-                    ALERT_WARNING,
+                    TYPE_WARNING,
                     ICON_WARNING,
-                    MESSAGE_BID_TOO_LOW,
+                    MESSAGE_LISTING_BID_TOO_LOW,
                     True,
                     'listing_page'
                 )
@@ -430,9 +432,9 @@ def place_bid(request):
                 listing_bundle = get_listing(request, listing_id)
                 generate_notification(
                     request.user,
-                    ALERT_SUCCESS,
+                    TYPE_SUCCESS,
                     ICON_SUCCESS,
-                    MESSAGE_BID_SUCCESSFUL,
+                    MESSAGE_LISTING_BID_SUCCESSFUL,
                     True,
                     'listing_page'
                 )
@@ -495,9 +497,91 @@ def settings(request):
         return render(request, reverse("index"))
     else:
         profile_picture_form = NewImageForm()
-        return render(request, "auctions/settings.html", {
-            'profile_picture_form': profile_picture_form
-        })
+
+        if request.method == "POST":
+            # instantiate forms
+            profile_picture_form = NewImageForm(request.POST, request.FILES)
+            random_setting_form1 = ''
+            random_setting_form2 = ''
+            random_setting_form3 = ''
+
+
+            # see what, if anything, has changed.
+            img_upload = request.FILES.get('image', None)
+            img_url = request.POST.get('image_url', None)
+            random_setting1 = ''
+            random_setting2 = ''
+            random_setting3 = ''
+
+            # check for profile image
+            if img_upload or img_url:
+                if profile_picture_form.is_valid():
+
+                    if img_url:
+                        # source for saving image to temp file:
+                        # Mayank Jain https://medium.com/@jainmickey
+                        filename = img_url.split('/')[-1].split('.')[0] + ".jpg"
+                        res = requests.get(img_url, stream=True)
+                        img_temp = tempfile.NamedTemporaryFile(delete=True)
+                        for block in res.iter_content(1024 * 8):
+                            if not block:
+                                break
+                            img_temp.write(block)
+                            # convert to ImageFile?
+                        img_source = files.images.ImageFile(img_temp, name=filename)
+                    else:
+                        img_source = img_upload
+                    
+
+                    img_mod = User_Image(
+                        owner=request.user,
+                        image=img_source
+                    )
+                    img_mod.save_thumbnail()
+                    img_mod.save()
+
+                    generate_notification(
+                        request.user,
+                        TYPE_SUCCESS,
+                        ICON_SUCCESS,
+                        MESSAGE_USER_PICTURE_UPLOAD_SUCCESS,
+                        True
+                    )
+
+                    return render(request, "auctions/settings.html", {
+                        'profile_picture_form': profile_picture_form,
+                        'img': img_mod.thumbnail.url
+                    })
+                else:
+                    generate_notification(
+                        request.user,
+                        TYPE_WARNING,
+                        ICON_WARNING,
+                        MESSAGE_USER_PICTURE_UPLOAD_FAILURE,
+                        True
+                    )
+                    return render(request, "auctions/settings.html")
+
+            elif random_setting1:
+                pass
+
+            elif random_setting2:
+                pass
+
+            elif random_setting3:
+                pass
+
+            # no changes were made
+            else:
+                return render(request, "auctions/settings.html", {
+                    'profile_picture_form': profile_picture_form
+                })
+
+        # request = GET
+        else:
+            return render(request, "auctions/settings.html", {
+                'profile_picture_form': profile_picture_form
+            })
 
 
 
@@ -535,9 +619,8 @@ def watchlist(request):
 
 
 # //////////////////////////////////////////////////////
-# UTILITY FUNCTIONS
+# UTILITY VIEW FUNCTIONS
 # //////////////////////////////////////////////////////
-
 
 def purge_listings(request):
     """Since this isn't being run on a real server that can purge things in real time,
