@@ -309,6 +309,15 @@ def index(request):
     else:
         # purge listings that have expired
         purge_listings(request)
+        notification = NotificationTemplate()
+        notification.build(
+            request.user,
+            TYPE_INFO,
+            ICON_GENERIC,
+            "Here's a message",
+            True
+        )
+        notification.save()
         notifications = get_notifications(request.user, 'index')
         active_listings_raw = Listing.objects.filter(owner=request.user)
         listing_page_tuple = get_page(request, active_listings_raw)
