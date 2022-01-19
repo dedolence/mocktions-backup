@@ -1,4 +1,7 @@
+from mimetypes import init
 from django.db.models.query import QuerySet
+
+from auctions.globals import ICON_GENERIC, TYPE_INFO
 from . import strings
 from .models import Notification
 from django.urls import reverse
@@ -16,6 +19,32 @@ def build_notification(user, type, icon, message, autodelete=False, page="index"
         type=type, 
         autodelete=autodelete,
         page=page)
+
+
+class NotificationTemplate():
+    def __init__(self) -> None:
+        self.notification = Notification()
+    
+    def build(self, 
+        user, type, icon, message, 
+        autodelete=False, page='index') -> None:
+        self.notification.user = user
+        self.notification.type = type
+        self.notification.autodelete = autodelete
+        self.notification.page = page
+        self.notification.content = (
+            strings.MESSAGE_GENERIC_TEMPLATE
+        ).format(icon=icon, message=message)
+
+    def set_message(self, icon, message):
+        self.content = (
+            strings.MESSAGE_GENERIC_TEMPLATE
+        ).format(icon=icon, message=message)
+
+    def save(self):
+        self.notification.save()
+    
+
 
 
 def get_notifications(user, page) -> list:
@@ -39,5 +68,3 @@ def notify_winner(user, listing) -> None:
         listing_url=listing_url, listing_title=listing_title, 
         shopping_cart_url=shopping_cart_url)
     build_notification(user, 'success', 'none', message)
-
-

@@ -94,21 +94,21 @@ def make_thumbnail(image, size=THUMBNAIL_SIZE):
     originally from Bharat Chauhan https://bit.ly/3GDQOKS
     """
     img_pil = Image.open(image)
-    img_pil.convert("RGB")
+    rgb_img = img_pil.convert("RGB")
 
     # crop to a square.
-    width = img_pil.size[0]
-    height = img_pil.size[1]
+    width = rgb_img.size[0]
+    height = rgb_img.size[1]
     if width != height:
         dif = abs(width-height)/2
         if width > height:
             (left, top, right, bottom) = (dif, 0, width-dif, height)
         else:
             (left, top, right, bottom) = (0, dif, width, height-dif)
-        img_pil = img_pil.crop((left, top, right, bottom))
+        rgb_img = rgb_img.crop((left, top, right, bottom))
         
-    img_pil.thumbnail(size)
+    rgb_img.thumbnail(size)
     thumb_io = BytesIO()
-    img_pil.save(thumb_io, "JPEG")
+    rgb_img.save(thumb_io, "JPEG")
     thumb = files.images.ImageFile(thumb_io, name=image.name)
     return thumb

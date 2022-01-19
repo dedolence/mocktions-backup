@@ -15,7 +15,8 @@ class NewImageForm(forms.ModelForm):
         label="Or enter the URL of an image:",
         widget=forms.URLInput(
                 attrs={'class': 'form-control'}
-            )
+            ),
+        required=False
         )
 
     class Meta:

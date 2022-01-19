@@ -507,6 +507,10 @@ def settings(request):
         return render(request, reverse("index"))
     else:
         profile_picture_form = NewImageForm()
+        notifications = get_notifications(request.user, reverse('settings'))
+        
+        # create a generic notification
+        notification = NotificationTemplate()
 
         if request.method == "POST":
             # instantiate forms
@@ -514,7 +518,6 @@ def settings(request):
             random_setting_form1 = ''
             random_setting_form2 = ''
             random_setting_form3 = ''
-
 
             # see what, if anything, has changed.
             img_upload = request.FILES.get('image', None)
@@ -525,6 +528,7 @@ def settings(request):
 
             # check for profile image
             if img_upload or img_url:
+
                 if profile_picture_form.is_valid():
 
                     if img_url:
@@ -550,29 +554,34 @@ def settings(request):
                     img_mod.save_thumbnail()
                     img_mod.save()
 
-                    notification = build_notification(
+                    notification.build(
                         request.user,
                         TYPE_SUCCESS,
                         ICON_SUCCESS,
                         MESSAGE_USER_PICTURE_UPLOAD_SUCCESS,
-                        True
+                        True,
+                        reverse('settings')
                     )
                     notification.save()
 
                     return render(request, "auctions/settings.html", {
                         'profile_picture_form': profile_picture_form,
-                        'img': img_mod.thumbnail.url
+                        'img': img_mod.thumbnail.url,
+                        'notifications': notifications
                     })
                 else:
-                    notification = build_notification(
+                    notification.build(
                         request.user,
                         TYPE_WARNING,
                         ICON_WARNING,
                         MESSAGE_USER_PICTURE_UPLOAD_FAILURE,
-                        True
+                        True,
+                        reverse('settings')
                     )
                     notification.save()
-                    return render(request, "auctions/settings.html")
+                    return render(request, "auctions/settings.html", {
+                        'notifications': notifications
+                    })
 
             elif random_setting1:
                 pass
@@ -586,7 +595,8 @@ def settings(request):
             # no changes were made
             else:
                 return render(request, "auctions/settings.html", {
-                    'profile_picture_form': profile_picture_form
+                    'profile_picture_form': profile_picture_form,
+                    'notifications': notifications
                 })
 
         # request = GET

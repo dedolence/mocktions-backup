@@ -17,7 +17,7 @@
                 </nav>
             </div>
         {% else %}
-            {% include 'auctions/includes/notifications.html' with notifications=notifications %}
+            {% autoescape off %}{% include 'auctions/includes/notifications.html' with notifications=notifications %}{% endautoescape %}
             
             <h5 class="mb-4">Welcome back, {{ request.user }}.</h5>
             
