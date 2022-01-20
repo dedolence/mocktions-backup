@@ -211,13 +211,15 @@ def create_listing(request):
 @login_required
 def delete_listing(request, listing_id):
     listing_bundle = get_listing(request, id=listing_id)
+    notification = NotificationTemplate()
+    notification.build(
+        request.user,
+        TYPE_DANGER,
+        ICON_DANGER,
+        MESSAGE_USER_DELETE_PROHIBITED,
+        True
+    )
     if request.user != listing_bundle["listing"].owner:
-        notification = build_notification(
-            request.user, 
-            TYPE_DANGER, 
-            ICON_DANGER, 
-            MESSAGE_USER_DELETE_PROHIBITED,
-            True)
         notification.save()
         return HttpResponseRedirect(reverse("index"))
     else:
@@ -228,12 +230,10 @@ def delete_listing(request, listing_id):
         else:
             listing = Listing.objects.get(pk=listing_id)
             listing.delete()
-            notification = build_notification(
-                request.user,
-                TYPE_INFO,
+            notification.set_type = TYPE_INFO
+            notification.set_message(
                 ICON_GENERIC,
-                MESSAGE_USER_LISTING_DELETED.format(listing.title),
-                True
+                MESSAGE_USER_LISTING_DELETED.format(listing.title)
             )
             notification.save()
             return HttpResponseRedirect(reverse("index"))
@@ -422,13 +422,13 @@ def place_bid(request):
                     listing=listing_bundle["listing"])
                 new_bid.save()
                 listing_bundle = get_listing(request, listing_id)
-                notification = build_notification(
+                notification.build(
                     request.user,
                     TYPE_SUCCESS,
                     ICON_SUCCESS,
                     MESSAGE_LISTING_BID_SUCCESSFUL,
                     True,
-                    'listing_page'
+                    reverse('view_listing', args=[listing_id])
                 )
                 notification.save()
                 

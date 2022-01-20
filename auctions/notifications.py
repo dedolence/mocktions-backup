@@ -1,24 +1,10 @@
 from mimetypes import init
 from django.db.models.query import QuerySet
 
-from auctions.globals import ICON_GENERIC, TYPE_INFO
+from auctions.globals import ICON_GENERIC, ICON_SUCCESS, TYPE_INFO, TYPE_SUCCESS
 from . import strings
 from .models import Notification
 from django.urls import reverse
-
-
-def build_notification(user, type, icon, message, autodelete=False, page="index") -> Notification:
-    """Generate and return an alert box. 'Type' and 'icon' are string values
-    corresponding to the Bootstrap 5.0 'alert-' and 'bi-' classes. 'Page'
-    is the view on which the notification should appear, defaults to index.
-    """
-    content = (strings.MESSAGE_GENERIC_TEMPLATE).format(icon=icon, message=message)
-    return Notification(
-        user=user, 
-        content=content, 
-        type=type, 
-        autodelete=autodelete,
-        page=page)
 
 
 class NotificationTemplate():
@@ -77,4 +63,14 @@ def notify_winner(user, listing) -> None:
     message = (strings.MESSAGE_NOTIFY_WINNER).format(
         listing_url=listing_url, listing_title=listing_title, 
         shopping_cart_url=shopping_cart_url)
-    build_notification(user, 'success', 'none', message)
+    
+    notification = NotificationTemplate()
+    notification.build(
+        user,
+        TYPE_SUCCESS,
+        ICON_SUCCESS,
+        message,
+        False,
+        reverse('index')
+    )
+    notification.save()
