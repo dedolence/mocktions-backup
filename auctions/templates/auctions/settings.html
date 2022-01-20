@@ -14,7 +14,9 @@
             </li>
         </ul>
     </nav>
+
     <div class="tab-content mt-5" id="indexTabContent">
+        {% include 'auctions/includes/notifications.html' with notifications=notifications %}
         <form action="{% url 'settings' %}" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="row my-5">
