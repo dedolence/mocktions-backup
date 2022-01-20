@@ -28,6 +28,7 @@ class NotificationTemplate():
     def build(self, 
         user, type, icon, message, 
         autodelete=False, page='index') -> None:
+        """ For setting all values at once. """
         self.notification.user = user
         self.notification.type = type
         self.notification.autodelete = autodelete
@@ -36,10 +37,19 @@ class NotificationTemplate():
             strings.MESSAGE_GENERIC_TEMPLATE
         ).format(icon=icon, message=message)
 
+    def set_autodelete(self, ad):
+        self.notification.autodelete = ad
+        
     def set_message(self, icon, message):
-        self.content = (
+        self.notification.content = (
             strings.MESSAGE_GENERIC_TEMPLATE
         ).format(icon=icon, message=message)
+
+    def set_page(self, page):
+        self.notification.page = page
+
+    def set_type(self, type):
+        self.notification.type = type
 
     def save(self):
         self.notification.save()
