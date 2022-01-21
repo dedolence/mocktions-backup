@@ -19,6 +19,14 @@ class NewImageForm(forms.ModelForm):
         required=False
         )
 
+    random_image = forms.BooleanField(
+        label="Or generate a random image:",
+        widget=forms.CheckboxInput(
+            attrs={'class': 'form-check-input'}
+        ),
+        required=False
+    )
+
     class Meta:
         model = User_Image
         fields = ['image']
@@ -30,20 +38,3 @@ class NewImageForm(forms.ModelForm):
         labels = {
             'image': 'Upload an image:'
         }
-""" 
-class NewImageForm(forms.Form):
-    img_url = forms.URLField(
-        label="Or enter the URL of an image:",
-        required=False,
-        widget=forms.URLInput(
-                attrs={'class': 'form-control'}
-            )
-        )
-
-    image = forms.ImageField(
-        label="Upload an image",
-        required=False,
-        widget=forms.ClearableFileInput(
-            attrs={'class': 'form-control'}
-        )
-    ) """

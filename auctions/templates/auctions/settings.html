@@ -1,5 +1,7 @@
 {% extends 'auctions/index.html' %}
 
+{% load static %}
+
 {% block tabcontent %}
     <nav>
         <ul class="nav nav-tabs">
@@ -16,18 +18,26 @@
     </nav>
 
     <div class="tab-content mt-5" id="indexTabContent">
-        {% include 'auctions/includes/notifications.html' with notifications=notifications %}
+        <div class="row mb-5">
+            <div class="col-md-2">
+                <img src="{{ request.user.profile_picture }}" class="img-fluid" style="border-radius: 50% 50%;" alt="User's profile image">
+            </div>
+            <div class="col-md-10 d-flex align-items-center">
+                <div>
+                    <h1>{{ request.user }}</h1>
+                    <p class="text-muted">User since {{ request.user.date_joined }}</p>
+                </div>
+            </div>
+        </div>
+
         <form action="{% url 'settings' %}" method="POST" enctype="multipart/form-data">
             {% csrf_token %}
-            <div class="row my-5">
+            <div class="row my-3">
                 <h3>Settings</h3>
             </div>
             <div class="row-my-5">
                 <div class="col-md-8">
                     <p class="lead">Change your profile picture</p>
-
-                    <img src="{{ img }}">
-                    
                     <div class="row my-3">
                         {% for field in profile_picture_form %}
                             <label for="{{ field.id_for_label }}" class="col-md-4 col-form-label">
@@ -47,6 +57,7 @@
                     </div>
                     <div class="row my-3">
                         <div class="col">
+                            <input type="reset" class="btn btn-outline-secondary me-2" value="Clear">
                             <input type="submit" class="btn btn-primary" value="Save changes" name="submit">
                         </div>
                     </div>

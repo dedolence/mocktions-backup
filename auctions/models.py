@@ -1,7 +1,10 @@
 import math
+import os
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models.deletion import CASCADE, PROTECT
+from django.templatetags.static import static
+
 from .globals import THUMBNAIL_SIZE
 from PIL import Image
 from django.core import files
@@ -28,23 +31,6 @@ class Comment(models.Model):
     user = models.ForeignKey('User', on_delete=PROTECT, null=True, related_name="users_comments")
     replyTo = models.ForeignKey('Comment', on_delete=CASCADE, null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
-
-
-# note: i was initially concerned about filename conflicts, but it looks like Django
-# appends random characters to filenames if there is a conflict.
-class User_Image(models.Model):
-    owner = models.ForeignKey("User", on_delete=CASCADE, blank=True)
-    image = models.ImageField(upload_to="%Y/%m/%d/", 
-        width_field="pp_width", height_field="pp_height", blank=True)
-    pp_width = models.IntegerField(blank=True, null=True)
-    pp_height = models.IntegerField(blank=True, null=True)
-    thumbnail = models.ImageField(upload_to="%Y/%m/%d/", blank=True)
-
-    # this method and make_thumbnail() from:
-    # Bharat Chauhan https://bit.ly/3GDQOKS
-    def save_thumbnail(self, *args, **kwargs):
-        self.thumbnail = make_thumbnail(self.image)
-        super().save(*args, **kwargs)
 
 
 class Listing(models.Model):
@@ -80,7 +66,27 @@ class Notification(models.Model):
 
 
 class User(AbstractUser):
+    default_image = static('auctions/images/user_avatar.png')
     watchlist = models.ManyToManyField('Listing', blank=True)
+    profile_picture = models.CharField(max_length=100, default=default_image)
+
+
+# note: i was initially concerned about filename conflicts, but it looks like Django
+# appends random characters to filenames if there is a conflict.
+class User_Image(models.Model):
+    owner = models.ForeignKey(User, on_delete=CASCADE, blank=True)
+    image = models.ImageField(upload_to="%Y/%m/%d/", 
+        width_field="pp_width", height_field="pp_height", blank=True)
+    pp_width = models.IntegerField(blank=True, null=True)
+    pp_height = models.IntegerField(blank=True, null=True)
+    thumbnail = models.ImageField(upload_to="%Y/%m/%d/", blank=True)
+
+    # this method and make_thumbnail() from:
+    # Bharat Chauhan https://bit.ly/3GDQOKS
+    def save_thumbnail(self, *args, **kwargs):
+        self.thumbnail = make_thumbnail(self.image)
+        super().save(*args, **kwargs)
+
 
 
 # //////////////////////////////////////////////////////

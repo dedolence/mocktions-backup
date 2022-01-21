@@ -28,3 +28,4 @@ MESSAGE_USER_DELETE_PROHIBITED = ("You are not allowed to delete this listing.")
 MESSAGE_USER_LISTING_DELETED = "Listing \"{}\" has been deleted."
 MESSAGE_USER_PICTURE_UPLOAD_SUCCESS = "Upload successful!"
 MESSAGE_USER_PICTURE_UPLOAD_FAILURE = "Upload failed. Try a different picture maybe?"
+MESSAGE_USER_PICTURE_UPLOAD_FORMAT = "Upload failed. File format must be .jpg/.jpeg, .gif, .png, or .tiff."

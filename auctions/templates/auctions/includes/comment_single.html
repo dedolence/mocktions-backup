@@ -4,7 +4,7 @@
 <div id="comment-{{comment.id}}" class="card my-2 p-0">
     <div class="row p-0 m-0">
         <div class="col-md-2 col-xl-1 p-3 m-0 d-none d-md-block">
-            <img src="{% static 'auctions/images/user_avatar.png' %}" class="img-fluid" alt="User's profile picture">
+            <img src="{{ request.user.profile_picture }}" class="img-fluid" style="border-radius: 50% 50%;" alt="User's profile image">
         </div>
         <div class="col-md-10 col-xl-11 p-0 m-0">
             <div class="card-body">

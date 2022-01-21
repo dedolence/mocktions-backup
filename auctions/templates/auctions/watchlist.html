@@ -15,7 +15,6 @@
         </ul>
     </nav>
     <div class="tab-content mt-5" id="indexTabContent">
-        {% include 'auctions/includes/notifications.html' with notifications=notifications %}
         {% url 'index' as control_url %}
         {% include 'auctions/includes/listingControls.html' with numbers_only=False controls=listing_controls control_url=control_url %}
 

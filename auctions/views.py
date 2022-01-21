@@ -4,6 +4,7 @@ import random
 from datetime import timedelta
 from math import floor
 import tempfile
+import uuid
 
 import requests
 from django.contrib.auth import authenticate, login, logout
@@ -503,33 +504,53 @@ def settings(request):
             # see what, if anything, has changed.
             img_upload = request.FILES.get('image', None)
             img_url = request.POST.get('image_url', None)
+            random_img = request.POST.get('random_image', None)
             random_setting1 = ''
             random_setting2 = ''
             random_setting3 = ''
 
             # check for profile image
-            if img_upload or img_url:
+            if img_upload or img_url or random_img:
 
                 if profile_picture_form.is_valid():
+                    
+                    if img_upload:
+                        img_source = img_upload
+                    else:
+                        if img_url:
+                            src_url = img_url
+                            filename = img_url.split('/')[-1].split('.')[0] + ".jpg"
+                        else:
+                            src_url = 'https://picsum.photos/200'
+                            filename = uuid.uuid4().hex     # random filename
+                        
+                        res = requests.get(src_url, stream=True)
 
-                    if img_url:
+                        # make sure it's an image
+                        content_types = 'image/gif', 'image/jpeg', 'image/png', 'image/tiff'
+                        if res.headers['content-type'] not in content_types:
+                            notification.build(
+                                request.user,
+                                TYPE_WARNING,
+                                ICON_WARNING,
+                                MESSAGE_USER_PICTURE_UPLOAD_FORMAT,
+                                True,
+                                reverse('settings')
+                            )
+                            notification.save()
+                            return HttpResponseRedirect(reverse('settings'))
+                        
                         # source for saving image to temp file:
                         # Mayank Jain https://medium.com/@jainmickey
-                        filename = img_url.split('/')[-1].split('.')[0] + ".jpg"
-                        res = requests.get(img_url, stream=True)
                         img_temp = tempfile.NamedTemporaryFile(delete=True)
                         for block in res.iter_content(1024 * 8):
                             if not block:
                                 break
                             img_temp.write(block)
-                            # convert to ImageFile?
                         img_source = files.images.ImageFile(
                             img_temp, 
                             name=filename
                             )
-                    else:
-                        img_source = img_upload
-                    
 
                     img_mod = User_Image(
                         owner=request.user,
@@ -537,6 +558,10 @@ def settings(request):
                     )
                     img_mod.save_thumbnail()
                     img_mod.save()
+
+                    # replace the user's profile picture
+                    request.user.profile_picture = img_mod.thumbnail.url
+                    request.user.save()
 
                     notification.build(
                         request.user,
