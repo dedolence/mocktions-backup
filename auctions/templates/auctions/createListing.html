@@ -10,7 +10,6 @@
         <div class="container w-75 ml-0 p-0">
         <p class="mb-5">Please fill out all fields.</p>
 
-        {# TODO: REFACTOR TO USE AN INCLUDE #}
         {% include 'auctions/includes/listingForm.html' with listing_form=form new_listing=True %}
 
     {% else %}

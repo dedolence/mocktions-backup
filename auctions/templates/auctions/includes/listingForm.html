@@ -8,56 +8,57 @@
     {% url 'edit_listing' as action_url %}
 {% endif %}
 
-<form action="{{action_url}}" method="POST" id="listingForm" enctype="multipart/form-data">
-    {% csrf_token %}
-
-    {% if form.non_field_errors %}
-        <div class="row mb-4"><p class="mark">{{ form.non_field_errors }}</p></div>
-    {% endif %}
-
-    {% if new_listing %}
-        <div class="row mb-4">
-            <div class="col-sm-9 offset-sm-3">
-                <div class="form-check">
-                    <input type="checkbox" class="form-check-input" name="random" id="randomInput" oninput="remove_requirements()">
-                    <label for="randomInput" class="form-check-label">Generate a random listing</label>
-                </div>
-            </div>
-        </div>    
-    {% endif %}
-
-    {% for field in listing_form %}
-        <div class="row mb-4">
-            <div class="col-sm-3">
-                <label for="{{ field.id_for_label }}" class="col-form-label d-block">{{ field.label }}:</label>
-            </div>
-            <div class="col-sm-9">
-                {{ field }} {{ field.help_text }}
-                <div class="text-danger text-small">
-                    <ul class="ml-0">
-                        {% for error in field.errors  %}
-                            <li class="text-danger small">{{ error }}</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-        </div>
-    {% endfor %}
-
-    <div class="row mb-4">
-        <div class="col-sm-3">
-            <a href="{% url 'index' %}" class="btn btn-danger">Cancel</a>
-        </div>
-        <div class="col-sm-9">
-            {% if new_listing %}
-                <input type="submit" class="btn btn-primary" value="Preview Listing" name="preview">
-            {% elif preview_listing %}
-                <input type="submit" class="btn btn-primary" value="Preview Changes" name="preview">
-                <input type="submit" class="btn btn-primary" value="Create Listing" name="submit">
-            {% else %}
-                <input type="submit" class="btn btn-primary" value="Save" name="submit">
+<form action="{{action_url}}" method="POST" id="listingForm" enctype="multipart/form-data" class="container">
+    <div class="row">
+        <div class="col-md-8">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="row mb-4"><p class="mark">{{ form.non_field_errors }}</p></div>
             {% endif %}
+            {% if new_listing %}
+                <div class="row mb-4">
+                    <div class="col-sm-9 offset-sm-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="random" id="randomInput" oninput="remove_requirements()">
+                            <label for="randomInput" class="form-check-label">Generate a random listing</label>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            {% for field in listing_form %}
+                <div class="row mb-4">
+                    <div class="col-sm-3">
+                        <label for="{{ field.id_for_label }}" class="col-form-label d-block">{{ field.label }}:</label>
+                    </div>
+                    <div class="col-sm-9">
+                        {{ field }} {{ field.help_text }}
+                        <div class="text-danger text-small">
+                            <ul class="ml-0">
+                                {% for error in field.errors  %}
+                                    <li class="text-danger small">{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            <div class="row mb-4">
+                <div class="col-sm-3">
+                    <a href="{% url 'index' %}" class="btn btn-danger">Cancel</a>
+                </div>
+                <div class="col-sm-9">
+                    {% if new_listing %}
+                        <input type="submit" class="btn btn-primary" value="Preview Listing" name="preview">
+                    {% elif preview_listing %}
+                        <input type="submit" class="btn btn-primary" value="Preview Changes" name="preview">
+                        <input type="submit" class="btn btn-primary" value="Create Listing" name="submit">
+                    {% else %}
+                        <input type="submit" class="btn btn-primary" value="Save" name="submit">
+                    {% endif %}
+                </div>
+            </div>
         </div>
+        <div class="col-md-4"></div>
     </div>
 
 </form>
