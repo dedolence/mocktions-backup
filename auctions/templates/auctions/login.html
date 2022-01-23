@@ -7,7 +7,7 @@
     {% endblock breadcrumb %}
 
     {% if message %}
-        <div>{{ message }}</div>
+        <div class="alert alert-info">{% autoescape off %}{{ message }}{% endautoescape %}</div>
     {% endif %}
 
     <form action="{% url 'login' %}" method="post" class="container my-5 p-0">

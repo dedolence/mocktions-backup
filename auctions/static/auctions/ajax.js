@@ -43,6 +43,26 @@ function ajax(full_url, disappear = false) {
                         $(alert).fadeOut();
                     }, 1000);
                     break;
+                case 'generate_random_user':
+                    dob = r.dob.date.split('-');
+                    dob_year = dob[0];
+                    dob_month = dob[1];
+                    dob_day = dob[2].split('T')[0];
+                    dob_full = `${dob_month}/${dob_day}/${dob_year}`;
+                    street_full = `${r.location.street.number} ${r.location.street.name}`;
+                    document.getElementById("id_username").value = r.login.username;
+                    document.getElementById("id_email").value = r.email;
+                    document.getElementById("id_password").value = r.login.password;
+                    document.getElementById("id_confirm_password").value = r.login.password;
+                    document.getElementById("id_firstname").value = r.name.first;
+                    document.getElementById("id_lastname").value = r.name.last;
+                    document.getElementById("id_street").value = street_full;
+                    document.getElementById("id_city").value = r.location.city;
+                    document.getElementById("id_state").value = r.location.state;
+                    document.getElementById("id_postcode").value = r.location.postcode;
+                    document.getElementById("id_country").value = r.location.country;
+                    document.getElementById("id_phone").value = r.phone;
+                    break;
                 default:
                     break;
             }

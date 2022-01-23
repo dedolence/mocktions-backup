@@ -38,3 +38,112 @@ class NewImageForm(forms.ModelForm):
         labels = {
             'image': 'Upload an image:'
         }
+
+class RegistrationForm(forms.Form):
+    username = forms.CharField(
+        label="Username", 
+        max_length=50,
+        widget=forms.TextInput(
+            attrs={'class': 'form-control', 'placeholder': 'Username'}
+        )
+    )
+
+    email = forms.EmailField(
+        label="Email address", 
+        max_length=100,
+        widget=forms.TextInput(
+            attrs={'class': 'form-control', 'placeholder': 'Email address'}
+        )
+    )
+
+    password = forms.CharField(
+        label="Password", 
+        max_length=50,
+        widget=forms.PasswordInput(
+            attrs={'class': 'form-control', 'placeholder': 'Password'}
+        )
+    )
+
+    confirm_password = forms.CharField(
+        label="Confirm your password",
+        max_length=50,
+        widget=forms.PasswordInput(
+            attrs={'class': 'form-control', 'placeholder': 'Confirm your password'}
+        )
+    )
+
+
+class BiographicForm(forms.Form):
+    firstname = forms.CharField(
+        label="First name", 
+        max_length=50,
+        required=False,
+        widget=forms.TextInput(
+            attrs={'class': 'form-control', 'placeholder': 'First name'}
+        )
+    )
+
+    lastname = forms.CharField(
+        label="Last name", 
+        max_length=50,
+        required=False,
+        widget=forms.TextInput(
+            attrs={'class': 'form-control', 'placeholder': 'Last name'}
+        )
+    )
+
+
+class ShippingInformation(forms.Form):
+    street = forms.CharField(
+        label="Street", 
+        max_length=50,
+        required=False,
+        widget=forms.TextInput(
+            attrs={'class': 'form-control', 'placeholder': 'Street'}
+        )
+    )
+
+    city = forms.CharField(
+        label="City", 
+        max_length=50,
+        required=False,
+        widget=forms.TextInput(
+            attrs={'class': 'form-control', 'placeholder': 'City'}
+        )
+    )
+
+    state = forms.CharField(
+        label="State/Region/Province", 
+        max_length=50,
+        required=False,
+        widget=forms.TextInput(
+            attrs={'class': 'form-control', 'placeholder': 'State/Region/Province'}
+        )
+    )
+
+    postcode = forms.CharField(
+        label="Postal code", 
+        max_length=20,
+        required=False,
+        widget=forms.TextInput(
+            attrs={'class': 'form-control', 'placeholder': 'Postal code'}
+        )
+    )
+
+    country = forms.CharField(
+        label="Country", 
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(
+            attrs={'class': 'form-control', 'placeholder': 'Country'}
+        )
+    )
+
+    phone = forms.CharField(
+        label="Phone number", 
+        max_length=20,
+        required=False,
+        widget=forms.TextInput(
+            attrs={'class': 'form-control', 'placeholder': 'Phone number'}
+        )
+    )

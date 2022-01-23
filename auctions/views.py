@@ -21,8 +21,10 @@ from django.utils import timezone
 from django.views.decorators.csrf import \
     csrf_exempt  # to make the watchlist AJAX request work, which doesn't use a CSRF token
 from PIL import Image
+
+from auctions import namelist
 from . import wordlist
-from .forms import NewImageForm, NewListingForm
+from .forms import BiographicForm, NewImageForm, NewListingForm, RegistrationForm, ShippingInformation
 from .globals import *
 from .models import Bid, Category, Comment, User_Image, Listing, Notification, User
 from .notifications import *
@@ -61,7 +63,7 @@ def ajax(request, action, id=None):
         return HttpResponseRedirect(reverse("index"))
     else:
         response = {}
-        if not request.user.is_authenticated:
+        if not request.user.is_authenticated and not action == 'generate_random_user':
             response["message"] = "You must be logged in to do that." 
             response["button_text"] = "Add to Watchlist", 
             response["undo"] = True
@@ -102,8 +104,12 @@ def ajax(request, action, id=None):
                 comment = Comment.objects.filter(pk=id)
                 response["comment"] = serializers.serialize("json", comment)
                 response["author"] = comment.first().user.username
+
+            elif action == 'generate_random_user':
+                response = requests.get('https://randomuser.me/api/').json()["results"][0]
+                
         
-        return JsonResponse(response)
+        return JsonResponse(response, safe=False)
 
 
 def category(request, category_id):
@@ -370,21 +376,14 @@ def login_view(request):
                 "message": "Invalid username and/or password."
             })
     else:
-        if 'next' in request.GET:
-            next = request.GET['next']
-        else:
-            next = None
-            
         return render(request, "auctions/login.html", {
-            'next': next
+            'message': MESSAGE_SPLASH_WELCOME
         })
 
 
 def logout_view(request):
     logout(request)
-    return render(request, "auctions/index.html", {
-        "message": "You have been logged out."
-    })
+    return HttpResponseRedirect(reverse('index'))
 
 
 @login_required
@@ -438,30 +437,52 @@ def place_bid(request):
 
 
 def register(request):
+    notification = NotificationTemplate()
     if request.method == "POST":
         username = request.POST["username"]
         email = request.POST["email"]
 
         # Ensure password matches confirmation
         password = request.POST["password"]
-        confirmation = request.POST["confirmation"]
+        confirmation = request.POST["confirm_password"]
         if password != confirmation:
             return render(request, "auctions/register.html", {
-                "message": "Passwords must match."
+                "message": MESSAGE_REG_PASSWORD_MISMATCH
             })
 
         # Attempt to create new user
         try:
             user = User.objects.create_user(username, email, password)
+
+            # apply any other biographical details
+            for k, v in request.POST.items():
+                setattr(user, k, v)
+            
             user.save()
         except IntegrityError:
             return render(request, "auctions/register.html", {
-                "message": "Username already taken."
+                "message": MESSAGE_REG_USERNAME_TAKEN
             })
         login(request, user)
+        notification.build(
+            user,
+            TYPE_SUCCESS,
+            ICON_SUCCESS,
+            MESSAGE_REG_SUCCESS,
+            False,
+            reverse('index')
+        )
+        notification.save()
         return HttpResponseRedirect(reverse("index"))
     else:
-        return render(request, "auctions/register.html")
+        cred_form = RegistrationForm()
+        bio_form = BiographicForm()
+        ship_form = ShippingInformation()
+        return render(request, "auctions/register.html", {
+            'cred_form': cred_form,
+            'bio_form': bio_form,
+            'ship_form': ship_form
+        })
 
 
 def search(request):
@@ -865,3 +886,8 @@ def picsum(request):
     return render(request, 'auctions/tests/picsum.html', {
         'url': image_url
     })
+
+def generateName():
+    firstname = random.choice(namelist.firstnames)
+    lastname = random.choice(namelist.lastnames)
+    return (firstname, lastname)

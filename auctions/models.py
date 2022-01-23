@@ -69,6 +69,12 @@ class User(AbstractUser):
     default_image = static('auctions/images/user_avatar.png')
     watchlist = models.ManyToManyField('Listing', blank=True)
     profile_picture = models.CharField(max_length=100, default=default_image)
+    street = models.CharField(max_length=100, blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    state = models.CharField(max_length=100, blank=True)
+    postcode = models.CharField(max_length=100, blank=True)
+    country = models.CharField(max_length=100, blank=True)
+    phone = models.CharField(max_length=100, blank=True)
 
 
 # note: i was initially concerned about filename conflicts, but it looks like Django

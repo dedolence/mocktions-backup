@@ -14,40 +14,42 @@
         {% csrf_token %}
         <div class="row mb-3">
             <div class="col-sm-4">
-                <div class="form-floating">
-                    <input id="usernameInput" class="form-control" type="text" name="username" placeholder="Username">
-                    <label for="usernameInput">Username</label>
+                {% url 'ajax' 'generate_random_user' 0 as ajax_url %}
+                <input id="randomUserButton" type="button" value="Generate a random user" class="btn btn-outline-primary" onclick="ajax('{{ajax_url}}')">
+            </div>
+        </div>
+        <h5 class="mt-5 mb-3">Required information</h5>
+        {% for field in cred_form %}
+            <div class="row mb-3">
+                <div class="col-sm-4">
+                    <div class="form-floating">
+                        {{ field }}
+                        <label for="field.id_for_label">{{ field.label }}</label>
+                    </div>
                 </div>
             </div>
-            <div class="col-sm-8"></div>
-        </div>
+        {% endfor %}
+        <h5 class="mt-5 mb-3">Optional information</h5>
+        {% for field in bio_form %}
+            <div class="row mb-3">
+                <div class="col-sm-4">
+                    <div class="form-floating">
+                        {{ field }}
+                        <label for="field.id_for_label">{{ field.label }}</label>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        {% for field in ship_form %}
         <div class="row mb-3">
             <div class="col-sm-4">
                 <div class="form-floating">
-                    <input id="emailInput" class="form-control" type="email" name="email" placeholder="Email address">
-                    <label for="emailInput">Email address</label>
+                    {{ field }}
+                    <label for="field.id_for_label">{{ field.label }}</label>
                 </div>
             </div>
-            <div class="col-sm-8"></div>
         </div>
-        <div class="row mb-3">
-            <div class="col-sm-4">
-                <div class="form-floating">
-                    <input id="passInput" class="form-control" type="password" name="password" placeholder="Password">
-                    <label for="passInput">Password</label>
-                </div>
-            </div>
-            <div class="col-sm-8"></div>
-        </div>
-        <div class="row mb-3">
-            <div class="col-sm-4">
-                <div class="form-floating">
-                    <input id="passConfirmInput" class="form-control" type="password" name="confirmation" placeholder="Password Confirmation">
-                    <label for="passConfirmInput">Confirm password</label>
-                </div>
-            </div>
-            <div class="col-sm-8"></div>
-        </div>
+    {% endfor %}
         <input class="btn btn-primary" type="submit" value="Register">
     </form>
 
