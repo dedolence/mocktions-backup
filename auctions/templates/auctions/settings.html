@@ -40,9 +40,44 @@
             </div>
             <div class="row-my-5">
                 <div class="col-md-8">
-                    <p class="lead">Change your profile picture</p>
                     <div class="row my-3">
+                        <hr class="my-5"/>
+                        <p class="lead">Change your profile picture</p>
                         {% for field in profile_picture_form %}
+                            <label for="{{ field.id_for_label }}" class="col-md-4 col-form-label">
+                                {{ field.label }}
+                            </label>
+                            <div class="col-md-8">
+                                {{ field }}
+                                <div class="text-danger text-small">
+                                    <ul class="ml-0">
+                                        {% for error in field.errors  %}
+                                            <li class="text-danger small">{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        <hr class="my-5"/>
+                        <p class="lead">Change your biographical information</p>
+                        {% for field in contact_form %}
+                            <label for="{{ field.id_for_label }}" class="col-md-4 col-form-label">
+                                {{ field.label }}
+                            </label>
+                            <div class="col-md-8">
+                                {{ field }}
+                                <div class="text-danger text-small">
+                                    <ul class="ml-0">
+                                        {% for error in field.errors  %}
+                                            <li class="text-danger small">{{ error }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        <hr class="my-5"/>
+                        <p class="lead">Change your shipping information</p>
+                        {% for field in shipping_form %}
                             <label for="{{ field.id_for_label }}" class="col-md-4 col-form-label">
                                 {{ field.label }}
                             </label>

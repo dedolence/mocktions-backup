@@ -31,14 +31,16 @@
         {% endfor %}
         <h5 class="mt-5 mb-3">Optional information</h5>
         {% for field in bio_form %}
-            <div class="row mb-3">
-                <div class="col-sm-4">
-                    <div class="form-floating">
-                        {{ field }}
-                        <label for="field.id_for_label">{{ field.label }}</label>
+            {% if field.name != "email" %}  {# Email is already listed in cred_form #}
+                <div class="row mb-3">
+                    <div class="col-sm-4">
+                        <div class="form-floating">
+                            {{ field }}
+                            <label for="field.id_for_label">{{ field.label }}</label>
+                        </div>
                     </div>
                 </div>
-            </div>
+            {% endif %}
         {% endfor %}
         {% for field in ship_form %}
         <div class="row mb-3">

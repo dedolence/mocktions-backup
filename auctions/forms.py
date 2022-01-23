@@ -1,5 +1,6 @@
 # Not going to use this after all, as I'd prefer writing the form manually to have better control over styles with Bootstrap
 
+from re import A
 from django import forms
 from .models import Listing, Comment, User_Image
 
@@ -73,8 +74,8 @@ class RegistrationForm(forms.Form):
     )
 
 
-class BiographicForm(forms.Form):
-    firstname = forms.CharField(
+class ContactForm(forms.Form):
+    first_name = forms.CharField(
         label="First name", 
         max_length=50,
         required=False,
@@ -83,12 +84,30 @@ class BiographicForm(forms.Form):
         )
     )
 
-    lastname = forms.CharField(
+    last_name = forms.CharField(
         label="Last name", 
         max_length=50,
         required=False,
         widget=forms.TextInput(
             attrs={'class': 'form-control', 'placeholder': 'Last name'}
+        )
+    )
+    
+    email = forms.CharField(
+        label="Email address",
+        max_length=100,
+        required=False,
+        widget=forms.EmailInput(
+            attrs={'class': 'form-control', 'placeholder': 'Email address'}
+        )
+    )
+    
+    phone = forms.CharField(
+        label="Phone number", 
+        max_length=20,
+        required=False,
+        widget=forms.TextInput(
+            attrs={'class': 'form-control', 'placeholder': 'Phone number'}
         )
     )
 
@@ -136,14 +155,5 @@ class ShippingInformation(forms.Form):
         required=False,
         widget=forms.TextInput(
             attrs={'class': 'form-control', 'placeholder': 'Country'}
-        )
-    )
-
-    phone = forms.CharField(
-        label="Phone number", 
-        max_length=20,
-        required=False,
-        widget=forms.TextInput(
-            attrs={'class': 'form-control', 'placeholder': 'Phone number'}
         )
     )

@@ -24,7 +24,7 @@ from PIL import Image
 
 from auctions import namelist
 from . import wordlist
-from .forms import BiographicForm, NewImageForm, NewListingForm, RegistrationForm, ShippingInformation
+from .forms import ContactForm, NewImageForm, NewListingForm, RegistrationForm, ShippingInformation
 from .globals import *
 from .models import Bid, Category, Comment, User_Image, Listing, Notification, User
 from .notifications import *
@@ -476,7 +476,7 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         cred_form = RegistrationForm()
-        bio_form = BiographicForm()
+        bio_form = ContactForm()
         ship_form = ShippingInformation()
         return render(request, "auctions/register.html", {
             'cred_form': cred_form,
@@ -511,6 +511,19 @@ def settings(request):
         return render(request, reverse("index"))
     else:
         profile_picture_form = NewImageForm()
+        contact_form = ContactForm({
+            'first_name': request.user.first_name,
+            'last_name': request.user.last_name,
+            'email': request.user.email,
+            'phone': request.user.phone
+        })
+        shipping_form = ShippingInformation({
+            'street': request.user.street,
+            'city': request.user.city,
+            'state': request.user.state,
+            'postcode': request.user.postcode,
+            'country': request.user.country
+        })
         
         # create a generic notification
         notification = NotificationTemplate()
@@ -518,18 +531,47 @@ def settings(request):
         if request.method == "POST":
             # instantiate forms
             profile_picture_form = NewImageForm(request.POST, request.FILES)
-            random_setting_form1 = ''
-            random_setting_form2 = ''
-            random_setting_form3 = ''
+            contact_form = ContactForm(request.POST)
+            shipping_form = ShippingInformation(request.POST)
 
             # see what, if anything, has changed.
             img_upload = request.FILES.get('image', None)
             img_url = request.POST.get('image_url', None)
             random_img = request.POST.get('random_image', None)
-            random_setting1 = ''
-            random_setting2 = ''
-            random_setting3 = ''
+            first_name = request.POST.get('first_name', None)
+            last_name = request.POST.get('last_name', None)
+            email = request.POST.get('email', None)
+            phone = request.POST.get('phone', None)
+            street = request.POST.get('street', None)
+            city = request.POST.get('city', None)
+            state = request.POST.get('state', None)
+            postcode = request.POST.get('postcode', None)
+            country = request.POST.get('country', None)
 
+            # validate form data
+            if not contact_form.is_valid() or not shipping_form.is_valid():
+                return render(request, "auctions/settings.html", {
+                        'profile_picture_form': profile_picture_form,
+                        'contact_form': contact_form,
+                        'shipping_form': shipping_form,
+                        'notifications': get_notifications(
+                            request.user, 
+                            reverse('settings')
+                            )
+                    })
+
+            user = request.user
+            user.first_name = first_name
+            user.last_name = last_name
+            user.email = email
+            user.phone = phone
+            user.street = street
+            user.city = city
+            user.state = state
+            user.postcode = postcode
+            user.country = country
+            user.save()
+            
             # check for profile image
             if img_upload or img_url or random_img:
 
@@ -596,6 +638,8 @@ def settings(request):
 
                     return render(request, "auctions/settings.html", {
                         'profile_picture_form': profile_picture_form,
+                        'contact_form': contact_form,
+                        'shipping_form': shipping_form,
                         'img': img_mod.thumbnail.url,
                         'notifications': get_notifications(
                             request.user, 
@@ -613,25 +657,20 @@ def settings(request):
                     )
                     notification.save()
                     return render(request, "auctions/settings.html", {
+                        'profile_picture_form': profile_picture_form,
+                        'contact_form': contact_form,
+                        'shipping_form': shipping_form,
                         'notifications': get_notifications(
                             request.user, 
                             reverse('settings')
                             )
                     })
-
-            elif random_setting1:
-                pass
-
-            elif random_setting2:
-                pass
-
-            elif random_setting3:
-                pass
-
             # no changes were made
             else:
                 return render(request, "auctions/settings.html", {
                     'profile_picture_form': profile_picture_form,
+                    'contact_form': contact_form,
+                    'shipping_form': shipping_form,
                     'notifications': get_notifications(
                         request.user, reverse('settings')
                         )
@@ -641,6 +680,8 @@ def settings(request):
         else:
             return render(request, "auctions/settings.html", {
                 'profile_picture_form': profile_picture_form,
+                'contact_form': contact_form,
+                'shipping_form': shipping_form,
                 'notifications': get_notifications(
                     request.user, reverse('settings')
                     )
