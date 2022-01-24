@@ -81,13 +81,14 @@ class User(AbstractUser):
 # appends random characters to filenames if there is a conflict.
 class User_Image(models.Model):
     owner = models.ForeignKey(User, on_delete=CASCADE, blank=True)
+    listing = models.ForeignKey(Listing, on_delete=CASCADE, blank=True, null=True, related_name="images")
     image = models.ImageField(upload_to="%Y/%m/%d/", 
         width_field="pp_width", height_field="pp_height", blank=True)
     pp_width = models.IntegerField(blank=True, null=True)
     pp_height = models.IntegerField(blank=True, null=True)
     thumbnail = models.ImageField(upload_to="%Y/%m/%d/", blank=True)
 
-    # this method and make_thumbnail() from:
+    # this method and make_thumbnail() originally from:
     # Bharat Chauhan https://bit.ly/3GDQOKS
     def save_thumbnail(self, *args, **kwargs):
         self.thumbnail = make_thumbnail(self.image)

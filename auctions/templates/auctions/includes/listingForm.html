@@ -17,20 +17,21 @@
             {% endif %}
             {% if new_listing %}
                 <div class="row mb-4">
-                    <div class="col-sm-9 offset-sm-3">
-                        <div class="form-check">
-                            <input type="checkbox" class="form-check-input" name="random" id="randomInput" oninput="remove_requirements()">
-                            <label for="randomInput" class="form-check-label">Generate a random listing</label>
-                        </div>
+                    <label for="randomInput" class="col-form-label col-sm-4 form-check-label ">Generate a random listing</label>
+                    <div class="col-md-8">
+                        <input type="checkbox" class="form-check-input align-bottom mt-2" name="random" id="randomInput" oninput="remove_requirements()">
                     </div>
                 </div>
             {% endif %}
+            <hr class="my-5"/>
+            <p class="lead my-4">Please fill out all fields.</p>
+            {% include 'auctions/includes/uploadImageForm.html' %}
             {% for field in listing_form %}
                 <div class="row mb-4">
-                    <div class="col-sm-3">
+                    <div class="col-sm-4">
                         <label for="{{ field.id_for_label }}" class="col-form-label d-block">{{ field.label }}:</label>
                     </div>
-                    <div class="col-sm-9">
+                    <div class="col-sm-8">
                         {{ field }} {{ field.help_text }}
                         <div class="text-danger text-small">
                             <ul class="ml-0">
@@ -43,10 +44,10 @@
                 </div>
             {% endfor %}
             <div class="row mb-4">
-                <div class="col-sm-3">
+                <div class="col-sm-4">
                     <a href="{% url 'index' %}" class="btn btn-danger">Cancel</a>
                 </div>
-                <div class="col-sm-9">
+                <div class="col-sm-8">
                     {% if new_listing %}
                         <input type="submit" class="btn btn-primary" value="Preview Listing" name="preview">
                     {% elif preview_listing %}

@@ -1,3 +1,108 @@
+// This is defined in the layout template, just reminding myself it exists.
+AJAX_URL;
+
+// This global contains all elements that have the attribute "data-target".
+// Those are the elements that will be required by event handlers. All other
+// elements can be ignored.
+const TARGETS = [];
+$(function() {
+    // Gather all elements that are required for any event handlers.
+    let targetQuery = document.querySelectorAll('*[data-target]');
+    targetQuery.forEach(function(e) {
+        TARGETS.push(e);
+    })
+});
+
+
+// Set up event handlers
+document.addEventListener("click", e => {
+    let target = e.target;
+    let clickAction = target.dataset.clickAction;
+    if (!clickAction) {
+        // Ignore anything that doesn't have the "data-click-action" attribute
+        return;
+    }
+    else {
+        // get all the relevant elements
+        // relevant elements have a target data attribute that's = the trigger's click-action attribute
+        let elementArray = TARGETS.map(function(e) {
+            if (e.dataset.target == clickAction) {
+                return e;
+            }
+        })
+        // automatically calls a function based only on its name (string)
+        window[clickAction](elementArray);
+    }
+});
+
+
+// Upload an image an return its properties
+function uploadImage(elementArray) {
+    // get POST url
+    const url = AJAX_URL('upload_image');
+    let csrf_token = document.querySelector('[name=csrfmiddlewaretoken]').value
+    let formData = new FormData();
+    let fileSourceElement;
+    elementArray.forEach(function(e) {
+        if (e.value && !fileSourceElement) {
+            switch (e.type) {
+                case "file":
+                    fileSourceElement = e;
+                    let i = 0;
+                    let n = fileSourceElement.files.length;
+                    for (i, n; i < n; i++) {
+                        formData.append('files', fileSourceElement.files[i]);
+                    }
+                    break;
+                case "url":
+                    fileSourceElement = e;
+                    formData.append('url', fileSourceElement.value);
+                    break;
+                default:
+                    break;
+            }
+        }
+        else {
+            return;
+        }
+    });
+    fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: {'X-CSRFToken': csrf_token}
+    })
+    .then(res => res.json())
+    .then(r => {
+        // r is an array containing the paths to each full-size image
+        let thumbnailContainer = document.getElementById('thumbnails');
+        let i = 0
+        let n = r.files.length;
+        if (n > 0) {
+            // clear the placeholder text if this is the first image uploaded
+            if (thumbnailContainer.firstChild.nodeName === '#text') {
+                thumbnailContainer.innerHTML = '';
+            }
+            // create card elements and append them to the form
+            for (i, n; i < n; i++) {
+                thumbnailContainer.append(buildImageCard(r.files[i]));
+            }
+        }
+    })    
+}
+
+function buildImageCard(image) {
+    let docFrag = document.createDocumentFragment();
+    let card_element = document.createElement('div');
+        card_element.classList.add('card');
+        card_element.classList.add('me-3');
+        card_element.style.width = "150px";
+        card_element.style.height = "150px";
+        card_element.style.border = "1pt dashed gray";
+
+    docFrag.append(card_element);
+    return docFrag;
+}
+
 function ajax(full_url, disappear = false) {
     // params[0] will be a leading '/'; params[1] will be 'ajax'
     let params = full_url.split('/');
@@ -12,24 +117,11 @@ function ajax(full_url, disappear = false) {
         .then(r => {
             let comment_input = document.getElementById("commentInput");
             switch (action) {
-                case 'dismiss':
-                    let el = document.getElementById("notification-" + id);
-                    $(el).fadeOut();
+
+                case 'add_image':
+                    console.log("Adding image");
                     break;
-                case 'watch_listing':
-                    watchListing(r, id, disappear);
-                    break;
-                case 'generate_comment':
-                    comment_input.innerHTML = r.message;
-                    comment_input.style.height = 'auto';
-                    comment_input.style.height = comment_input.scrollHeight + 10 + "px";
-                    break;
-                case 'reply_comment':
-                    reply_comment(r);
-                    break;
-                case 'edit_comment':
-                    editComment(id);
-                    break;
+
                 case 'delete_comment':
                     let card = document.getElementById("comment-" + id);
                     let alert = document.createElement("div");
@@ -43,6 +135,22 @@ function ajax(full_url, disappear = false) {
                         $(alert).fadeOut();
                     }, 1000);
                     break;
+
+                case 'dismiss':
+                    let el = document.getElementById("notification-" + id);
+                    $(el).fadeOut();
+                    break;
+
+                case 'edit_comment':
+                    editComment(id);
+                    break;
+                    
+                case 'generate_comment':
+                    comment_input.innerHTML = r.message;
+                    comment_input.style.height = 'auto';
+                    comment_input.style.height = comment_input.scrollHeight + 10 + "px";
+                    break;
+
                 case 'generate_random_user':
                     dob = r.dob.date.split('-');
                     dob_year = dob[0];
@@ -63,6 +171,15 @@ function ajax(full_url, disappear = false) {
                     document.getElementById("id_country").value = r.location.country;
                     document.getElementById("id_phone").value = r.phone;
                     break;
+                
+                case 'reply_comment':
+                    reply_comment(r);
+                    break;
+
+                case 'watch_listing':
+                    watchListing(r, id, disappear);
+                    break;
+
                 default:
                     break;
             }

@@ -1,18 +1,16 @@
 # Not going to use this after all, as I'd prefer writing the form manually to have better control over styles with Bootstrap
 
-from re import A
 from django import forms
-from .models import Listing, Comment, User_Image
+from .models import Listing, User_Image
 
 
 class NewListingForm(forms.ModelForm):
     class Meta:
         model = Listing
-        fields = ['title', 'description', 'image_url', 'starting_bid', 'shipping', 'category', 'lifespan']
+        fields = ['title', 'description', 'starting_bid', 'shipping', 'category', 'lifespan']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control'}),
-            'image_url': forms.URLInput(attrs={'class': 'form-control'}),
             'starting_bid': forms.NumberInput(attrs={'class': 'form-control'}),
             'shipping': forms.NumberInput(attrs={'class': 'form-control'}),
             'category': forms.Select(attrs={'class': 'form-select'}),

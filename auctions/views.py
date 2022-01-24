@@ -68,7 +68,17 @@ def ajax(request, action, id=None):
             response["button_text"] = "Add to Watchlist", 
             response["undo"] = True
         else:
-            if action == 'watch_listing':
+            if action == "upload_image":
+                if request.FILES:
+                    files = request.FILES.getlist('files', None)
+                    images = upload_images(request, files)
+                else:
+                    url = request.POST.get('url', None)
+                    images = fetch_image(request, url, reverse('create_listing'))
+                file_paths = [f.image.url for f in images]
+                response['files'] = file_paths
+
+            elif action == 'watch_listing':
                 listing = Listing.objects.get(id=id)
                 watchlist = request.user.watchlist
                 if listing in watchlist.all():
@@ -747,22 +757,7 @@ def purge_listings(request):
                 obj.delete()
             listing.save()
 
-""" 
-def format_comment(raw_comment) -> dict:
-    formatted_comment = {
-        "content": raw_comment.content,
-        "listing": raw_comment.listing,
-        "user": raw_comment.user,
-        "replyTo": raw_comment.replyTo }
-    if raw_comment.replyTo:
-        formatted_comment["originalContent"] = raw_comment.replyTo.content
 
-
-def get_comments(raw_listing) -> QuerySet:
-    raw_comments = raw_listing.listings_comments.all().order_by('-timestamp')
-    return map(format_comment, raw_comments)
-
-"""
 def get_highest_bid(listing) -> Bid:
     bids = Bid.objects.filter(listing=listing).order_by('-amount')
     return bids.first()
@@ -808,7 +803,55 @@ def check_expiration(listing) -> dict:
         'minutes': floor((s / 60) % 60),
         'seconds': floor(s % 60)
     }
+
+
+def fetch_image(request, url, page):
+    """ Can be called with or without the url parameter. When no url
+    is provided, a random image will be returned.
+    """
+    notification = NotificationTemplate()
+
+    if url:
+        src_url = url
+        filename = url.split('/')[-1].split('.')[0] + ".jpg"
+    else:
+        src_url = 'https://picsum.photos/200'
+        filename = uuid.uuid4().hex     # random filename
     
+    res = requests.get(src_url, stream=True)
+    # make sure it's an image
+    content_types = 'image/gif', 'image/jpeg', 'image/png', 'image/tiff'
+    if res.headers['content-type'] not in content_types:
+        notification.build(
+            request.user,
+            TYPE_WARNING,
+            ICON_WARNING,
+            MESSAGE_USER_PICTURE_UPLOAD_FORMAT,
+            True,
+            reverse('settings')
+        )
+        notification.save()
+        return HttpResponseRedirect(page)   
+    # source for saving image to temp file:
+    # Mayank Jain https://medium.com/@jainmickey
+    img_temp = tempfile.NamedTemporaryFile(delete=True)
+    for block in res.iter_content(1024 * 8):
+        if not block:
+            break
+        img_temp.write(block)
+    img_source = files.images.ImageFile(
+        img_temp, 
+        name=filename
+        )
+
+    img_mod = User_Image(
+        owner=request.user,
+        image=img_source
+    )
+    img_mod.save_thumbnail()
+    img_mod.save()
+    return [img_mod]
+
 
 def get_page(request, raw_listings) -> tuple:
     """Generate a dict containing all the information needed for the template
@@ -877,6 +920,19 @@ def order_listings(listings, spec) -> QuerySet:
         order = '-current_bid'
         
     return listings.order_by(order)
+
+
+def upload_images(request, files):
+    uploaded_images = []
+    for f in files:
+        img_mod = User_Image(
+            owner=request.user,
+            image=f
+        )
+        img_mod.save_thumbnail()
+        img_mod.save()
+        uploaded_images.append(img_mod)
+    return uploaded_images
 
 
 # //////////////////////////////////////////////////////
