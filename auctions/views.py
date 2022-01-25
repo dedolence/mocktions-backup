@@ -69,14 +69,19 @@ def ajax(request, action, id=None):
             response["undo"] = True
         else:
             if action == "upload_image":
+                images = None
                 if request.FILES:
                     files = request.FILES.getlist('files', None)
-                    images = upload_images(request, files)
+                    try:
+                        images = upload_images(request, files)
+                    except Image.DecompressionBombError:
+                        response['error'] = 'DecompressionBombError'
                 else:
                     url = request.POST.get('url', None)
                     images = fetch_image(request, url, reverse('create_listing'))
-                file_paths = [f.image.url for f in images]
-                response['files'] = file_paths
+                if images:
+                    file_paths = [f.image.url for f in images]
+                    response['files'] = file_paths
 
             elif action == 'watch_listing':
                 listing = Listing.objects.get(id=id)

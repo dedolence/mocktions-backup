@@ -6,12 +6,14 @@
         </button>
     </div>
 </div>
+
 <div class="row mb-4">
     <div class="col-md-4">Images:</div>
     <div class="col-md-8">
-        <div id="thumbnails" class="container d-flex flex-row">No images uploaded yet.</div>
+        <div id="thumbnails" class="container d-flex flex-row p-0">No images uploaded yet.</div>
     </div>
 </div>
+
 <div id="addImageModal" class="modal fade" tabindex="-1" aria-labelledby="addImageModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-center">
         <div class="modal-content">
@@ -39,6 +41,20 @@
             <div class="modal-footer">
                 <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal" data-click-action="uploadImage">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="editImageModal" class="modal fade" tabindex="-1" aria-labelledby="editImageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-center">
+        <div class="modal-content">
+            <div class="modal-body d-flex justify-content-center mw-100">
+                <div><img id="imageForEdit" alt="A picture of the listing being sold" class="img-fluid"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal" data-click-action="removeImage"><i class="bi bi-exclamation-octagon"></i> Delete Image</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
             </div>
         </div>
     </div>

@@ -25,7 +25,7 @@ document.addEventListener("click", e => {
     else {
         // get all the relevant elements
         // relevant elements have a target data attribute that's = the trigger's click-action attribute
-        let elementArray = TARGETS.map(function(e) {
+        let elementArray = TARGETS.filter(function(e) {
             if (e.dataset.target == clickAction) {
                 return e;
             }
@@ -73,35 +73,82 @@ function uploadImage(elementArray) {
     })
     .then(res => res.json())
     .then(r => {
-        // r is an array containing the paths to each full-size image
-        let thumbnailContainer = document.getElementById('thumbnails');
-        let i = 0
-        let n = r.files.length;
-        if (n > 0) {
-            // clear the placeholder text if this is the first image uploaded
-            if (thumbnailContainer.firstChild.nodeName === '#text') {
-                thumbnailContainer.innerHTML = '';
-            }
-            // create card elements and append them to the form
-            for (i, n; i < n; i++) {
-                thumbnailContainer.append(buildImageCard(r.files[i]));
+        if (r.error) {
+            let errorDiv = generateListingFormError(r.error);
+            let errorContainer = document.getElementById('formErrors');
+            errorContainer.appendChild(errorDiv);
+        }
+        else {
+            // r is an array containing the paths to each full-size image
+            let thumbnailContainer = document.getElementById('thumbnails');
+            let i = 0
+            let n = r.files.length;
+            if (n > 0) {
+                // create card elements and append them to the form
+                for (i, n; i < n; i++) {
+                    if (thumbnailContainer.firstChild.nodeName == "#text") {
+                        thumbnailContainer.innerHTML = '';
+                    }
+                    thumbnailContainer.append(buildImageCard(r.files[i]));
+                }
             }
         }
     })    
 }
 
-function buildImageCard(image) {
-    let docFrag = document.createDocumentFragment();
-    let card_element = document.createElement('div');
-        card_element.classList.add('card');
-        card_element.classList.add('me-3');
-        card_element.style.width = "150px";
-        card_element.style.height = "150px";
-        card_element.style.border = "1pt dashed gray";
 
-    docFrag.append(card_element);
-    return docFrag;
+function buildImageCard(image_path) {
+    let div = document.createElement('div');
+        div.className = "me-3 image-thumbnail border"
+        div.style.backgroundImage = `url(${image_path})`;
+        div.id = image_path;
+        div.dataset.target = 'removeImage';
+        TARGETS.push(div);
+    let a = document.createElement('a');
+        a.href = "#";
+        a.classList.add('stretched-link')
+        a.addEventListener('click', e => {
+            let modalElement = document.getElementById('editImageModal');
+            let modal = new bootstrap.Modal(modalElement);
+            let img = document.getElementById('imageForEdit');
+                img.src = image_path;
+            modal.show();
+        })
+    div.appendChild(a);
+
+    return div;
 }
+
+
+function removeImage(elementArray) {
+    let img_target = elementArray[0];
+    // remove this from targets as it's no longer target-able
+    TARGETS.splice(TARGETS.indexOf(img_target), 1);
+    img_target.parentElement.removeChild(img_target);
+}
+
+
+function generateListingFormError(error) {
+    let alertElement = document.createElement('div');
+        alertElement.className = "alert alert-danger alert-dismissible";
+        alertElement.id = 'errorDiv';
+    let textSpan = document.createElement('span');
+    let dismissButton = document.createElement('button');
+        dismissButton.type = 'button';
+        dismissButton.classList.add('btn-close');
+        dismissButton.dataset.bsDismiss = 'alert';
+        dismissButton.ariaLabel = 'Close';
+    switch (error) {
+        case "DecompressionBombError":
+            textSpan.innerHTML = "Couldn't upload image: too large.";
+            break;
+        default:
+            break;
+    }
+    alertElement.appendChild(textSpan).appendChild(dismissButton);
+    return alertElement;
+}
+
 
 function ajax(full_url, disappear = false) {
     // params[0] will be a leading '/'; params[1] will be 'ajax'

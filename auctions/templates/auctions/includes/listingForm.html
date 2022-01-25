@@ -8,13 +8,16 @@
     {% url 'edit_listing' as action_url %}
 {% endif %}
 
+
 <form action="{{action_url}}" method="POST" id="listingForm" enctype="multipart/form-data" class="container">
     <div class="row">
         <div class="col-md-8">
             {% csrf_token %}
-            {% if form.non_field_errors %}
-                <div class="row mb-4"><p class="mark">{{ form.non_field_errors }}</p></div>
-            {% endif %}
+            <div id="formErrors">
+                {% if form.non_field_errors %}
+                    <div class="row mb-4"><p class="mark">{{ form.non_field_errors }}</p></div>
+                {% endif %}
+            </div>
             {% if new_listing %}
                 <div class="row mb-4">
                     <label for="randomInput" class="col-form-label col-sm-4 form-check-label ">Generate a random listing</label>
