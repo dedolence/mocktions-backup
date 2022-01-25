@@ -86,6 +86,7 @@ function uploadImage(elementArray) {
             if (n > 0) {
                 // create card elements and append them to the form
                 for (i, n; i < n; i++) {
+                    // remove placeholder
                     if (thumbnailContainer.firstChild.nodeName == "#text") {
                         thumbnailContainer.innerHTML = '';
                     }
@@ -99,7 +100,7 @@ function uploadImage(elementArray) {
 
 function buildImageCard(image_path) {
     let div = document.createElement('div');
-        div.className = "me-3 image-thumbnail border"
+        div.className = "me-3 mb-3 image-thumbnail border"
         div.style.backgroundImage = `url(${image_path})`;
         div.id = image_path;
         div.dataset.target = 'removeImage';
@@ -115,7 +116,6 @@ function buildImageCard(image_path) {
             modal.show();
         })
     div.appendChild(a);
-
     return div;
 }
 
