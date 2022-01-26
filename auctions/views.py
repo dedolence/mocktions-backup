@@ -80,8 +80,8 @@ def ajax(request, action, id=None):
                     url = request.POST.get('url', None)
                     images = fetch_image(request, url, reverse('create_listing'))
                 if images:
-                    file_paths = [f.image.url for f in images]
-                    response['files'] = file_paths
+                    response['paths'] = [i.image.url for i in images]
+                    response['ids'] = [i.id for i in images]
 
             elif action == 'watch_listing':
                 listing = Listing.objects.get(id=id)
@@ -122,6 +122,15 @@ def ajax(request, action, id=None):
 
             elif action == 'generate_random_user':
                 response = requests.get('https://randomuser.me/api/').json()["results"][0]
+
+            elif action == 'purge_image':
+                img_id = request.POST.get('img_id', None)
+                img_mod = User_Image.objects.get(pk=img_id)
+                """ img_mod.image.close()
+                img_mod.image.delete()
+                img_mod.thumbnail.close()
+                img_mod.thumbnail.delete() """
+                img_mod.delete()
                 
         
         return JsonResponse(response, safe=False)
@@ -740,6 +749,11 @@ def watchlist(request):
 # //////////////////////////////////////////////////////
 # UTILITY VIEW FUNCTIONS
 # //////////////////////////////////////////////////////
+
+
+def purge_media():
+    pass
+
 
 def purge_listings(request):
     """Since this isn't being run on a real server that can purge things in real time,

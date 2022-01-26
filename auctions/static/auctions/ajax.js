@@ -82,15 +82,16 @@ function uploadImage(elementArray) {
             // r is an array containing the paths to each full-size image
             let thumbnailContainer = document.getElementById('thumbnails');
             let i = 0
-            let n = r.files.length;
+            let n = r.paths.length;
             if (n > 0) {
                 // create card elements and append them to the form
                 for (i, n; i < n; i++) {
                     // remove placeholder
-                    if (thumbnailContainer.firstChild.nodeName == "#text") {
+                    let fc = thumbnailContainer.firstChild;
+                    if (fc && fc.nodeName == "#text") {
                         thumbnailContainer.innerHTML = '';
                     }
-                    thumbnailContainer.append(buildImageCard(r.files[i]));
+                    thumbnailContainer.append(buildImageCard(r.paths[i], r.ids[i]));
                 }
             }
         }
@@ -98,11 +99,11 @@ function uploadImage(elementArray) {
 }
 
 
-function buildImageCard(image_path) {
+function buildImageCard(image_path, image_id) {
     let div = document.createElement('div');
         div.className = "me-3 mb-3 image-thumbnail border"
         div.style.backgroundImage = `url(${image_path})`;
-        div.id = image_path;
+        div.id = "img_thumbnail-" + image_id;
         div.dataset.target = 'removeImage';
         TARGETS.push(div);
     let a = document.createElement('a');
@@ -125,6 +126,15 @@ function removeImage(elementArray) {
     // remove this from targets as it's no longer target-able
     TARGETS.splice(TARGETS.indexOf(img_target), 1);
     img_target.parentElement.removeChild(img_target);
+
+    const url = AJAX_URL("purge_image");
+    const img_id = img_target.id.split('-')[1];
+    const formData = new FormData();
+    formData.append('img_id', img_id);
+    fetch(url, { 
+        method: "POST",
+        body: formData
+    })
 }
 
 

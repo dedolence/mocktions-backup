@@ -109,7 +109,8 @@ def make_thumbnail(image, size=THUMBNAIL_SIZE):
     img_pil = Image.open(image)
     rgb_img = img_pil.convert("RGB")
 
-    # crop to a square.
+    # reduce to a square by cropping off portions of the longest side
+    # to match the shortest side; keeps image centered.
     width = rgb_img.size[0]
     height = rgb_img.size[1]
     if width != height:
@@ -123,5 +124,6 @@ def make_thumbnail(image, size=THUMBNAIL_SIZE):
     rgb_img.thumbnail(size)
     thumb_io = BytesIO()
     rgb_img.save(thumb_io, "JPEG")
-    thumb = files.images.ImageFile(thumb_io, name=image.name)
+    filename, ext = image.name.split('.')
+    thumb = files.images.ImageFile(thumb_io, name=filename + "_thumb." + ext)
     return thumb
