@@ -125,12 +125,7 @@ def ajax(request, action, id=None):
 
             elif action == 'purge_image':
                 img_id = request.POST.get('img_id', None)
-                img_mod = User_Image.objects.get(pk=img_id)
-                """ img_mod.image.close()
-                img_mod.image.delete()
-                img_mod.thumbnail.close()
-                img_mod.thumbnail.delete() """
-                img_mod.delete()
+                purge_media(img_id)
                 
         
         return JsonResponse(response, safe=False)
@@ -751,8 +746,17 @@ def watchlist(request):
 # //////////////////////////////////////////////////////
 
 
-def purge_media():
-    pass
+def purge_media(img_id):
+    img_mod = User_Image.objects.get(pk=img_id)
+    """
+    If the auto-delete middleware doesn't do its job and delete
+    abandoned media, this will:
+        img_mod.image.close()
+        img_mod.image.delete()
+        img_mod.thumbnail.close()
+        img_mod.thumbnail.delete()
+    """
+    img_mod.delete()
 
 
 def purge_listings(request):
