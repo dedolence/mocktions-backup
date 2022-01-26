@@ -833,13 +833,12 @@ def fetch_image(request, url, page):
     is provided, a random image will be returned.
     """
     notification = NotificationTemplate()
-
     if url:
         src_url = url
         filename = url.split('/')[-1].split('.')[0] + ".jpg"
     else:
         src_url = 'https://picsum.photos/200'
-        filename = uuid.uuid4().hex     # random filename
+        filename = uuid.uuid4().hex + ".jpg"     # random filename
     
     res = requests.get(src_url, stream=True)
     # make sure it's an image

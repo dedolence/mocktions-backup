@@ -45,9 +45,9 @@ function uploadImage(elementArray) {
     let fileSourceElement;
     elementArray.forEach(function(e) {
         if (e.value && !fileSourceElement) {
+            fileSourceElement = e;
             switch (e.type) {
                 case "file":
-                    fileSourceElement = e;
                     let i = 0;
                     let n = fileSourceElement.files.length;
                     for (i, n; i < n; i++) {
@@ -55,7 +55,6 @@ function uploadImage(elementArray) {
                     }
                     break;
                 case "url":
-                    fileSourceElement = e;
                     formData.append('url', fileSourceElement.value);
                     break;
                 default:
