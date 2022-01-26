@@ -202,7 +202,7 @@ def create_listing(request):
 
         # check if we need to generate a random listing:
         if 'random' in request.POST:
-            form = NewListingForm(generateListing(1))
+            form = NewListingForm(generate_listing(1, request))
         else:
             # create form instance
             form = NewListingForm(request.POST)
@@ -828,7 +828,7 @@ def check_expiration(listing) -> dict:
     }
 
 
-def fetch_image(request, url, page):
+def fetch_image(request, url=None, page=None):
     """ Can be called with or without the url parameter. When no url
     is provided, a random image will be returned.
     """
@@ -962,12 +962,12 @@ def upload_images(request, files):
 # //////////////////////////////////////////////////////
 
 
-def generateListing(amount):
+def generate_listing(amount, request):
     listings = []
     for i in range(amount):
         listing = {
             'title': generateTitle(),
-            'image_url': generateImage(),
+            'image_url': fetch_image(request),
             'description': generateDescription()[0:500],
             'starting_bid': random.randint(1,9999),
             'shipping': random.randint(5, 50),
