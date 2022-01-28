@@ -55,3 +55,7 @@ MESSAGE_REG_SUCCESS = ("<p><strong>Success!</strong> Welcome to Mocktions, a fak
     + "a button that will fill out the forms with randomized data for you.</p>"
     + "<p>Thanks for visiting, and if you run into any issues please let me know at "
     + "<a href='mailto:nhahoyt@gmail.com' class='alert-link'>nhahoyt@gmail.com</a>.</p>")
+
+# Listing creation message
+MESSAGE_LISTING_CREATION_INVALID_USER = ("Couldn't access listing. Listing owner and user don't match. "
+    + "This could happen if you logged in as a different user and tried to access a listing draft.")

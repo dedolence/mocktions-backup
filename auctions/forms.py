@@ -1,12 +1,12 @@
 # Not going to use this after all, as I'd prefer writing the form manually to have better control over styles with Bootstrap
 
 from django import forms
-from .models import Listing, User_Image
+from .models import Listing, TempListing, UserImage
 
 
 class NewListingForm(forms.ModelForm):
     class Meta:
-        model = Listing
+        model = TempListing
         fields = ['title', 'description', 'starting_bid', 'shipping', 'category', 'lifespan']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control'}),
@@ -36,7 +36,7 @@ class NewImageForm(forms.ModelForm):
     )
 
     class Meta:
-        model = User_Image
+        model = UserImage
         fields = ['image']
         widgets = {
             'image': forms.ClearableFileInput(

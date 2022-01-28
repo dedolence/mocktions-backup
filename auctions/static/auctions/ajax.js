@@ -42,6 +42,8 @@ function uploadImage(elementArray) {
     const url = AJAX_URL('upload_image');
     let csrf_token = document.querySelector('[name=csrfmiddlewaretoken]').value
     let formData = new FormData();
+    let listing_id = document.querySelector('*[data-listing-id]').dataset.listingId;
+        formData.append('listing_id', listing_id);
     let fileSourceElement;
     elementArray.forEach(function(e) {
         if (e.value && !fileSourceElement) {

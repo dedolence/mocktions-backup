@@ -1,5 +1,6 @@
 import math
 import os
+from unittest.util import _MAX_LENGTH
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models.deletion import CASCADE, PROTECT
@@ -65,6 +66,19 @@ class Notification(models.Model):
         help_text="Defines on which page the notification should appear.")
 
 
+class TempListing(models.Model):
+    """ Temporary listing that mirrors Listing but with no requirements."""
+    owner = models.ForeignKey('User', on_delete=PROTECT, null=True, blank=False)
+    timestamp = models.DateTimeField(auto_now_add=True, null=True)
+    title = models.CharField(max_length=64, null=True, blank=True)
+    description = models.TextField(max_length=500, null=True, blank=True)
+    starting_bid = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    shipping = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
+    category = models.ForeignKey('Category', on_delete=CASCADE, null=True, blank=True)
+    lifespan = models.IntegerField(default=1, null=True, blank=True, help_text="days until listing expires.")
+    objects = models.Manager()
+
+
 class User(AbstractUser):
     default_image = static('auctions/images/user_avatar.png')
     watchlist = models.ManyToManyField('Listing', blank=True)
@@ -79,9 +93,11 @@ class User(AbstractUser):
 
 # note: i was initially concerned about filename conflicts, but it looks like Django
 # appends random characters to filenames if there is a conflict.
-class User_Image(models.Model):
+class UserImage(models.Model):
     owner = models.ForeignKey(User, on_delete=CASCADE, blank=True)
-    listing = models.ForeignKey(Listing, on_delete=CASCADE, blank=True, null=True, related_name="images")
+    # This may be a use-case for GenericForeignKey, to accept either Listing or TempListing
+    listing = models.ForeignKey(Listing, on_delete=CASCADE, blank=True, null=True)
+    temp_listing = models.ForeignKey(TempListing, on_delete=CASCADE, blank=True, null=True)
     image = models.ImageField(upload_to="%Y/%m/%d/", 
         width_field="pp_width", height_field="pp_height", blank=True)
     pp_width = models.IntegerField(blank=True, null=True)

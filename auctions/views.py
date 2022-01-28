@@ -19,14 +19,14 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import \
-    csrf_exempt  # to make the watchlist AJAX request work, which doesn't use a CSRF token
+    csrf_exempt
 from PIL import Image
 
 from auctions import namelist
 from . import wordlist
 from .forms import ContactForm, NewImageForm, NewListingForm, RegistrationForm, ShippingInformation
 from .globals import *
-from .models import Bid, Category, Comment, User_Image, Listing, Notification, User
+from .models import Bid, Category, Comment, TempListing, UserImage, Listing, Notification, User
 from .notifications import *
 from .strings import *
 
@@ -69,19 +69,31 @@ def ajax(request, action, id=None):
             response["undo"] = True
         else:
             if action == "upload_image":
-                images = None
-                if request.FILES:
-                    files = request.FILES.getlist('files', None)
-                    try:
-                        images = upload_images(request, files)
-                    except Image.DecompressionBombError:
-                        response['error'] = 'DecompressionBombError'
+                listing_id = request.POST.get('listing_id', None)
+                if not listing_id:
+                    response['error'] = "Listing ID not found: can't save images."
                 else:
-                    url = request.POST.get('url', None)
-                    images = fetch_image(request, url, reverse('create_listing'))
-                if images:
-                    response['paths'] = [i.image.url for i in images]
-                    response['ids'] = [i.id for i in images]
+                    try:
+                        listing = Listing.objects.get(pk=listing_id)
+                    except Listing.DoesNotExist:
+                        try:
+                            listing = TempListing.objects.get(pk=listing_id)
+                        except TempListing.DoesNotExist:
+                            request['error'] = "No listing found with that ID."
+                    
+                    images = None
+                    if request.FILES:
+                        files = request.FILES.getlist('files', None)
+                        try:
+                            images = upload_images(request, files, listing)
+                        except Image.DecompressionBombError:
+                            response['error'] = 'DecompressionBombError'
+                    else:
+                        url = request.POST.get('url', None)
+                        images = fetch_image(request, url, reverse('create_listing'), listing)
+                    if images:
+                        response['paths'] = [i.image.url for i in images]
+                        response['ids'] = [i.id for i in images]
 
             elif action == 'watch_listing':
                 listing = Listing.objects.get(id=id)
@@ -186,52 +198,35 @@ def comment(request):
 
 
 @login_required
-def create_listing(request):
-    # if GET, display new listing form
+def create_listing(request, listing_id=None):
     if request.method == "GET":
-        new_listing_form = NewListingForm()
-        # categories = Category.objects.all()
-        return render(request, "auctions/createListing.html", {
-            # 'categories': categories
-            'form': new_listing_form
-        })
-
-    # TODO: move this to the views.preview_listing() method     
-    # else if POST, preview listing for changes or add to DB
-    elif request.method == "POST":
-
-        # check if we need to generate a random listing:
-        if 'random' in request.POST:
-            form = NewListingForm(generate_listing(1, request))
+        temp = TempListing.objects.create(owner=request.user)
+        form = NewListingForm(instance=temp)
+        form_mode = 'create_new'
+    else:
+        # accessing a draft
+        temp = TempListing.objects.get(pk=listing_id)
+        if temp.owner != request.user:
+            # no editing other people's drafts!
+            notification = NotificationTemplate()
+            notification.build(
+                request.user,
+                TYPE_INFO,
+                ICON_GENERIC,
+                MESSAGE_LISTING_CREATION_INVALID_USER,
+                True
+            )
+            return HttpResponseRedirect(reverse('index'))
         else:
-            # create form instance
-            form = NewListingForm(request.POST)
-        
-        # validate form
-        if not form.is_valid():
-            # errors were found so return the form to the initial listing form page
-            return render(request, "auctions/createListing.html", {
-                'form': form
-            })       
-        else:
-            # create an instance of the object
-            instance = form.save(commit=False)
-            # attach user to the form instance
-            instance.owner = request.user
-            instance.current_bid = instance.starting_bid
-            # check to see if we need to preview or submit
-            if 'submit' in request.POST:
-                # add to DB
-                instance.save()
-                # include many-to-many relationships
-                form.save_m2m()
-                return HttpResponseRedirect(reverse('view_listing', args=[instance.id]))
-            else:
-                return render(request, 'auctions/previewListing.html', {
-                    'listing': instance,
-                    'form': form,
-                    'form_controls': False
-                })
+            form = NewListingForm(request.POST, instance=temp)
+            form_mode = 'preview'
+    return render(request, 'auctions/createListing.html', {
+        'form': form,
+        'listing_id': temp.id,
+        'form_mode': form_mode
+    })
+
+
 
 
 @login_required
@@ -455,6 +450,29 @@ def place_bid(request):
             reverse("view_listing", args=[listing_id]))
 
 
+@login_required
+def preview_listing(request, id):
+    """ID refers to the temporary listing. Validate the form
+    information and reroute either to this view again, or to
+    submit_listing.
+
+    This should also be the route taken for editing an existing
+    listing, I suppose.
+    """
+    temp_listing = TempListing.objects.get(pk=id)
+    if request.user != temp_listing.owner:
+        notification = NotificationTemplate()
+        notification.build(request.user,
+        TYPE_INFO,
+        ICON_WARNING,
+        MESSAGE_LISTING_CREATION_INVALID_USER,
+        True)
+        return HttpResponseRedirect(reverse('index'))
+    else:
+        form = NewListingForm(instance=temp_listing)
+
+
+
 def register(request):
     notification = NotificationTemplate()
     if request.method == "POST":
@@ -634,7 +652,7 @@ def settings(request):
                             name=filename
                             )
 
-                    img_mod = User_Image(
+                    img_mod = UserImage(
                         owner=request.user,
                         image=img_source
                     )
@@ -712,6 +730,14 @@ def shopping_cart(request):
     return HttpResponseRedirect(reverse('index'))
 
 
+def submit_listing(id):
+    """ID refers to the temporary ID used for drafting a new listing.
+    Validate the listing and copy to a new Listing model object, then
+    delete the temporary listing.
+    """
+    pass
+
+
 def view_all_users(request):
     return HttpResponseRedirect(reverse('index'))
 
@@ -747,7 +773,7 @@ def watchlist(request):
 
 
 def purge_media(img_id):
-    img_mod = User_Image.objects.get(pk=img_id)
+    img_mod = UserImage.objects.get(pk=img_id)
     """
     If the auto-delete middleware doesn't do its job and delete
     abandoned media, this will:
@@ -828,7 +854,7 @@ def check_expiration(listing) -> dict:
     }
 
 
-def fetch_image(request, url=None, page=None):
+def fetch_image(request, url=None, page=None, listing=None):
     """ Can be called with or without the url parameter. When no url
     is provided, a random image will be returned.
     """
@@ -853,6 +879,8 @@ def fetch_image(request, url=None, page=None):
             reverse('settings')
         )
         notification.save()
+        if not page:
+            page = reverse('index')
         return HttpResponseRedirect(page)   
     # source for saving image to temp file:
     # Mayank Jain https://medium.com/@jainmickey
@@ -866,9 +894,10 @@ def fetch_image(request, url=None, page=None):
         name=filename
         )
 
-    img_mod = User_Image(
+    img_mod = UserImage(
         owner=request.user,
-        image=img_source
+        image=img_source,
+        listing=listing
     )
     img_mod.save_thumbnail()
     img_mod.save()
@@ -944,12 +973,13 @@ def order_listings(listings, spec) -> QuerySet:
     return listings.order_by(order)
 
 
-def upload_images(request, files):
+def upload_images(request, files, listing=None):    
     uploaded_images = []
     for f in files:
-        img_mod = User_Image(
+        img_mod = UserImage(
             owner=request.user,
-            image=f
+            image=f,
+            listing=listing
         )
         img_mod.save_thumbnail()
         img_mod.save()

@@ -2,14 +2,16 @@
     new_listing = True/False
 {% endcomment %}
 
-{% if new_listing or preview_listing %}
-    {% url 'create_listing' as action_url %}
-{% else %}
+{% if form_mode == 'create_new' %}
+    {% url 'create_listing' listing_id as action_url %}
+{% elif form_mode == 'preview' %}
+    {% url 'submit_listing' listing_id as action_url %}
+{% elif form_mode == 'edit_existing' %}
     {% url 'edit_listing' as action_url %}
 {% endif %}
 
 
-<form action="{{action_url}}" method="POST" id="listingForm" enctype="multipart/form-data" class="container">
+<form action="{{action_url}}" method="POST" id="listingForm" enctype="multipart/form-data" class="container" data-listing-id="{{ listing_id }}">
     <div class="row">
         <div class="col-md-10">
             {% csrf_token %}
@@ -20,7 +22,7 @@
             </div>
             {% if new_listing %}
                 <div class="row mb-4">
-                    <label for="randomInput" class="col-form-label col-sm-4 form-check-label ">Generate a random listing</label>
+                    <label for="randomInput" class="col-form-label col-sm-4 form-check-label">Generate a random listing</label>
                     <div class="col-md-8">
                         <input type="checkbox" class="form-check-input align-bottom mt-2" name="random" id="randomInput" oninput="remove_requirements()">
                     </div>
@@ -48,16 +50,13 @@
             {% endfor %}
             <div class="row mb-4">
                 <div class="col-sm-4">
-                    <a href="{% url 'index' %}" class="btn btn-danger">Cancel</a>
                 </div>
-                <div class="col-sm-8">
-                    {% if new_listing %}
-                        <input type="submit" class="btn btn-primary" value="Preview Listing" name="preview">
-                    {% elif preview_listing %}
-                        <input type="submit" class="btn btn-primary" value="Preview Changes" name="preview">
-                        <input type="submit" class="btn btn-primary" value="Create Listing" name="submit">
-                    {% else %}
-                        <input type="submit" class="btn btn-primary" value="Save" name="submit">
+                <div class="col-sm-8 d-flex flex-row">
+                    <a href="{% url 'index' %}" class="btn btn-danger">Cancel</a>
+                    <div class="flex-grow-1"></div>
+                    <input type="submit" class="btn btn-outline-primary" name="preview" value="Save and continue">
+                    {% if preview_listing %}
+                        <input type="submit" class="btn btn-primary" name="submit" value="Save and post">
                     {% endif %}
                 </div>
             </div>
