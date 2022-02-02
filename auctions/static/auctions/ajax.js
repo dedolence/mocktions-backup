@@ -38,6 +38,10 @@ document.addEventListener("click", e => {
 
 // Upload an image an return its properties
 function uploadImage(elementArray) {
+    // check to see if we can upload any more images
+    const thumbnailContainer = document.getElementById('thumbnails');
+    const currentImages = thumbnailContainer.children.length;
+    console.log(elementArray);
     // get POST url
     const url = AJAX_URL('upload_image');
     let csrf_token = document.querySelector('[name=csrfmiddlewaretoken]').value
@@ -67,6 +71,10 @@ function uploadImage(elementArray) {
             return;
         }
     });
+    // load a loading progress modal because this can take some time
+    let loadingModalElement = document.getElementById('loadingImageModal');
+    let loadingModal = new bootstrap.Modal(loadingModalElement);
+    loadingModal.show();
     fetch(url, {
         method: 'POST',
         body: formData,
@@ -81,7 +89,6 @@ function uploadImage(elementArray) {
         }
         else {
             // r is an array containing the paths to each full-size image
-            let thumbnailContainer = document.getElementById('thumbnails');
             let i = 0
             let n = r.paths.length;
             if (n > 0) {
@@ -95,8 +102,14 @@ function uploadImage(elementArray) {
                     thumbnailContainer.append(buildImageCard(r.paths[i], r.ids[i]));
                 }
             }
+            loadingModal.hide();
+            /* hide() doesn't always work, as when users upload images. No idea why.
+             * From this script's perspective there is no difference in these methods.
+             * So, set a timer (arbitrarily for one second) just to manually hide
+             * the modal if it's still being displayed. */
+            window.setTimeout(() => { loadingModal.hide(); }, 1000);
         }
-    })    
+    })
 }
 
 

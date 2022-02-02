@@ -1,6 +1,7 @@
 import math
 import os
 from unittest.util import _MAX_LENGTH
+import uuid
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models.deletion import CASCADE, PROTECT
@@ -96,7 +97,7 @@ class User(AbstractUser):
 class UserImage(models.Model):
     owner = models.ForeignKey(User, on_delete=CASCADE, blank=True)
     # This may be a use-case for GenericForeignKey, to accept either Listing or TempListing
-    listing = models.ForeignKey(Listing, on_delete=CASCADE, blank=True, null=True)
+    listing = models.ForeignKey(Listing, on_delete=CASCADE, blank=True, null=True, related_name="images")
     temp_listing = models.ForeignKey(TempListing, on_delete=CASCADE, blank=True, null=True)
     image = models.ImageField(upload_to="%Y/%m/%d/", 
         width_field="pp_width", height_field="pp_height", blank=True)
@@ -140,6 +141,8 @@ def make_thumbnail(image, size=THUMBNAIL_SIZE):
     rgb_img.thumbnail(size)
     thumb_io = BytesIO()
     rgb_img.save(thumb_io, "JPEG")
-    filename, ext = image.name.split('.')
-    thumb = files.images.ImageFile(thumb_io, name=filename + "_thumb." + ext)
+    # sick of encountering images with ridiculous filenames (multiple . for instance)
+    # normalize filenames to a UUID who cares anymore
+    filename = uuid.uuid4().hex + "_thumb.jpg"
+    thumb = files.images.ImageFile(thumb_io, name=filename)
     return thumb

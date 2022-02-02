@@ -1,7 +1,11 @@
 # Notifications
 
 # This is the template used by generate_notification
+from .globals import MAX_UPLOADS_PER_LISTING
+
+
 MESSAGE_GENERIC_TEMPLATE = "<i class='bi bi-{icon} pe-2'></i> {message}"
+MESSAGE_GENERIC_LOGIN_REQUIRED = "You must be logged in to do that."
 
 # Splash message
 MESSAGE_SPLASH_WELCOME = ("<p><strong>Welcome to Mocktions!</strong></p>"
@@ -36,6 +40,9 @@ MESSAGE_LISTING_EDIT_PROHIBITED = ("The listing, \"{},\" cannot be edited. This 
 + "because the listing currently has bids on it, or because the listing does "
 + "not belong to you.<br/>If this listing belongs to you, you may still "
 + "delete the listing.")
+MESSAGE_LISTING_MAX_UPLOADS_EXCEEDED = ("Too many images: a listing can only have a "
++ "up to " + str(MAX_UPLOADS_PER_LISTING) + " images.")
+MESSAGE_WATCHLIST_PROMPT = "Add to watchlist"
 
 # User index messages
 MESSAGE_USER_DELETE_PROHIBITED = ("You are not allowed to delete this listing.")

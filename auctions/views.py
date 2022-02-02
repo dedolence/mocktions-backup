@@ -11,7 +11,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
-from django.core import serializers, files
+from django.core import files
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
 from django.http.response import JsonResponse
@@ -22,8 +22,8 @@ from django.views.decorators.csrf import \
     csrf_exempt
 from PIL import Image
 
-from auctions import namelist
-from . import wordlist
+from . import namelist, wordlist
+from .ajax_controls import *
 from .forms import ContactForm, NewImageForm, NewListingForm, RegistrationForm, ShippingInformation
 from .globals import *
 from .models import Bid, Category, Comment, TempListing, UserImage, Listing, Notification, User
@@ -64,82 +64,26 @@ def ajax(request, action, id=None):
     else:
         response = {}
         if not request.user.is_authenticated and not action == 'generate_random_user':
-            response["message"] = "You must be logged in to do that." 
-            response["button_text"] = "Add to Watchlist", 
+            response["message"] = MESSAGE_GENERIC_LOGIN_REQUIRED 
+            response["button_text"] = MESSAGE_WATCHLIST_PROMPT
             response["undo"] = True
         else:
             if action == "upload_image":
-                listing_id = request.POST.get('listing_id', None)
-                if not listing_id:
-                    response['error'] = "Listing ID not found: can't save images."
-                else:
-                    try:
-                        listing = Listing.objects.get(pk=listing_id)
-                    except Listing.DoesNotExist:
-                        try:
-                            listing = TempListing.objects.get(pk=listing_id)
-                        except TempListing.DoesNotExist:
-                            request['error'] = "No listing found with that ID."
-                    
-                    images = None
-                    if request.FILES:
-                        files = request.FILES.getlist('files', None)
-                        try:
-                            images = upload_images(request, files, listing)
-                        except Image.DecompressionBombError:
-                            response['error'] = 'DecompressionBombError'
-                    else:
-                        url = request.POST.get('url', None)
-                        images = fetch_image(request, url, reverse('create_listing'), listing)
-                    if images:
-                        response['paths'] = [i.image.url for i in images]
-                        response['ids'] = [i.id for i in images]
-
+                response = ajax_upload_images(request, response)
             elif action == 'watch_listing':
-                listing = Listing.objects.get(id=id)
-                watchlist = request.user.watchlist
-                if listing in watchlist.all():
-                    watchlist.remove(listing)
-                    response["message"] = "Removed from watchlist."
-                    response["button_text"] = "Add to Watchlist"
-                else:
-                    watchlist.add(listing)
-                    response["message"] = "Added to watchlist."
-                    response["button_text"] = "Watching"
-            
+                response = ajax_watch_listing(request, response)
             elif action == 'dismiss':
-                try:
-                    notification = Notification.objects.get(pk=id)
-                    notification.delete()
-                except ObjectDoesNotExist:
-                    pass
-            
+                response = ajax_dismiss_notification(request, response)
             elif action == 'generate_comment':
-                message = ''
-                for i in range(0, random.randint(1,5)):
-                    message += GEN.sentence()
-                response["message"] = message
-
+                response = ajax_generate_comment(request, response)
             elif action == 'delete_comment':
-                comment = Comment.objects.get(pk=id)
-                comment.delete()
-                response["message"] = "Comment deleted."
-
+                response = ajax_delete_comment(request, response)
             elif action == 'reply_comment':
-                # Filter must be used instead of get to return iterable for serializer
-                # (or wrap the queryset in [] to list-ify it).
-                comment = Comment.objects.filter(pk=id)
-                response["comment"] = serializers.serialize("json", comment)
-                response["author"] = comment.first().user.username
-
+                response = ajax_reply_comment(request, response)
             elif action == 'generate_random_user':
-                response = requests.get('https://randomuser.me/api/').json()["results"][0]
-
+                response = ajax_generate_user(request, response)
             elif action == 'purge_image':
-                img_id = request.POST.get('img_id', None)
-                purge_media(img_id)
-                
-        
+                response = ajax_purge_media(request, response)
         return JsonResponse(response, safe=False)
 
 
@@ -772,17 +716,7 @@ def watchlist(request):
 # //////////////////////////////////////////////////////
 
 
-def purge_media(img_id):
-    img_mod = UserImage.objects.get(pk=img_id)
-    """
-    If the auto-delete middleware doesn't do its job and delete
-    abandoned media, this will:
-        img_mod.image.close()
-        img_mod.image.delete()
-        img_mod.thumbnail.close()
-        img_mod.thumbnail.delete()
-    """
-    img_mod.delete()
+
 
 
 def purge_listings(request):
@@ -862,6 +796,7 @@ def fetch_image(request, url=None, page=None, listing=None):
     if url:
         src_url = url
         filename = url.split('/')[-1].split('.')[0] + ".jpg"
+        #TODO: probably need more URL validation here
     else:
         src_url = 'https://picsum.photos/200'
         filename = uuid.uuid4().hex + ".jpg"     # random filename
@@ -876,7 +811,7 @@ def fetch_image(request, url=None, page=None, listing=None):
             ICON_WARNING,
             MESSAGE_USER_PICTURE_UPLOAD_FORMAT,
             True,
-            reverse('settings')
+            page
         )
         notification.save()
         if not page:
@@ -893,12 +828,14 @@ def fetch_image(request, url=None, page=None, listing=None):
         img_temp, 
         name=filename
         )
-
     img_mod = UserImage(
         owner=request.user,
-        image=img_source,
-        listing=listing
+        image=img_source
     )
+    if listing and listing.__class__ == Listing:
+        img_mod.listing = listing
+    elif listing and listing.__class__ == TempListing:
+        img_mod.temp_listing = listing
     img_mod.save_thumbnail()
     img_mod.save()
     return [img_mod]
@@ -978,9 +915,12 @@ def upload_images(request, files, listing=None):
     for f in files:
         img_mod = UserImage(
             owner=request.user,
-            image=f,
-            listing=listing
+            image=f
         )
+        if listing and listing.__class__ == Listing:
+            img_mod.listing = listing
+        elif listing and listing.__class__ == TempListing:
+            img_mod.temp_listing = listing
         img_mod.save_thumbnail()
         img_mod.save()
         uploaded_images.append(img_mod)
