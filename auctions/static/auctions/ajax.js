@@ -1,5 +1,6 @@
-// This is defined in the layout template, just reminding myself it exists.
-AJAX_URL;
+// This global constant is defined in layout.html; just pointing it out here.
+AJAX
+
 
 // This global contains all elements that have the attribute "data-target".
 // Those are the elements that will be required by event handlers. All other
@@ -24,31 +25,51 @@ document.addEventListener("click", e => {
     }
     else {
         // get all the relevant elements
-        // relevant elements have a target data attribute that's = the trigger's click-action attribute
+        // relevant elements have a target data attribute = to the trigger's click-action value
         let elementArray = TARGETS.filter(function(e) {
             if (e.dataset.target == clickAction) {
                 return e;
             }
         })
-        // automatically calls a function based only on its name (string)
-        window[clickAction](elementArray);
+        // automatically calls a function based only on its name
+        var url = AJAX[clickAction];
+        window[clickAction](elementArray, url);
     }
 });
 
 
+async function make_fetch(formData, url) {
+    const csrf_token = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    return fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: {'X-CSRFToken': csrf_token}
+    })
+    .then(res => {
+        if (res.status >= 200 && res.status <= 299) {
+            return res.json();
+        }
+        else {
+            throw Error(res.statusText);
+        }
+    })
+    .catch((error) => {
+        console.log(error);
+    })
+}
+
+
 // Upload an image an return its properties
-function uploadImage(elementArray) {
+async function upload_media(elementArray, url) {
     // check to see if we can upload any more images
     const thumbnailContainer = document.getElementById('thumbnails');
-    const currentImages = thumbnailContainer.children.length;
-    console.log(elementArray);
-    // get POST url
-    const url = AJAX_URL('upload_image');
-    let csrf_token = document.querySelector('[name=csrfmiddlewaretoken]').value
-    let formData = new FormData();
     let listing_id = document.querySelector('*[data-listing-id]').dataset.listingId;
+    let formData = new FormData();
         formData.append('listing_id', listing_id);
     let fileSourceElement;
+
+    // iterate through the elements and see which type of image we're fetching:
+    // user can choose to add an image from a URL or upload from their computer.
     elementArray.forEach(function(e) {
         if (e.value && !fileSourceElement) {
             fileSourceElement = e;
@@ -71,17 +92,14 @@ function uploadImage(elementArray) {
             return;
         }
     });
+    
     // load a loading progress modal because this can take some time
     let loadingModalElement = document.getElementById('loadingImageModal');
     let loadingModal = new bootstrap.Modal(loadingModalElement);
     loadingModal.show();
-    fetch(url, {
-        method: 'POST',
-        body: formData,
-        headers: {'X-CSRFToken': csrf_token}
-    })
-    .then(res => res.json())
-    .then(r => {
+
+    let request = make_fetch(formData, url);
+    request.then(r => {
         if (r.error) {
             let errorDiv = generateListingFormError(r.error);
             let errorContainer = document.getElementById('formErrors');
@@ -94,22 +112,16 @@ function uploadImage(elementArray) {
             if (n > 0) {
                 // create card elements and append them to the form
                 for (i, n; i < n; i++) {
-                    // remove placeholder
-                    let fc = thumbnailContainer.firstChild;
-                    if (fc && fc.nodeName == "#text") {
-                        thumbnailContainer.innerHTML = '';
-                    }
                     thumbnailContainer.append(buildImageCard(r.paths[i], r.ids[i]));
                 }
             }
             loadingModal.hide();
-            /* hide() doesn't always work, as when users upload images. No idea why.
-             * From this script's perspective there is no difference in these methods.
-             * So, set a timer (arbitrarily for one second) just to manually hide
-             * the modal if it's still being displayed. */
+            // hide() doesn't always work when users upload images. No idea why.
+            // So, set a timer (arbitrarily for one second) just to manually hide
+            // the modal if it's still being displayed. 
             window.setTimeout(() => { loadingModal.hide(); }, 1000);
         }
-    })
+    });
 }
 
 
@@ -118,7 +130,8 @@ function buildImageCard(image_path, image_id) {
         div.className = "me-3 mb-3 image-thumbnail border"
         div.style.backgroundImage = `url(${image_path})`;
         div.id = "img_thumbnail-" + image_id;
-        div.dataset.target = 'removeImage';
+        // target must = the function to be called
+        div.dataset.target = 'purge_media';
         TARGETS.push(div);
     let a = document.createElement('a');
         a.href = "#";
@@ -135,19 +148,16 @@ function buildImageCard(image_path, image_id) {
 }
 
 
-function removeImage(elementArray) {
+function purge_media(elementArray, url) {
     let img_target = elementArray[0];
-    // remove this from targets as it's no longer target-able
-    TARGETS.splice(TARGETS.indexOf(img_target), 1);
-    img_target.parentElement.removeChild(img_target);
-
-    const url = AJAX_URL("purge_image");
     const img_id = img_target.id.split('-')[1];
     const formData = new FormData();
     formData.append('img_id', img_id);
-    fetch(url, { 
-        method: "POST",
-        body: formData
+    let request = make_fetch(formData, url);
+    request.then(() => {
+        // remove this from targets as it's no longer target-able
+        TARGETS.splice(TARGETS.indexOf(img_target), 1);
+        img_target.parentElement.removeChild(img_target);
     })
 }
 
@@ -173,7 +183,7 @@ function generateListingFormError(error) {
     return alertElement;
 }
 
-
+/* 
 function ajax(full_url, disappear = false) {
     // params[0] will be a leading '/'; params[1] will be 'ajax'
     let params = full_url.split('/');
@@ -257,6 +267,7 @@ function ajax(full_url, disappear = false) {
             return;
         });
 }
+ */
 
 function editComment(id) {
     let anchor = document.getElementById("commentInputAnchor");

@@ -1,38 +1,41 @@
 import random
 import requests
 from django.core import serializers
+from django.http.response import JsonResponse
+from django.urls import path
 from .models import *
 from .strings import *
 from .globals import *
+from .utility import *
 
 
-def ajax_delete_comment(request, response):
+def ajax_delete_comment(request):
     comment = Comment.objects.get(pk=id)
     comment.delete()
-    return response
 
 
-def ajax_dismiss_notification(request, response):
+def ajax_dismiss_notification(request):
     try:
         notification = Notification.objects.get(pk=id)
         notification.delete()
     except Notification.ObjectDoesNotExist:
         pass
-    return response
 
 
-def ajax_generate_comment(request, response):
+def ajax_generate_comment(request):
+    response = {}
     message = ''
     for i in range(0, random.randint(1,5)):
         message += GEN.sentence()
     response["message"] = message
+    return JsonResponse(response)
 
 
-def ajax_generate_user(request, response):
+def ajax_generate_user(request):
     return requests.get('https://randomuser.me/api/').json()["results"][0]
 
 
-def ajax_purge_media(request, response):
+def ajax_purge_media(request):
     img_id = request.POST.get('img_id', None)
     img_mod = UserImage.objects.get(pk=img_id)
     """
@@ -44,17 +47,22 @@ def ajax_purge_media(request, response):
         img_mod.thumbnail.delete()
     """
     img_mod.delete()
+    return JsonResponse({'message': 'Image removed successfully.'})
 
 
-def ajax_reply_comment(request, response):
+def ajax_reply_comment(request):
+    response = {}
     # Filter must be used instead of get to return iterable for serializer
     # (or wrap the queryset in [] to list-ify it).
     comment = Comment.objects.filter(pk=id)
     response["comment"] = serializers.serialize("json", comment)
     response["author"] = comment.first().user.username
+    return JsonResponse(response)
 
 
-def ajax_upload_images(request, response):
+
+def ajax_upload_media(request):
+    response = {}
     listing_id = request.POST.get('listing_id', None)
     if not listing_id:
         response['error'] = "Listing ID not found: can't save images."
@@ -72,7 +80,7 @@ def ajax_upload_images(request, response):
         if request.FILES:
             # User uploaded images from their computer
             files = request.FILES.getlist('files', None)
-            if (files.count() + current_count) > MAX_UPLOADS_PER_LISTING:
+            if (len(files) + current_count) > MAX_UPLOADS_PER_LISTING:
                 response['error'] = MESSAGE_LISTING_MAX_UPLOADS_EXCEEDED
             else:
                 try:
@@ -82,16 +90,17 @@ def ajax_upload_images(request, response):
         else:
             # User provided URL of an image
             url = request.POST.get('url', None)
-            images = fetch_image(request, url, reverse('create_listing'), listing)
+            images = get_image(request, url, reverse('create_listing'), listing)
         
         if images:
             response['paths'] = [i.image.url for i in images]
             response['ids'] = [i.id for i in images]
         
-        return response
+        return JsonResponse(response)
 
 
-def ajax_watch_listing(request, response):
+def ajax_watch_listing(request):
+    response = {}
     listing = Listing.objects.get(id=id)
     watchlist = request.user.watchlist
     if listing in watchlist.all():
@@ -102,4 +111,4 @@ def ajax_watch_listing(request, response):
         watchlist.add(listing)
         response["message"] = "Added to watchlist."
         response["button_text"] = "Watching"
-    return response
+    return JsonResponse(response)

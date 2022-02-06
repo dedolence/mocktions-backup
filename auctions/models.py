@@ -98,7 +98,7 @@ class UserImage(models.Model):
     owner = models.ForeignKey(User, on_delete=CASCADE, blank=True)
     # This may be a use-case for GenericForeignKey, to accept either Listing or TempListing
     listing = models.ForeignKey(Listing, on_delete=CASCADE, blank=True, null=True, related_name="images")
-    temp_listing = models.ForeignKey(TempListing, on_delete=CASCADE, blank=True, null=True)
+    temp_listing = models.ForeignKey(TempListing, on_delete=CASCADE, blank=True, null=True, related_name="images")
     image = models.ImageField(upload_to="%Y/%m/%d/", 
         width_field="pp_width", height_field="pp_height", blank=True)
     pp_width = models.IntegerField(blank=True, null=True)

@@ -1,13 +1,31 @@
-from django.urls import path
-from . import views
 from django.conf import settings
 from django.conf.urls.static import static
+from django.urls import include, path
+
+from auctions.globals import (AJAX_DELETE_COMMENT, AJAX_DISMISS_NOTIFICATION,
+                              AJAX_GENERATE_COMMENT, AJAX_GENERATE_USER,
+                              AJAX_PURGE_MEDIA, AJAX_REPLY_COMMENT,
+                              AJAX_UPLOAD_MEDIA, AJAX_WATCH_LISTING)
+
+from . import ajax_controls, views
+
+
+ajax_urls_include = [
+    path(AJAX_DELETE_COMMENT, ajax_controls.ajax_delete_comment, name=AJAX_DELETE_COMMENT),
+    path(AJAX_DISMISS_NOTIFICATION, ajax_controls.ajax_dismiss_notification, name=AJAX_DISMISS_NOTIFICATION),
+    path(AJAX_GENERATE_COMMENT, ajax_controls.ajax_generate_comment, name=AJAX_GENERATE_COMMENT),
+    path(AJAX_GENERATE_USER, ajax_controls.ajax_generate_user, name=AJAX_GENERATE_USER),
+    path(AJAX_PURGE_MEDIA, ajax_controls.ajax_purge_media, name=AJAX_PURGE_MEDIA),
+    path(AJAX_REPLY_COMMENT, ajax_controls.ajax_reply_comment, name=AJAX_REPLY_COMMENT),
+    path(AJAX_UPLOAD_MEDIA, ajax_controls.ajax_upload_media, name=AJAX_UPLOAD_MEDIA),
+    path(AJAX_WATCH_LISTING, ajax_controls.ajax_watch_listing, name=AJAX_WATCH_LISTING)
+]
+
 
 urlpatterns = [
     path("", views.index, name="index"),
     path("accounts/<str:username>", views.view_user, name="view_user"),
-    path("ajax", views.ajax, name="ajax_"),
-    path("ajax/<str:action>/<int:id>", views.ajax, name="ajax"),
+    path("ajax/", include(ajax_urls_include)),
     path("bid", views.place_bid, name="place_bid"),
     path("cart", views.shopping_cart, name="shopping_cart"),
     path("categories", views.categories, name="categories"),
@@ -36,3 +54,4 @@ urlpatterns = [
     # path("bidding/", views.test_bidding, name="test_bidding"),
     # path("testListing/", views.test_listing, name="test_listing")
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
