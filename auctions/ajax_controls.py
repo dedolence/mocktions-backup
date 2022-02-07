@@ -9,6 +9,10 @@ from .globals import *
 from .utility import *
 
 
+def ajax_test(request):
+    return JsonResponse({'message': 'It worked!'})
+
+
 def ajax_delete_comment(request):
     comment = Comment.objects.get(pk=id)
     comment.delete()

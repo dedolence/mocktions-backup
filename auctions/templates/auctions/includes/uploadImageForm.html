@@ -29,18 +29,19 @@
                         </li>
                         <li class="list-group-item mb-3 pb-4">
                             <label class="lead mb-3" for="id_upload_image">Or, upload an image from your computer.</label>
-                            <input type="file" id="id_upload_image" name="upload_image" class="form-control" data-target="{{ upload_media.name }}" multiple="multiple">
+                            <input type="file" id="id_upload_image" name="upload_image" class="form-control" data-target="{{ ajax.ajax_upload_media.name }}" multiple="multiple">
                         </li>
                         <li class="list-group-item mb-3 pb-4">
                             <label class="lead mb-3" for="id_url_image">Or, add an image from the internet.</label>
-                            <input type="url" id="id_url_image" name="url_image" class="form-control" data-target="{{ upload_media.name }}" placeholder="URL of image">
+                            <input type="url" id="id_url_image" name="url_image" class="form-control" data-target="{{ ajax.ajax_upload_media.name }}" placeholder="URL of image">
                         </li>
                     </ul>
                 </div>
             </div>
             <div class="modal-footer">
+                <button type="reset" class="btn btn-outline-secondary">Clear form</button>
                 <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" data-click-action="{{ upload_media.name }}">Save</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" data-click-action="{{ ajax.ajax_upload_media.name }}">Save</button>
             </div>
         </div>
     </div>
@@ -53,7 +54,7 @@
                 <div><img id="imageForEdit" alt="A picture of the listing being sold" class="img-fluid"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-bs-dismiss="modal" data-click-action="{{ purge_media.name }}"><i class="bi bi-exclamation-octagon"></i> Delete Image</button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal" data-click-action="{{ ajax.purge_media.name }}"><i class="bi bi-exclamation-octagon"></i> Delete Image</button>
                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
             </div>
         </div>
