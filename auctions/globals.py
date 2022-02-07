@@ -1,6 +1,8 @@
 from essential_generators import DocumentGenerator
 
 LISTING_EXPIRATION_DAYS = 14        # global value for how long listings are active
+LISTING_DRAFT_EXPIRATION_DAYS = 30  # not used yet
+LISTING_DRAFT_CAP = 10              # Cap on the number of listing drafts per user
 GEN = DocumentGenerator()
 
 # Images

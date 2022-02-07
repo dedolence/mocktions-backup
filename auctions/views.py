@@ -109,9 +109,23 @@ def comment(request):
 def create_listing(request, listing_id=None):
     notification = NotificationTemplate()
     if request.method == "GET":
-        temp = TempListing.objects.create(owner=request.user)
-        form = NewListingForm(instance=temp)
-        form_mode = 'create_new'
+        # check to see if this user has reached the cap on listing drafts
+        temps = TempListing.objects.filter(owner=request.user).count()
+        if temps >= LISTING_DRAFT_CAP:
+            notification.build(
+                request.user,
+                TYPE_WARNING,
+                ICON_WARNING,
+                MESSAGE_LISTING_DRAFT_CAP_EXCEEDED,
+                True,
+                reverse('drafts')
+            )
+            notification.save()
+            return HttpResponseRedirect(reverse('index'))
+        else:
+            temp = TempListing.objects.create(owner=request.user)
+            form = NewListingForm(instance=temp)
+            form_mode = 'create_new'
     else:
         # accessing a draft
         temp = TempListing.objects.get(pk=listing_id)
