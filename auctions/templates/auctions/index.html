@@ -17,21 +17,13 @@
                 </nav>
             </div>
         {% else %}
+
             {% include 'auctions/includes/notifications.html' with notifications=notifications %}
+
             {% block tabcontent %}
-                <nav>
-                    <ul class="nav nav-tabs">
-                        <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="{% url 'index' %}">Your Listings</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'watchlist' %}">Your Watchlist</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'settings' %}">Your Profile</a>
-                        </li>
-                    </ul>
-                </nav>
+
+                {% include 'auctions/includes/userNavTab.html' with index_active=True %}
+
                 <div class="tab-content mt-5" id="indexTabContent">
                     {% url 'index' as control_url %}
                     {% include 'auctions/includes/listingControls.html' with numbers_only=False controls=listing_controls control_url=control_url %}
@@ -41,7 +33,8 @@
                     {% empty %}
                         <h5>No listings were found.</h5>
                     {% endfor %}
-                </div>    
+                </div>
+
             {% endblock tabcontent %}
         {% endif %}
 {% endblock %}

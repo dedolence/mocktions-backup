@@ -43,6 +43,8 @@ MESSAGE_LISTING_EDIT_PROHIBITED = ("The listing, \"{},\" cannot be edited. This 
 MESSAGE_LISTING_MAX_UPLOADS_EXCEEDED = ("Too many images: a listing can only have a "
 + "up to " + str(MAX_UPLOADS_PER_LISTING) + " images.")
 MESSAGE_WATCHLIST_PROMPT = "Add to watchlist"
+MESSAGE_LISTING_DRAFT_SAVED = ("Your listing has been saved to drafts. You can leave this "
+    + "page and finish editing it later if you want.")
 
 # User index messages
 MESSAGE_USER_DELETE_PROHIBITED = ("You are not allowed to delete this listing.")
