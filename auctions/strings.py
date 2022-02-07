@@ -45,6 +45,8 @@ MESSAGE_LISTING_MAX_UPLOADS_EXCEEDED = ("Too many images: a listing can only hav
 MESSAGE_WATCHLIST_PROMPT = "Add to watchlist"
 MESSAGE_LISTING_DRAFT_SAVED = ("Your listing has been saved to drafts. You can leave this "
     + "page and finish editing it later if you want.")
+MESSAGE_LISTING_DRAFT_CAP_EXCEEDED = ("You currently have too many listing drafts already. "
+    + "Please publish or delete a draft to free up more space for a new listing.")
 
 # User index messages
 MESSAGE_USER_DELETE_PROHIBITED = ("You are not allowed to delete this listing.")

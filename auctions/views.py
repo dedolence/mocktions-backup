@@ -23,6 +23,7 @@ from .models import Bid, Category, Comment, TempListing, UserImage, Listing, Use
 from .notifications import *
 from .strings import *
 from .utility import *
+from auctions import notifications
 
 # for testing
 # from .testing import *
@@ -121,7 +122,7 @@ def create_listing(request, listing_id=None):
                 reverse('drafts')
             )
             notification.save()
-            return HttpResponseRedirect(reverse('index'))
+            return HttpResponseRedirect(reverse('drafts'))
         else:
             temp = TempListing.objects.create(owner=request.user)
             form = NewListingForm(instance=temp)
@@ -138,6 +139,7 @@ def create_listing(request, listing_id=None):
                 MESSAGE_LISTING_CREATION_INVALID_USER,
                 True
             )
+            notification.save()
             return HttpResponseRedirect(reverse('index'))
         else:
             notification.build(
@@ -148,10 +150,10 @@ def create_listing(request, listing_id=None):
                 True,
                 reverse('create_listing')
             )
+            notification.save()
             form = NewListingForm(request.POST, instance=temp)
             form_mode = 'preview'
     
-    notification.save()
     return render(request, 'auctions/createListing.html', {
         'form': form,
         'listing_id': temp.id,
@@ -198,9 +200,11 @@ def delete_listing(request, listing_id):
 
 @login_required
 def drafts(request):
+    notifications = get_notifications(request.user, reverse('drafts'))
     drafts = TempListing.objects.filter(owner=request.user)
     return render(request, 'auctions/drafts.html', {
-        'drafts': drafts
+        'drafts': drafts,
+        'notifications': notifications
     })
 
 
