@@ -29,6 +29,7 @@ urlpatterns = [
     path("create", views.create_listing, name="create_listing"),
     path("create/<int:listing_id>", views.create_listing, name="create_listing"),
     path("delete/<int:listing_id>", views.delete_listing, name="delete_listing"),
+    path("listings/drafts", views.drafts, name="drafts"),
     path("edit/<int:listing_id>", views.edit_listing, name="edit_listing"),
     path("listings/", views.listings, name="all_listings"),
     path("listings/view/<int:listing_id>", views.listing_page, name="view_listing"),

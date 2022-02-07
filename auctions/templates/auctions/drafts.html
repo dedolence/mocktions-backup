@@ -1,0 +1,15 @@
+{% extends 'auctions/index.html' %}
+
+{% block tabcontent %}
+
+    {% include 'auctions/includes/userNavTab.html' with drafts_active=True %}
+
+    <div class="tab-content mt-5" id="indexTabContent">
+
+        {% for draft in drafts %}
+            {% include 'auctions/includes/listingDraft.html' with listing=draft %}
+        {% empty %}
+            <p>You have no drafts.</p>
+        {% endfor %}
+    </div>
+{% endblock tabcontent %}
