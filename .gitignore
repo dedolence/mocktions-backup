@@ -1,0 +1,4 @@
+auctions/templates/auctions/tests/
+auctions/testing.py
+auctions/__pycache__/
+db.sqlite3
