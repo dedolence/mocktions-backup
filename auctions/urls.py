@@ -1,24 +1,19 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import include, path
-
-from auctions.globals import (AJAX_DELETE_COMMENT, AJAX_DISMISS_NOTIFICATION,
-                              AJAX_GENERATE_COMMENT, AJAX_GENERATE_USER,
-                              AJAX_PURGE_MEDIA, AJAX_REPLY_COMMENT,
-                              AJAX_UPLOAD_MEDIA, AJAX_WATCH_LISTING)
-
 from . import ajax_controls, views
 
 
 ajax_urls_include = [
-    path(AJAX_DELETE_COMMENT, ajax_controls.ajax_delete_comment, name=AJAX_DELETE_COMMENT),
-    path(AJAX_DISMISS_NOTIFICATION, ajax_controls.ajax_dismiss_notification, name=AJAX_DISMISS_NOTIFICATION),
-    path(AJAX_GENERATE_COMMENT, ajax_controls.ajax_generate_comment, name=AJAX_GENERATE_COMMENT),
-    path(AJAX_GENERATE_USER, ajax_controls.ajax_generate_user, name=AJAX_GENERATE_USER),
-    path(AJAX_PURGE_MEDIA, ajax_controls.ajax_purge_media, name=AJAX_PURGE_MEDIA),
-    path(AJAX_REPLY_COMMENT, ajax_controls.ajax_reply_comment, name=AJAX_REPLY_COMMENT),
-    path(AJAX_UPLOAD_MEDIA, ajax_controls.ajax_upload_media, name=AJAX_UPLOAD_MEDIA),
-    path(AJAX_WATCH_LISTING, ajax_controls.ajax_watch_listing, name=AJAX_WATCH_LISTING)
+    path('test/', ajax_controls.ajax_test, name="ajax_test"),
+    path('comment/delete/', ajax_controls.ajax_delete_comment, name='ajax_delete_comment'),
+    path('notification/dismiss', ajax_controls.ajax_dismiss_notification, name='ajax_dismiss_notification'),
+    path('comment/generate/', ajax_controls.ajax_generate_comment, name='ajax_generate_comment'),
+    path('user/generate/', ajax_controls.ajax_generate_user, name='ajax_generate_user'),
+    path('media/purge/', ajax_controls.ajax_purge_media, name='ajax_purge_media'),
+    path('comment/reply/', ajax_controls.ajax_reply_comment, name='ajax_reply_comment'),
+    path('media/upload/', ajax_controls.ajax_upload_media, name='ajax_upload_media'),
+    path('listing/watch/', ajax_controls.ajax_watch_listing, name='ajax_watch_listing')
 ]
 
 

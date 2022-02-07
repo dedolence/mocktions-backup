@@ -1,5 +1,5 @@
 // This global constant is defined in layout.html; just pointing it out here.
-AJAX
+AJAX_URLS
 
 
 // This global contains all elements that have the attribute "data-target".
@@ -32,7 +32,7 @@ document.addEventListener("click", e => {
             }
         })
         // automatically calls a function based only on its name
-        var url = AJAX[clickAction];
+        var url = AJAX_URLS[clickAction];
         window[clickAction](elementArray, url);
     }
 });
@@ -58,9 +58,15 @@ async function make_fetch(formData, url) {
     })
 }
 
+function ajax_test(elementArray, url) {
+    make_fetch(null, url)
+    .then(r => {
+        elementArray[0].innerHTML = r.message;
+    })
+}
 
 // Upload an image an return its properties
-async function upload_media(elementArray, url) {
+async function ajax_upload_media(elementArray, url) {
     // check to see if we can upload any more images
     const thumbnailContainer = document.getElementById('thumbnails');
     let listing_id = document.querySelector('*[data-listing-id]').dataset.listingId;
@@ -148,7 +154,7 @@ function buildImageCard(image_path, image_id) {
 }
 
 
-function purge_media(elementArray, url) {
+function ajax_purge_media(elementArray, url) {
     let img_target = elementArray[0];
     const img_id = img_target.id.split('-')[1];
     const formData = new FormData();

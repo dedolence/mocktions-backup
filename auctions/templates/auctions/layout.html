@@ -14,21 +14,25 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
         <script src = "https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
         <script>
-            const AJAX = {
-                {{ delete_comment.name }}: '{{ delete_comment.url }}',
-                {{ dismiss_notification.name }}: '{{ dismiss_notification.url }}',
-                {{ generate_comment.name }}: '{{ generate_comment.url }}',
-                {{ generate_user.name }}: '{{ generate_user.url }}',
-                {{ purge_media.name }}: '{{ purge_media.url }}',
-                {{ reply_comment.name }}: '{{ reply_comment.url }}',
-                {{ upload_media.name }}: '{{ upload_media.url }}',
-                {{ watch_listing.name }}: '{{ watch_listing.url }}'
-            }
+            {% comment %} const AJAX = {
+                {{ ajax.ajax_delete_comment.name }}: '{{ ajax.ajax_delete_comment.url }}',
+                {{ ajax.ajax_dismiss_notification.name }}: '{{ ajax.ajax_dismiss_notification.url }}',
+                {{ ajax.ajax_generate_comment.name }}: '{{ ajax.ajax_generate_comment.url }}',
+                {{ ajax.ajax_generate_user.name }}: '{{ ajax.ajax_generate_user.url }}',
+                {{ ajax.ajax_purge_media.name }}: '{{ ajax.ajax_purge_media.url }}',
+                {{ ajax.ajax_reply_comment.name }}: '{{ ajax.ajax_reply_comment.url }}',
+                {{ ajax.ajax_upload_media.name }}: '{{ ajax.ajax_upload_media.url }}',
+                {{ ajax.ajax_watch_listing.name }}: '{{ ajax.ajax_watch_listing.url }}'
+            } {% endcomment %}
+            const AJAX_URLS = {
+                {% for func in ajax %}
+                    {{ func }}: "{% url func %}",
+                {% endfor %}
+            };
         </script>
         <script src="{% static 'auctions/ajax.js' %}"></script>
     </head>
     <body>
-        
         {% include "auctions/includes/navbar.html" %}
         <main class="container pt-2 pt-md-4 pb-4 mb-4">
             {% block body %}
