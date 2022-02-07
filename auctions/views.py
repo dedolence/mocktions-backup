@@ -107,6 +107,7 @@ def comment(request):
 
 @login_required
 def create_listing(request, listing_id=None):
+    notification = NotificationTemplate()
     if request.method == "GET":
         temp = TempListing.objects.create(owner=request.user)
         form = NewListingForm(instance=temp)
@@ -116,7 +117,6 @@ def create_listing(request, listing_id=None):
         temp = TempListing.objects.get(pk=listing_id)
         if temp.owner != request.user:
             # no editing other people's drafts!
-            notification = NotificationTemplate()
             notification.build(
                 request.user,
                 TYPE_INFO,
@@ -126,12 +126,26 @@ def create_listing(request, listing_id=None):
             )
             return HttpResponseRedirect(reverse('index'))
         else:
+            notification.build(
+                request.user,
+                TYPE_INFO,
+                ICON_GENERIC,
+                MESSAGE_LISTING_DRAFT_SAVED,
+                True,
+                reverse('create_listing')
+            )
             form = NewListingForm(request.POST, instance=temp)
             form_mode = 'preview'
+    
+    notification.save()
     return render(request, 'auctions/createListing.html', {
         'form': form,
         'listing_id': temp.id,
-        'form_mode': form_mode
+        'form_mode': form_mode,
+        'notifications': get_notifications(
+            request.user, 
+            reverse('create_listing')
+            )
     })
 
 
@@ -166,6 +180,14 @@ def delete_listing(request, listing_id):
             )
             notification.save()
             return HttpResponseRedirect(reverse("index"))
+
+
+@login_required
+def drafts(request):
+    drafts = TempListing.objects.filter(owner=request.user)
+    return render(request, 'auctions/drafts.html', {
+        'drafts': drafts
+    })
 
 
 @login_required
@@ -659,20 +681,19 @@ def view_user(request, username):
         'user': user
     })
 
+
+@login_required
 def watchlist(request):
-    if not request.user.is_authenticated:
-        return HttpResponseRedirect(reverse("login"))
-    else:
-        # purge listings that have expired
-        purge_listings(request)
-        notifications = get_notifications(request.user, 'index')
-        active_listings_raw = request.user.watchlist.all()
-        listing_page_tuple = get_page(request, active_listings_raw)
-        return render(request, "auctions/watchlist.html", {
-            'listing_controls': listing_page_tuple[0],
-            'listing_bundles': listing_page_tuple[1],
-            'notifications': notifications
-        })
+    # purge listings that have expired
+    purge_listings(request)
+    notifications = get_notifications(request.user, 'index')
+    active_listings_raw = request.user.watchlist.all()
+    listing_page_tuple = get_page(request, active_listings_raw)
+    return render(request, "auctions/watchlist.html", {
+        'listing_controls': listing_page_tuple[0],
+        'listing_bundles': listing_page_tuple[1],
+        'notifications': notifications
+    })
 
 
 # //////////////////////////////////////////////////////

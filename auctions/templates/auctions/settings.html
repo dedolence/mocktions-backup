@@ -3,19 +3,8 @@
 {% load static %}
 
 {% block tabcontent %}
-    <nav>
-        <ul class="nav nav-tabs">
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'index' %}">Your Listings</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'watchlist' %}">Your Watchlist</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" aria-current="page"  href="{% url 'settings' %}">Your Profile</a>
-            </li>
-        </ul>
-    </nav>
+
+    {% include 'auctions/includes/userNavTab.html' with settings_active=True %}
 
     <div class="tab-content mt-5" id="indexTabContent">
         <div class="row mb-5">
