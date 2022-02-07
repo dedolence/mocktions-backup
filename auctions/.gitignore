@@ -1,3 +1,4 @@
 /templates/auctions/tests/
 mockup.html
 testing.py
+__pycache__/
