@@ -3,3 +3,4 @@ mockup.html
 testing.py
 auctions/__pycache__/
 __pycache__/
+db.sqlite3
