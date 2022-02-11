@@ -80,6 +80,7 @@ class TempListing(models.Model):
     objects = models.Manager()
 
 
+
 class User(AbstractUser):
     default_image = static('auctions/images/user_avatar.png')
     watchlist = models.ManyToManyField('Listing', blank=True)

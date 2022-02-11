@@ -202,6 +202,7 @@ def delete_listing(request, listing_id):
 def drafts(request):
     notifications = get_notifications(request.user, reverse('drafts'))
     drafts = TempListing.objects.filter(owner=request.user)
+    
     return render(request, 'auctions/drafts.html', {
         'drafts': drafts,
         'notifications': notifications
