@@ -12,28 +12,6 @@ from .strings import *
 from .globals import *
 
 
-def get_expiration(listing) -> dict:
-    """Make sure the listing is still active according to its creation timestamp.
-    Irrelevant, but for my own notes:
-    Due to the db being sqlite, the timestamp is a naive date; i.e. it does not carry with it any timezone information.
-    By default Django creates objects using UTC time format.
-    LOCAL_TIMEZONE stores the timezone as a string in ISO format, to be used for converting UTC timestamps to local user timezones.
-    """
-    expiration_date = listing.timestamp + timedelta(days=listing.lifespan)
-    today = timezone.now()
-    difference = (expiration_date - today)      # e.g. 13 days, 22:18:29.642879.
-    s = difference.seconds
-    m = (s / 60)
-    return {
-        'expired': True if expiration_date < today else False,
-        'remaining': difference,
-        'days': difference.days,
-        'hours': floor(m / 60),
-        'minutes': floor((s / 60) % 60),
-        'seconds': floor(s % 60)
-    }
-
-
 def get_highest_bid(listing) -> Bid:
     bids = Bid.objects.filter(listing=listing).order_by('-amount')
     return bids.first()
@@ -83,10 +61,7 @@ def get_image(request, url=None, page=None, listing=None) -> Array:
         owner=request.user,
         image=img_source
     )
-    if listing and listing.__class__ == Listing:
-        img_mod.listing = listing
-    elif listing and listing.__class__ == TempListing:
-        img_mod.temp_listing = listing
+    img_mod.listing = listing
     img_mod.save_thumbnail()
     img_mod.save()
     return [img_mod]
@@ -210,10 +185,7 @@ def upload_images(request, files, listing=None) -> Array:
             owner=request.user,
             image=f
         )
-        if listing and listing.__class__ == Listing:
-            img_mod.listing = listing
-        elif listing and listing.__class__ == TempListing:
-            img_mod.temp_listing = listing
+        img_mod.listing = listing
         img_mod.save_thumbnail()
         img_mod.save()
         uploaded_images.append(img_mod)
