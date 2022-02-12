@@ -126,3 +126,41 @@ So once again:
         Simply have a M2M field called "watchlist" on User. No related_names seem to even be necessary here.
         Just do: user.watchlist.add(listing), or user.watchlist.all(). Why was this so difficult?
         
+
+2/11/22
+    A little bit lost at the moment and wish I had been taking notes earlier. I started working on a feature - uploading images to a listing? - and
+    it has spiraled somewhat. Images initiated a refactoring of the AJAX process. That worked out well and I think I have a more robust system in 
+    place. Now I'm back to the listing creation/editing/posting loop. What needs to happen?
+    - Create listing: 
+        - Initially create a temporary listing. Why? So that the images have a listing ID to be attached to. They are uploaded before the listing is
+        posted, so they need to have some ID to identify them. This also allows the Listings to be saved as a draft and edited/posted later. 
+        - At some point, that temporary listing will become active. How? I think it makes sense to have an active/inactive boolean flag. Why?
+        So that if the database gets large, inactive listings can be archived easily.
+    - Edit listing:
+        - Continue editing a draft listing, or a posted listing. If a posted listing, all fields will be required for the changes to take effect.
+    - Post listing:
+        - Check that all fields are entered and flag the listing as active.
+
+    It occurs to me that the Listing model class should have some more functionality built into it:
+    - Active/inactive flag (boolean field, default False because initially Listings will always be drafts)
+    - Listing.temp_listings.all(): a model manager that returns only draft listings.
+    - Listing.active_listings.all(): a model manager that returns only posted listings.
+    - Listing.objects.all(): default manager returns all listings.
+    
+    When a listing is queried, it should also by default return a list of images, right? Because those are very much required in rendering Listings.
+    But also, how difficult would it be to just use, listing_images = listing_object.images.all()
+
+    So what do I want a Listing.objects.get(pk=XX) query to look like?
+
+    Beginning to think I literally don't have to do any of this.
+
+2/12
+    I decided to merge Listing and TempListing into Listing. Added:
+    active = a True/False flag to indicate whether this listing is a draft or not
+    is_expired = a True/False property that says whether or not the listing is expired or not.
+    expiration = returns a dict containing information about when the listing expires (still maybe better to calculate this at the time 
+        it's rendered to the user).
+    all_images = a property that returns a QuerySet containing the UserImage objects associated with the listing.
+        Why? Avoids having to do a separate query for the images, which would need to be sent as another context variable to a template.
+        Not a big deal perhaps, but it keeps the logic of fetching a listing's images neatly tucked into the Listing class itself.
+        

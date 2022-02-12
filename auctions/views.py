@@ -19,7 +19,7 @@ from . import namelist, wordlist
 from .ajax_controls import *
 from .forms import ContactForm, NewImageForm, NewListingForm, RegistrationForm, ShippingInformation
 from .globals import *
-from .models import Bid, Category, Comment, TempListing, UserImage, Listing, User
+from .models import Bid, Category, Comment, UserImage, Listing, User
 from .notifications import *
 from .strings import *
 from .utility import *
@@ -111,7 +111,7 @@ def create_listing(request, listing_id=None):
     notification = NotificationTemplate()
     if request.method == "GET":
         # check to see if this user has reached the cap on listing drafts
-        temps = TempListing.objects.filter(owner=request.user).count()
+        temps = Listing.objects.filter(owner=request.user).filter(active=False).count()
         if temps >= LISTING_DRAFT_CAP:
             notification.build(
                 request.user,
@@ -124,12 +124,12 @@ def create_listing(request, listing_id=None):
             notification.save()
             return HttpResponseRedirect(reverse('drafts'))
         else:
-            temp = TempListing.objects.create(owner=request.user)
+            temp = Listing.objects.create(owner=request.user)
             form = NewListingForm(instance=temp)
             form_mode = 'create_new'
     else:
         # accessing a draft
-        temp = TempListing.objects.get(pk=listing_id)
+        temp = Listing.objects.get(pk=listing_id)
         if temp.owner != request.user:
             # no editing other people's drafts!
             notification.build(
@@ -201,7 +201,7 @@ def delete_listing(request, listing_id):
 @login_required
 def drafts(request):
     notifications = get_notifications(request.user, reverse('drafts'))
-    drafts = TempListing.objects.filter(owner=request.user)
+    drafts = Listing.objects.filter(owner=request.user).filter(active=False)
     
     return render(request, 'auctions/drafts.html', {
         'drafts': drafts,
@@ -408,7 +408,7 @@ def preview_listing(request, id):
     This should also be the route taken for editing an existing
     listing, I suppose.
     """
-    temp_listing = TempListing.objects.get(pk=id)
+    temp_listing = Listing.objects.get(pk=id)
     if request.user != temp_listing.owner:
         notification = NotificationTemplate()
         notification.build(request.user,
