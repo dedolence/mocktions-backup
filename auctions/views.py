@@ -109,6 +109,7 @@ def comment(request):
 @login_required
 def create_listing(request, listing_id=None):
     notification = NotificationTemplate()
+    images = None
     if request.method == "GET":
         # check to see if this user has reached the cap on listing drafts
         temps = Listing.objects.filter(owner=request.user).filter(active=False).count()
@@ -124,39 +125,20 @@ def create_listing(request, listing_id=None):
             notification.save()
             return HttpResponseRedirect(reverse('drafts'))
         else:
-            temp = Listing.objects.create(owner=request.user)
-            form = NewListingForm(instance=temp)
+            form = NewListingForm()
             form_mode = 'create_new'
     else:
-        # accessing a draft
-        temp = Listing.objects.get(pk=listing_id)
-        if temp.owner != request.user:
-            # no editing other people's drafts!
-            notification.build(
-                request.user,
-                TYPE_INFO,
-                ICON_GENERIC,
-                MESSAGE_LISTING_CREATION_INVALID_USER,
-                True
-            )
-            notification.save()
-            return HttpResponseRedirect(reverse('index'))
-        else:
-            notification.build(
-                request.user,
-                TYPE_INFO,
-                ICON_GENERIC,
-                MESSAGE_LISTING_DRAFT_SAVED,
-                True,
-                reverse('create_listing')
-            )
-            notification.save()
-            form = NewListingForm(request.POST, instance=temp)
-            form_mode = 'preview'
+        # save the POST data as a new temporary listing
+        form = NewListingForm(request.POST)
+        new_listing = form.save()
+        form_mode = 'preview'
+        images = request.POST.getlist('images', None)
+        if not images:
+            images = "Didn't receive any images bro"
     
     return render(request, 'auctions/createListing.html', {
+        'images': images,
         'form': form,
-        'listing_id': temp.id,
         'form_mode': form_mode,
         'notifications': get_notifications(
             request.user, 

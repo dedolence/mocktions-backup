@@ -10,11 +10,9 @@
     {% url 'edit_listing' as action_url %}
 {% endif %}
 
-
-<form action="{{action_url}}" method="POST" id="listingForm" enctype="multipart/form-data" class="container" data-listing-id="{{ listing_id }}">
+<div class="container">
     <div class="row">
         <div class="col-md-10">
-            {% csrf_token %}
             <div id="formErrors">
                 {% if form.non_field_errors %}
                     <div class="row mb-4"><p class="mark">{{ form.non_field_errors }}</p></div>
@@ -31,6 +29,9 @@
             <hr class="my-5"/>
             <p class="lead my-4">Please fill out all fields.</p>
             {% include 'auctions/includes/uploadImageForm.html' %}
+            <form action="{{action_url}}" method="POST" id="listingForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            <select class="d-none" name="images" id="selectImageInput" multiple></select>
             {% for field in listing_form %}
                 <div class="row mb-4">
                     <div class="col-sm-4">
@@ -63,8 +64,7 @@
         </div>
         <div class="col-md-2"></div>
     </div>
-
-</form>
+</div>
 
 <script>
 function remove_requirements() {

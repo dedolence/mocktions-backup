@@ -42,6 +42,10 @@ MESSAGE_LISTING_EDIT_PROHIBITED = ("The listing, \"{},\" cannot be edited. This 
 + "delete the listing.")
 MESSAGE_LISTING_MAX_UPLOADS_EXCEEDED = ("Too many images: a listing can only have a "
 + "up to " + str(MAX_UPLOADS_PER_LISTING) + " images.")
+MESSAGE_LISTING_UPLOAD_TOO_LARGE = ("Sorry, that file was too large to upload. I'm not actually "
+    + "sure what size is too big because the documentation doesn't really tell me. I know "
+    + "that's kinda pathetic but I have to move on and fix some other stuff now. "
+    + "Try uploading something smaller. Ok, bye.")
 MESSAGE_WATCHLIST_PROMPT = "Add to watchlist"
 MESSAGE_LISTING_DRAFT_SAVED = ("Your listing has been saved to drafts. You can leave this "
     + "page and finish editing it later if you want.")

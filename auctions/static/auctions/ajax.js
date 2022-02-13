@@ -6,6 +6,7 @@ AJAX_URLS
 // Those are the elements that will be required by event handlers. All other
 // elements can be ignored.
 const TARGETS = [];
+const GLOBALS = {};
 $(function() {
     // Gather all elements that are required for any event handlers.
     let targetQuery = document.querySelectorAll('*[data-target]');
@@ -69,9 +70,11 @@ function ajax_test(elementArray, url) {
 async function ajax_upload_media(elementArray, url) {
     // check to see if we can upload any more images
     const thumbnailContainer = document.getElementById('thumbnails');
-    let listing_id = document.querySelector('*[data-listing-id]').dataset.listingId;
+    const currentImageCount = thumbnailContainer.children.length;
+
     let formData = new FormData();
-        formData.append('listing_id', listing_id);
+        formData.append('currentImageCount', currentImageCount);
+    
     let fileSourceElement;
 
     // iterate through the elements and see which type of image we're fetching:
@@ -100,16 +103,17 @@ async function ajax_upload_media(elementArray, url) {
     });
     
     // load a loading progress modal because this can take some time
-    let loadingModalElement = document.getElementById('loadingImageModal');
-    let loadingModal = new bootstrap.Modal(loadingModalElement);
+    const loadingModalElement = document.getElementById('loadingImageModal');
+    const loadingModal = new bootstrap.Modal(loadingModalElement);
     loadingModal.show();
 
-    let request = make_fetch(formData, url);
+    const request = make_fetch(formData, url);
     request.then(r => {
         if (r.error) {
             let errorDiv = generateListingFormError(r.error);
             let errorContainer = document.getElementById('formErrors');
             errorContainer.appendChild(errorDiv);
+            loadingModal.hide();
         }
         else {
             // r is an array containing the paths to each full-size image
@@ -132,6 +136,7 @@ async function ajax_upload_media(elementArray, url) {
 
 
 function buildImageCard(image_path, image_id) {
+    const selectImageInput = document.getElementById('selectImageInput');
     let div = document.createElement('div');
         div.className = "me-3 mb-3 image-thumbnail border"
         div.style.backgroundImage = `url(${image_path})`;
@@ -149,7 +154,11 @@ function buildImageCard(image_path, image_id) {
                 img.src = image_path;
             modal.show();
         })
-    div.appendChild(a);
+    let option = document.createElement("option");
+        option.value = image_id;
+        option.defaultSelected = true;
+    div.append(a);
+    selectImageInput.append(option);
     return div;
 }
 
@@ -173,18 +182,12 @@ function generateListingFormError(error) {
         alertElement.className = "alert alert-danger alert-dismissible";
         alertElement.id = 'errorDiv';
     let textSpan = document.createElement('span');
+        textSpan.innerHTML = error;
     let dismissButton = document.createElement('button');
         dismissButton.type = 'button';
         dismissButton.classList.add('btn-close');
         dismissButton.dataset.bsDismiss = 'alert';
         dismissButton.ariaLabel = 'Close';
-    switch (error) {
-        case "DecompressionBombError":
-            textSpan.innerHTML = "Couldn't upload image: too large.";
-            break;
-        default:
-            break;
-    }
     alertElement.appendChild(textSpan).appendChild(dismissButton);
     return alertElement;
 }

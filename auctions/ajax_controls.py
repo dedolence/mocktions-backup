@@ -67,40 +67,31 @@ def ajax_reply_comment(request):
 
 def ajax_upload_media(request):
     response = {}
-    listing_id = request.POST.get('listing_id', None)
-    if not listing_id:
-        response['error'] = "Listing ID not found: can't save images."
+    images = None
+    current_image_count = request.POST.get('currentImageCount', None)
+    if int(current_image_count) >= MAX_UPLOADS_PER_LISTING:
+        response['error'] = MESSAGE_LISTING_MAX_UPLOADS_EXCEEDED
     else:
-        try:
-            listing = Listing.objects.get(pk=listing_id)
-        except Listing.DoesNotExist:
-            try:
-                listing = TempListing.objects.get(pk=listing_id)
-            except TempListing.DoesNotExist:
-                request['error'] = "No listing found with that ID."
-
-        current_count = listing.images.count()
-        images = None
         if request.FILES:
             # User uploaded images from their computer
             files = request.FILES.getlist('files', None)
-            if (len(files) + current_count) > MAX_UPLOADS_PER_LISTING:
+            if len(files) > MAX_UPLOADS_PER_LISTING:
                 response['error'] = MESSAGE_LISTING_MAX_UPLOADS_EXCEEDED
             else:
                 try:
-                    images = upload_images(request, files, listing)
+                    images = upload_images(request, files)
                 except Image.DecompressionBombError:
-                    response['error'] = 'DecompressionBombError'
+                    response['error'] = MESSAGE_LISTING_UPLOAD_TOO_LARGE
         else:
             # User provided URL of an image
             url = request.POST.get('url', None)
-            images = get_image(request, url, reverse('create_listing'), listing)
+            images = get_image(request, url, reverse('create_listing'))
         
         if images:
             response['paths'] = [i.image.url for i in images]
             response['ids'] = [i.id for i in images]
-        
-        return JsonResponse(response)
+    
+    return JsonResponse(response)
 
 
 def ajax_watch_listing(request):

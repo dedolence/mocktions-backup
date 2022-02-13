@@ -1,5 +1,6 @@
 # Not going to use this after all, as I'd prefer writing the form manually to have better control over styles with Bootstrap
 
+from tkinter import Widget
 from django import forms
 from .models import Listing, UserImage
 
