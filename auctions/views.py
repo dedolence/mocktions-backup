@@ -202,7 +202,6 @@ def delete_listing(request, listing_id):
 def drafts(request):
     notifications = get_notifications(request.user, reverse('drafts'))
     drafts = Listing.objects.filter(owner=request.user).filter(active=False)
-    
     return render(request, 'auctions/drafts.html', {
         'drafts': drafts,
         'notifications': notifications

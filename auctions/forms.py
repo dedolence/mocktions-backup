@@ -5,6 +5,7 @@ from .models import Listing, UserImage
 
 
 class NewListingForm(forms.ModelForm):
+    """For creating listing DRAFTS; i.e., no field is required."""
     class Meta:
         model = Listing
         fields = ['title', 'description', 'starting_bid', 'shipping', 'category', 'lifespan']
