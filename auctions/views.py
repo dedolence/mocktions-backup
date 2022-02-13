@@ -132,9 +132,14 @@ def create_listing(request, listing_id=None):
         form = NewListingForm(request.POST)
         new_listing = form.save()
         form_mode = 'preview'
-        images = request.POST.getlist('images', None)
-        if not images:
-            images = "Didn't receive any images bro"
+        # get a list of images IDs uploaded to form
+        image_ids = request.POST.getlist('images', None)
+        images = [UserImage.objects.get(pk=id) for id in image_ids]
+        # set the foriegnkey for each uploaded image to the new listing
+        for image in images:
+            image.listing = new_listing
+            image.save()
+        
     
     return render(request, 'auctions/createListing.html', {
         'images': images,

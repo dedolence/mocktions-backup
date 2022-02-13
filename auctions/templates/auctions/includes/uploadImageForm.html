@@ -10,7 +10,13 @@
 <div class="row mb-4">
     <div class="col-md-4"></div>
     <div class="col-md-8">
-        <div id="thumbnails" class="container d-flex flex-row flex-wrap p-0"></div>
+        <div id="thumbnails" class="container d-flex flex-row flex-wrap p-0">
+            {% if images %}
+                {% for image in images %}
+                    <p>{{image.listing.id}}</p>
+                {% endfor %}
+            {% endif %}
+        </div>
     </div>
 </div>
 
