@@ -11,9 +11,8 @@
     {% if user.is_authenticated %}
         <div class="container w-75 ml-0 p-0">
 
-            {% include 'auctions/includes/listing_single.html' with listing=listing expiration=listing_bundle.expiration_bundle watch_options=False owner_controls=False watching_currently=False disappear=False %}
-
-            {% include 'auctions/includes/listingForm.html' with listing_form=form preview_listing=True %}
+            
+            {% include 'auctions/includes/listingForm.html' with listing_form=form preview_listing=True image_paths=image_paths %}
         </div>
 
     {% else %}

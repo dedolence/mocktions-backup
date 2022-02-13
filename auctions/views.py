@@ -109,7 +109,14 @@ def comment(request):
 @login_required
 def create_listing(request, listing_id=None):
     notification = NotificationTemplate()
+    context = {
+        'notifications': get_notifications(
+            request.user, 
+            reverse('create_listing')
+            )
+    }
     images = None
+    template = None
     if request.method == "GET":
         # check to see if this user has reached the cap on listing drafts
         temps = Listing.objects.filter(owner=request.user).filter(active=False).count()
@@ -125,31 +132,28 @@ def create_listing(request, listing_id=None):
             notification.save()
             return HttpResponseRedirect(reverse('drafts'))
         else:
-            form = NewListingForm()
-            form_mode = 'create_new'
+            context['form'] = NewListingForm()
+            context['form_mode'] = LISTING_FORM_CREATE_NEW
+            context['template'] = 'auctions/createListing.html'
     else:
         # save the POST data as a new temporary listing
         form = NewListingForm(request.POST)
         new_listing = form.save()
-        form_mode = 'preview'
-        # get a list of images IDs uploaded to form
         image_ids = request.POST.getlist('images', None)
         images = [UserImage.objects.get(pk=id) for id in image_ids]
+        image_paths = []
         # set the foriegnkey for each uploaded image to the new listing
         for image in images:
             image.listing = new_listing
             image.save()
-        
+            image_paths.append(image.image.url)
+        context['form'] = form
+        context['image_paths'] = image_paths
+        context['listing'] = new_listing
+        context['template'] = 'auctions/previewListing.html'
+        context['form_mode'] = LISTING_FORM_PREVIEW
     
-    return render(request, 'auctions/createListing.html', {
-        'images': images,
-        'form': form,
-        'form_mode': form_mode,
-        'notifications': get_notifications(
-            request.user, 
-            reverse('create_listing')
-            )
-    })
+    return render(request, context['template'], context)
 
 
 

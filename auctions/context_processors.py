@@ -22,3 +22,11 @@ def ajax(request):
         } """
         dict['ajax'][func[0]] = { 'name': func[0], 'url': reverse(func[0])}
     return dict
+
+
+def globals(request):
+    return {
+        'LISTING_FORM_CREATE_NEW': LISTING_FORM_CREATE_NEW,
+        'LISTING_FORM_PREVIEW': LISTING_FORM_PREVIEW,
+        'LISTING_FORM_EDIT': LISTING_FORM_EDIT
+    }

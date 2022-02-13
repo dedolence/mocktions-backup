@@ -19,3 +19,9 @@ TYPE_INFO = 'info'
 TYPE_DANGER = 'danger'
 TYPE_WARNING = 'warning'
 TYPE_SUCCESS = 'success'
+
+
+# Form Modes
+LISTING_FORM_CREATE_NEW = "create"
+LISTING_FORM_PREVIEW = "preview"
+LISTING_FORM_EDIT = "edit"

@@ -66,7 +66,8 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.media',
-                'auctions.context_processors.ajax'
+                'auctions.context_processors.ajax',
+                'auctions.context_processors.globals'
             ],
         },
     },

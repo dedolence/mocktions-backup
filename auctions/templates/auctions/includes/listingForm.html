@@ -1,8 +1,4 @@
-{% comment %}
-    new_listing = True/False
-{% endcomment %}
-
-{% if form_mode == 'create_new' %}
+{% if form_mode == 'create' %}
     {% url 'create_listing' listing_id as action_url %}
 {% elif form_mode == 'preview' %}
     {% url 'submit_listing' listing_id as action_url %}
@@ -10,71 +6,95 @@
     {% url 'edit_listing' as action_url %}
 {% endif %}
 
+
 <div class="container">
     <div class="row">
         <div class="col-md-10">
+
+            {# Display form errors #}
             <div id="formErrors">
                 {% if form.non_field_errors %}
                     <div class="row mb-4"><p class="mark">{{ form.non_field_errors }}</p></div>
                 {% endif %}
             </div>
+
+            {# Display option to generate a random listing #}
             {% if new_listing %}
                 <div class="row mb-4">
                     <label for="randomInput" class="col-form-label col-sm-4 form-check-label">Generate a random listing</label>
                     <div class="col-md-8">
-                        <input type="checkbox" class="form-check-input align-bottom mt-2" name="random" id="randomInput" oninput="remove_requirements()">
+                        <input type="checkbox" class="form-check-input align-bottom mt-2" name="random" id="randomInput">
                     </div>
                 </div>
             {% endif %}
+
+
             <hr class="my-5"/>
             <p class="lead my-4">Please fill out all fields.</p>
+
+            {# Include the subform for adding images to this listing #}
             {% include 'auctions/includes/uploadImageForm.html' %}
+
+
             <form action="{{action_url}}" method="POST" id="listingForm" enctype="multipart/form-data">
-            {% csrf_token %}
-            <select class="d-none" name="images" id="selectImageInput" multiple></select>
-            {% for field in listing_form %}
-                <div class="row mb-4">
-                    <div class="col-sm-4">
-                        <label for="{{ field.id_for_label }}" class="col-form-label d-block">{{ field.label }}:</label>
-                    </div>
-                    <div class="col-sm-8">
-                        {{ field }} {{ field.help_text }}
-                        <div class="text-danger text-small">
-                            <ul class="ml-0">
-                                {% for error in field.errors  %}
-                                    <li class="text-danger small">{{ error }}</li>
-                                {% endfor %}
-                            </ul>
+                {% csrf_token %}
+
+                {% comment%}
+                    This select element won't be visible to the user, but will be populated by Javascript
+                    with the database IDs of any images that the user uploads for the listing. Those will
+                    be sent to the server and, if this listing is saved, linked via foreignkey to this new
+                    listing.
+                {% endcomment %}
+                <select class="d-none" name="images" id="selectImageInput" multiple>
+                    {% for image in images %}
+                        <option value="{{ image.id }}" selected></option>
+                    {% endfor %}
+                </select>
+
+                {# Display field forms according to the modelform #}
+                {% for field in listing_form %}
+                    <div class="row mb-4">
+                        <div class="col-sm-4">
+                            <label for="{{ field.id_for_label }}" class="col-form-label d-block">{{ field.label }}:</label>
+                        </div>
+                        <div class="col-sm-8">
+                            {{ field }} {{ field.help_text }}
+                            <div class="text-danger text-small">
+                                <ul class="ml-0">
+                                    {% for error in field.errors  %}
+                                        <li class="text-danger small">{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
                         </div>
                     </div>
+                {% endfor %}
+
+                {# Display controls for saving/canceling. #}
+                <div class="row mb-4">
+
+                    <div class="col-sm-4">
+                    </div>
+                    
+                    <div class="col-sm-8 d-flex flex-row">
+
+                        <a href="{% url 'index' %}" class="btn btn-danger">Cancel</a>
+                        
+                        <div class="flex-grow-1">{# Spacer #}</div>
+                        
+                        {% if form_mode == 'create' %}
+                            <input type="submit" class="btn btn-outline-primary" name="preview" value="Save draft and preview">
+                        {% elif form_mode == 'preview' %}
+                            <input type="submit" class="btn btn-outline-primary me-2" name="save" value="Save without posting">
+                            <input type="submit" class="btn btn-primary" name="post" value="Save and post">
+                        {% elif form_mode == 'edit_existing' %}
+                            <input type="submit" class="btn btn-primary" name="save" value="Save changes">
+                        {% endif %}
+                    </div>
+                
                 </div>
-            {% endfor %}
-            <div class="row mb-4">
-                <div class="col-sm-4">
-                </div>
-                <div class="col-sm-8 d-flex flex-row">
-                    <a href="{% url 'index' %}" class="btn btn-danger">Cancel</a>
-                    <div class="flex-grow-1"></div>
-                    <input type="submit" class="btn btn-outline-primary" name="preview" value="Save as draft and continue">
-                    {% if preview_listing %}
-                        <input type="submit" class="btn btn-primary" name="submit" value="Save and post">
-                    {% endif %}
-                </div>
-            </div>
+            </form>
         </div>
         <div class="col-md-2"></div>
     </div>
 </div>
-
-<script>
-function remove_requirements() {
-    
-    let form = document.getElementById("listingForm");
-    let formElements = form.elements;
-    for (let i = 0; i < formElements.length; i++) {
-        formElements[i].required = false;
-    }
-    form.submit()
-
-}
-</script>
