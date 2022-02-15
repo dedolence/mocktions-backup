@@ -137,6 +137,15 @@ async function ajax_upload_media(elementArray, url) {
         // }
         if (r.paths.length > 0) {
             thumbnailContainer.innerHTML += r.html;
+            // add image ids to a list that will be sent to server to be referenced by the listing
+            let imageIdList = document.getElementById('selectImageInput');
+            let i = 0, n = r.ids.length;
+            for (i, n; i < n; i++) {
+                let optionElement = document.createElement('option');
+                    optionElement.value = r.ids[i];
+                    optionElement.defaultSelected = true;
+                    imageIdList.append(optionElement);
+            }
         }
 
         // add new elements to list of targets
