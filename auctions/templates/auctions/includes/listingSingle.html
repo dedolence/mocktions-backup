@@ -1,13 +1,12 @@
-{# This should probably just be a generic Listing template; why bother having a separate one just for drafts? #}
 <div class="card">
     <div class="card-body">
         <h5 class="card-title">{{ listing.title|default:"(No title)" }}</h5>
         <h6 class="text-muted">Category: {{ listing.category|default:"(Uncategorized)" }}</h6>
         <div id="thumbnails" class="container d-flex flex-row flex-wrap p-0">
             {% for image in listing.all_images %}
-                <img src="{{ image.thumbnail.url }}" alt="A picture of the item listed">
+                <img src="{{ image.thumbnail.url }}" alt="A picture of the item listed" class="img-thumbnail me-3">
             {% empty %}
-                <p>No image</p>
+                <p>No images</p>
             {% endfor %}
         </div>
         <p class="card-text">{{ listing.description }}</p>

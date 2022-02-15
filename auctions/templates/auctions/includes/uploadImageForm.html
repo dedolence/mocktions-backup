@@ -11,9 +11,11 @@
     <div class="col-md-4"></div>
     <div class="col-md-8">
         <div id="thumbnails" class="container d-flex flex-row flex-wrap p-0">
-            {% if image_paths %}
-                {% for image_path in image_paths %}
-                    <img src="{{ image_path }}">
+            {% if images %}
+                {% for image in images %}
+                    <div class="me-3 mb-3 image-thumbnail border" style="background-image: url('{{ image.image.url }}')" id="img_thumbnail-{{ image.id }}" data-target="purge_media">
+                        <a href="#" class="stretched-link" onclick="showImageModal('{{ image.image.url }}')"></a>
+                    </div>
                 {% endfor %}
             {% endif %}
         </div>

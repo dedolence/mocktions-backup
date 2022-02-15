@@ -107,8 +107,8 @@ async function ajax_upload_media(elementArray, url) {
     const loadingModal = new bootstrap.Modal(loadingModalElement);
     loadingModal.show();
 
-    const request = make_fetch(formData, url);
-    request.then(r => {
+    make_fetch(formData, url)
+    .then(r => {
         if (r.error) {
             let errorDiv = generateListingFormError(r.error);
             let errorContainer = document.getElementById('formErrors');
@@ -116,26 +116,52 @@ async function ajax_upload_media(elementArray, url) {
             loadingModal.hide();
         }
         else {
-            // r is an array containing the paths to each full-size image
-            let i = 0
-            let n = r.paths.length;
-            if (n > 0) {
-                // create card elements and append them to the form
-                for (i, n; i < n; i++) {
-                    thumbnailContainer.append(buildImageCard(r.paths[i], r.ids[i]));
-                }
-            }
-            loadingModal.hide();
-            // hide() doesn't always work when users upload images. No idea why.
-            // So, set a timer (arbitrarily for one second) just to manually hide
-            // the modal if it's still being displayed. 
-            window.setTimeout(() => { loadingModal.hide(); }, 1000);
+            return r;
         }
-    });
+    })
+    .then(r => {
+        // r is an object containing:
+        // r.paths: paths to full-size images
+        // r.ids: database primary keys for images
+        // r.html: a single HTML string for displaying all the images
+        // do we have any images
+        if (r.paths.length > 0) {
+            thumbnailContainer.innerHTML += r.html;
+        }
+        loadingModal.hide();
+        // hide() doesn't always work when users upload images. No idea why.
+        // So, set a timer (arbitrarily for one second) just to manually hide
+        // the modal if it's still being displayed. 
+        window.setTimeout(() => { loadingModal.hide(); }, 1000);
+    })
 }
 
 
 function buildImageCard(image_path, image_id) {
+    /* Test HTML rendering */
+    const url = AJAX_URLS['ajax_build_image_thumbnail'];
+    const csrf_token = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const data = new FormData();
+          data.append('id', image_id);
+    fetch(url, {
+        method: 'POST',
+        headers: {'X-CSRFToken': csrf_token},
+        body: data
+    })
+    .then(r => r.json())
+    .then(j => {
+        const html_string = j.html;
+        const selectImageInput = document.getElementById('selectImageInput');
+        let option = document.createElement("option");
+            option.value = image_id;
+            option.defaultSelected = true;
+        selectImageInput.append(option);
+        const fragment = document.createDocumentFragment();
+            fragment.innerHTML = html_string;
+        return html_string;
+    })
+    /* end test */
+    /*
     const selectImageInput = document.getElementById('selectImageInput');
     let div = document.createElement('div');
         div.className = "me-3 mb-3 image-thumbnail border"
@@ -160,6 +186,16 @@ function buildImageCard(image_path, image_id) {
     div.append(a);
     selectImageInput.append(option);
     return div;
+    */
+}
+
+
+function showImageModal(image_path) {
+    let modalElement = document.getElementById('editImageModal');
+    let modal = new bootstrap.Modal(modalElement);
+    let img = document.getElementById('imageForEdit');
+        img.src = image_path;
+    modal.show();
 }
 
 

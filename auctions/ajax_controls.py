@@ -2,6 +2,7 @@ import random
 import requests
 from django.core import serializers
 from django.http.response import JsonResponse
+from django.template.loader import render_to_string
 from django.urls import path
 from .models import *
 from .strings import *
@@ -9,8 +10,17 @@ from .globals import *
 from .utility import *
 
 
-def ajax_test(request):
-    return JsonResponse({'message': 'It worked!'})
+def ajax_build_image_thumbnail(request):
+    image_ids = request.POST.get('ids', None)
+    html_string = ''
+    response = {}
+    for id in image_ids:
+        image_instance = UserImage.objects.get(pk=id)
+        html_string += render_to_string('auctions/includes/imageThumbnail.html', {
+            'image': image_instance
+        })
+    response['html'] = html_string
+    return JsonResponse(response)
 
 
 def ajax_delete_comment(request):
@@ -88,9 +98,18 @@ def ajax_upload_media(request):
             images = get_image(request, url, reverse('create_listing'))
         
         if images:
+            image_ids = [i.id for i in images]
+            html_string = ''
+            # generate HTML for these images to be displayed
+            for id in image_ids:
+                image_instance = UserImage.objects.get(pk=id)
+                html_string += render_to_string('auctions/includes/imageThumbnail.html', {
+                    'image': image_instance
+                })
             response['paths'] = [i.image.url for i in images]
-            response['ids'] = [i.id for i in images]
-    
+            response['ids'] = image_ids
+            response['html'] = html_string
+   
     return JsonResponse(response)
 
 

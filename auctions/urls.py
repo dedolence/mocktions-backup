@@ -5,7 +5,7 @@ from . import ajax_controls, views
 
 
 ajax_urls_include = [
-    path('test/', ajax_controls.ajax_test, name="ajax_test"),
+    path('build/image_thumbnail/', ajax_controls.ajax_build_image_thumbnail, name="ajax_build_image_thumbnail"),
     path('comment/delete/', ajax_controls.ajax_delete_comment, name='ajax_delete_comment'),
     path('notification/dismiss', ajax_controls.ajax_dismiss_notification, name='ajax_dismiss_notification'),
     path('comment/generate/', ajax_controls.ajax_generate_comment, name='ajax_generate_comment'),

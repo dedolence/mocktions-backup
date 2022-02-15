@@ -141,14 +141,12 @@ def create_listing(request, listing_id=None):
         new_listing = form.save()
         image_ids = request.POST.getlist('images', None)
         images = [UserImage.objects.get(pk=id) for id in image_ids]
-        image_paths = []
         # set the foriegnkey for each uploaded image to the new listing
         for image in images:
             image.listing = new_listing
             image.save()
-            image_paths.append(image.image.url)
         context['form'] = form
-        context['image_paths'] = image_paths
+        context['images'] = images
         context['listing'] = new_listing
         context['template'] = 'auctions/previewListing.html'
         context['form_mode'] = LISTING_FORM_PREVIEW

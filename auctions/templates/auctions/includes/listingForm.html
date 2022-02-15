@@ -78,7 +78,10 @@
                     
                     <div class="col-sm-8 d-flex flex-row">
 
-                        <a href="{% url 'index' %}" class="btn btn-danger">Cancel</a>
+                        <a href="{% url 'index' %}" class="btn btn-outline-danger">Cancel</a>
+                        {% if form_mode == 'preview' or form_mode == 'edit_existing' %}
+                            <a href="{% url 'delete_listing' listing.id %}" class="btn btn-danger ms-2">Delete listing</a>
+                        {% endif %}
                         
                         <div class="flex-grow-1">{# Spacer #}</div>
                         
