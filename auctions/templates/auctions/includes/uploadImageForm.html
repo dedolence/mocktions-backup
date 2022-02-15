@@ -13,9 +13,7 @@
         <div id="thumbnails" class="container d-flex flex-row flex-wrap p-0">
             {% if images %}
                 {% for image in images %}
-                    <div class="me-3 mb-3 image-thumbnail border" style="background-image: url('{{ image.image.url }}')" id="img_thumbnail-{{ image.id }}" data-target="purge_media">
-                        <a href="#" class="stretched-link" onclick="showImageModal('{{ image.image.url }}')"></a>
-                    </div>
+                    {% include 'auctions/includes/imageThumbnail.html' with image=image %}
                 {% endfor %}
             {% endif %}
         </div>
@@ -62,7 +60,7 @@
                 <div><img id="imageForEdit" alt="A picture of the listing being sold" class="img-fluid"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-bs-dismiss="modal" data-click-action="{{ ajax.purge_media.name }}"><i class="bi bi-exclamation-octagon"></i> Delete Image</button>
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal" data-click-action="{{ ajax.ajax_purge_media.name }}"><i class="bi bi-exclamation-octagon"></i> Delete Image</button>
                 <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
             </div>
         </div>

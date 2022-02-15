@@ -7,16 +7,17 @@ AJAX_URLS
 // elements can be ignored.
 const TARGETS = [];
 const GLOBALS = {};
-$(function() {
-    // Gather all elements that are required for any event handlers.
-    let targetQuery = document.querySelectorAll('*[data-target]');
-    targetQuery.forEach(function(e) {
-        TARGETS.push(e);
-    })
-});
 
 
-// Set up event handlers
+// On page load (or fire if page is loaded by the time it gets here)
+if (document.readyState === 'loading') {
+    // NB this does block final load of images/stylesheets; keep it light
+    document.addEventListener("DOMContentLoaded", populateTargets);
+} else {
+    populateTargets();
+}
+
+
 document.addEventListener("click", e => {
     let target = e.target;
     let clickAction = target.dataset.clickAction;
@@ -33,10 +34,19 @@ document.addEventListener("click", e => {
             }
         })
         // automatically calls a function based only on its name
-        var url = AJAX_URLS[clickAction];
+        var url = AJAX_URLS[clickAction] ? AJAX_URLS[clickAction] : null;
         window[clickAction](elementArray, url);
     }
 });
+
+
+function populateTargets() {
+    // Clear the targets object then repopulate it.
+    Object.keys(TARGETS).forEach(key => delete TARGETS[key]);
+    document.querySelectorAll('*[data-target]').forEach(function(e) {
+        TARGETS.push(e);
+    });
+}
 
 
 async function make_fetch(formData, url) {
@@ -120,14 +130,18 @@ async function ajax_upload_media(elementArray, url) {
         }
     })
     .then(r => {
-        // r is an object containing:
-        // r.paths: paths to full-size images
-        // r.ids: database primary keys for images
-        // r.html: a single HTML string for displaying all the images
-        // do we have any images
+        // r = {
+        //  paths: [source paths for images], 
+        //  ids: [primary keys], 
+        //  html: "html string for appending to DOM"
+        // }
         if (r.paths.length > 0) {
             thumbnailContainer.innerHTML += r.html;
         }
+
+        // add new elements to list of targets
+        populateTargets();
+        
         loadingModal.hide();
         // hide() doesn't always work when users upload images. No idea why.
         // So, set a timer (arbitrarily for one second) just to manually hide
@@ -137,64 +151,19 @@ async function ajax_upload_media(elementArray, url) {
 }
 
 
-function buildImageCard(image_path, image_id) {
-    /* Test HTML rendering */
-    const url = AJAX_URLS['ajax_build_image_thumbnail'];
-    const csrf_token = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    const data = new FormData();
-          data.append('id', image_id);
-    fetch(url, {
-        method: 'POST',
-        headers: {'X-CSRFToken': csrf_token},
-        body: data
-    })
-    .then(r => r.json())
-    .then(j => {
-        const html_string = j.html;
-        const selectImageInput = document.getElementById('selectImageInput');
-        let option = document.createElement("option");
-            option.value = image_id;
-            option.defaultSelected = true;
-        selectImageInput.append(option);
-        const fragment = document.createDocumentFragment();
-            fragment.innerHTML = html_string;
-        return html_string;
-    })
-    /* end test */
-    /*
-    const selectImageInput = document.getElementById('selectImageInput');
-    let div = document.createElement('div');
-        div.className = "me-3 mb-3 image-thumbnail border"
-        div.style.backgroundImage = `url(${image_path})`;
-        div.id = "img_thumbnail-" + image_id;
-        // target must = the function to be called
-        div.dataset.target = 'purge_media';
-        TARGETS.push(div);
-    let a = document.createElement('a');
-        a.href = "#";
-        a.classList.add('stretched-link')
-        a.addEventListener('click', e => {
-            let modalElement = document.getElementById('editImageModal');
-            let modal = new bootstrap.Modal(modalElement);
-            let img = document.getElementById('imageForEdit');
-                img.src = image_path;
-            modal.show();
-        })
-    let option = document.createElement("option");
-        option.value = image_id;
-        option.defaultSelected = true;
-    div.append(a);
-    selectImageInput.append(option);
-    return div;
-    */
-}
-
-
-function showImageModal(image_path) {
-    let modalElement = document.getElementById('editImageModal');
+function showImageModal(elementArray, url=null) {
+    /* let modalElement = document.getElementById('editImageModal');
     let modal = new bootstrap.Modal(modalElement);
     let img = document.getElementById('imageForEdit');
         img.src = image_path;
+    modal.show(); */
+
+    // modal element requires an ID for bootstrap so might as well use it
+    let modalElement = document.getElementById('editImageModal');
+    let modal = new bootstrap.Modal(modalElement);
+    let imagePath = elementArray[0].dataset.imagePath;
+    let imagePlaceholder = document.getElementById('imageForEdit');
+        imagePlaceholder.src = imagePath;
     modal.show();
 }
 
@@ -228,91 +197,6 @@ function generateListingFormError(error) {
     return alertElement;
 }
 
-/* 
-function ajax(full_url, disappear = false) {
-    // params[0] will be a leading '/'; params[1] will be 'ajax'
-    let params = full_url.split('/');
-    let action = params[2];
-    let id = params[3];
-    let csrf_token = document.querySelector('[name=csrfmiddlewaretoken]').value
-    fetch(full_url, {
-        method: 'POST',
-        headers: {'X-CSRFToken': csrf_token}
-        })
-        .then(res => res.json())
-        .then(r => {
-            let comment_input = document.getElementById("commentInput");
-            switch (action) {
-
-                case 'add_image':
-                    console.log("Adding image");
-                    break;
-
-                case 'delete_comment':
-                    let card = document.getElementById("comment-" + id);
-                    let alert = document.createElement("div");
-                        alert.classList.add("alert");
-                        alert.classList.add("alert-warning");
-                        alert.ariaRoleDescription = "alert";
-                        alert.innerHTML = r.message;
-                    let parent = card.parentElement;
-                    parent.replaceChild(alert, card);
-                    setTimeout(function() {
-                        $(alert).fadeOut();
-                    }, 1000);
-                    break;
-
-                case 'dismiss':
-                    let el = document.getElementById("notification-" + id);
-                    $(el).fadeOut();
-                    break;
-
-                case 'edit_comment':
-                    editComment(id);
-                    break;
-                    
-                case 'generate_comment':
-                    comment_input.innerHTML = r.message;
-                    comment_input.style.height = 'auto';
-                    comment_input.style.height = comment_input.scrollHeight + 10 + "px";
-                    break;
-
-                case 'generate_random_user':
-                    dob = r.dob.date.split('-');
-                    dob_year = dob[0];
-                    dob_month = dob[1];
-                    dob_day = dob[2].split('T')[0];
-                    dob_full = `${dob_month}/${dob_day}/${dob_year}`;
-                    street_full = `${r.location.street.number} ${r.location.street.name}`;
-                    document.getElementById("id_username").value = r.login.username;
-                    document.getElementById("id_email").value = r.email;
-                    document.getElementById("id_password").value = r.login.password;
-                    document.getElementById("id_confirm_password").value = r.login.password;
-                    document.getElementById("id_first_name").value = r.name.first;
-                    document.getElementById("id_last_name").value = r.name.last;
-                    document.getElementById("id_street").value = street_full;
-                    document.getElementById("id_city").value = r.location.city;
-                    document.getElementById("id_state").value = r.location.state;
-                    document.getElementById("id_postcode").value = r.location.postcode;
-                    document.getElementById("id_country").value = r.location.country;
-                    document.getElementById("id_phone").value = r.phone;
-                    break;
-                
-                case 'reply_comment':
-                    reply_comment(r);
-                    break;
-
-                case 'watch_listing':
-                    watchListing(r, id, disappear);
-                    break;
-
-                default:
-                    break;
-            }
-            return;
-        });
-}
- */
 
 function editComment(id) {
     let anchor = document.getElementById("commentInputAnchor");

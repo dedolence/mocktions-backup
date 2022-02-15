@@ -1,3 +1,3 @@
-<div class="me-3 mb-3 image-thumbnail border" style="background-image: url('{{ image.image.url }}')" id="img_thumbnail-{{ image.id }}" data-target="purge_media">
-    <a href="#" class="stretched-link" onclick="showImageModal('{{ image.image.url }}')"></a>
+<div class="me-3 mb-3 image-thumbnail border" style="background-image: url('{{ image.image.url }}')" id="img_thumbnail-{{ image.id }}" data-target="ajax_purge_media">
+    <a href="#" class="stretched-link" data-click-action="showImageModal" data-target="showImageModal" data-image-path='{{ image.image.url }}'></a>
 </div>
