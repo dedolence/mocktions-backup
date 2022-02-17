@@ -160,20 +160,40 @@ async function ajax_upload_media(elementArray, url) {
 }
 
 
-function showImageModal(elementArray, url=null) {
-    /* let modalElement = document.getElementById('editImageModal');
-    let modal = new bootstrap.Modal(modalElement);
-    let img = document.getElementById('imageForEdit');
-        img.src = image_path;
-    modal.show(); */
-
-    // modal element requires an ID for bootstrap so might as well use it
+function showEditImageModal(elementArray, url=null) {
     let modalElement = document.getElementById('editImageModal');
-    let modal = new bootstrap.Modal(modalElement);
     let imagePath = elementArray[0].dataset.imagePath;
-    let imagePlaceholder = document.getElementById('imageForEdit');
-        imagePlaceholder.src = imagePath;
+    showImageModal(modalElement, imagePath)
+}
+
+
+function showImageViewModal(elementArray, url=null) {
+    let modalElement = document.getElementById('viewImageModal');
+    let imagePath = elementArray[0].dataset.imagePath;
+    showImageModal(modalElement, imagePath)
+}
+
+
+function showImageModal(modalElement, imagePath) {
+    let modal = new bootstrap.Modal(modalElement);
+    const imagePlaceholder = findImagePlaceholder(modalElement);
     modal.show();
+    console.log(imagePlaceholder);
+    function findImagePlaceholder(element) {
+        console.log("checking element: " + element);
+        if (element.tagName === 'IMG' && element.id === 'modalImage') {
+            return element;
+        } else {
+            let i = 0; n = element.children.length;
+            if (n > 0) {
+                for (i, n; i < n; i++) {
+                    return findImagePlaceholder(element.children[i]);
+                }
+            } else {
+                return;
+            }
+        }
+    }
 }
 
 
@@ -187,6 +207,14 @@ function ajax_purge_media(elementArray, url) {
         // remove this from targets as it's no longer target-able
         TARGETS.splice(TARGETS.indexOf(img_target), 1);
         img_target.parentElement.removeChild(img_target);
+        let imageIdList = document.getElementById('selectImageInput');
+        let i = 0; n = imageIdList.children.length;
+        for (i, n; i < n; i++) {
+            let child = imageIdList.children[i];
+            if (child.value === img_id) {
+                imageIdList.removeChild(child);
+            }
+        }
     })
 }
 

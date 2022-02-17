@@ -115,45 +115,24 @@ def create_listing(request, listing_id=None):
             reverse('create_listing')
             )
     }
-    images = None
-    template = None
-    if request.method == "GET":
-        # check to see if this user has reached the cap on listing drafts
-        temps = Listing.objects.filter(owner=request.user).filter(active=False).count()
-        if temps >= LISTING_DRAFT_CAP:
-            notification.build(
-                request.user,
-                TYPE_WARNING,
-                ICON_WARNING,
-                MESSAGE_LISTING_DRAFT_CAP_EXCEEDED,
-                True,
-                reverse('drafts')
-            )
-            notification.save()
-            return HttpResponseRedirect(reverse('drafts'))
-        else:
-            context['form'] = NewListingForm()
-            context['form_mode'] = LISTING_FORM_CREATE_NEW
-            context['template'] = 'auctions/createListing.html'
+    # check to see if this user has reached the cap on listing drafts
+    temps = Listing.objects.filter(owner=request.user).filter(active=False).count()
+    if temps >= LISTING_DRAFT_CAP:
+        notification.build(
+            request.user,
+            TYPE_WARNING,
+            ICON_WARNING,
+            MESSAGE_LISTING_DRAFT_CAP_EXCEEDED,
+            True,
+            reverse('drafts')
+        )
+        notification.save()
+        return HttpResponseRedirect(reverse('drafts'))
     else:
-        # save the POST data as a new temporary listing
-        form = NewListingForm(request.POST)
-        new_listing = form.save()
-        image_ids = request.POST.getlist('images', None)
-        images = [UserImage.objects.get(pk=id) for id in image_ids]
-        # set the foriegnkey for each uploaded image to the new listing
-        for image in images:
-            image.listing = new_listing
-            image.save()
-        context['form'] = form
-        context['images'] = images
-        context['listing'] = new_listing
-        context['template'] = 'auctions/previewListing.html'
-        context['form_mode'] = LISTING_FORM_PREVIEW
-    
+        context['form'] = NewListingForm()
+        context['form_mode'] = LISTING_FORM_CREATE_NEW
+        context['template'] = 'auctions/createListing.html'
     return render(request, context['template'], context)
-
-
 
 
 @login_required
@@ -388,25 +367,34 @@ def place_bid(request):
 
 
 @login_required
-def preview_listing(request, id):
-    """ID refers to the temporary listing. Validate the form
-    information and reroute either to this view again, or to
-    submit_listing.
-
-    This should also be the route taken for editing an existing
-    listing, I suppose.
+def preview_listing(request):
+    """ Either save changes made to the draft, or
+    save to a new database object and make the listing active.
     """
-    temp_listing = Listing.objects.get(pk=id)
-    if request.user != temp_listing.owner:
-        notification = NotificationTemplate()
-        notification.build(request.user,
-        TYPE_INFO,
-        ICON_WARNING,
-        MESSAGE_LISTING_CREATION_INVALID_USER,
-        True)
-        return HttpResponseRedirect(reverse('index'))
-    else:
-        form = NewListingForm(instance=temp_listing)
+    notification = NotificationTemplate()
+    context = {
+        'notifications': get_notifications(
+            request.user, 
+            reverse('create_listing')
+            )
+    }
+    if 'preview' in request.POST:
+        # save the POST data as a new temporary listing
+        form = NewListingForm(request.POST)
+        new_listing = form.save()
+        image_ids = request.POST.getlist('images', None)
+        images = [UserImage.objects.get(pk=id) for id in image_ids]
+        # set the foriegnkey for each uploaded image to the new listing
+        for image in images:
+            image.listing = new_listing
+            image.save()
+        context['form'] = form
+        context['images'] = images
+        context['listing'] = new_listing
+        context['form_mode'] = LISTING_FORM_PREVIEW
+        return render(request, 'auctions/previewListing.html', context)
+    elif 'post' in request.POST:
+        pass
 
 
 
@@ -665,14 +653,6 @@ def settings(request):
 
 def shopping_cart(request):
     return HttpResponseRedirect(reverse('index'))
-
-
-def submit_listing(id):
-    """ID refers to the temporary ID used for drafting a new listing.
-    Validate the listing and copy to a new Listing model object, then
-    delete the temporary listing.
-    """
-    pass
 
 
 def view_all_users(request):

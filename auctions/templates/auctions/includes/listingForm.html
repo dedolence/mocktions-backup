@@ -1,7 +1,5 @@
-{% if form_mode == 'create' %}
-    {% url 'create_listing' listing_id as action_url %}
-{% elif form_mode == 'preview' %}
-    {% url 'submit_listing' listing_id as action_url %}
+{% if form_mode == 'preview' %}
+    {% url 'preview_listing' as action_url %}
 {% elif form_mode == 'edit_existing' %}
     {% url 'edit_listing' as action_url %}
 {% endif %}
@@ -72,29 +70,19 @@
 
                 {# Display controls for saving/canceling. #}
                 <div class="row mb-4">
-
-                    <div class="col-sm-4">
+                    <div class="col col-12">
+                        <div class="d-flex">
+                            <div><a href="{% url 'index' %}" class="btn btn-outline-danger">Cancel</a></div>
+                            {% if form_mode == 'preview' %}
+                                <div><a href="{% url 'delete_listing' listing.id %}" class="btn btn-danger ms-3"><i class="bi bi-trash me-1"></i> Delete listing</a></div>
+                            {% endif %}
+                            <div class="flex-grow-1"></div>
+                            <div><button type="submit" class="btn btn-outline-primary" name="preview"><i class="bi bi-save"></i> Save draft</button></div>
+                            {% if form_mode == 'preview' %}
+                                <div><button type="submit" class="btn btn-primary ms-2" name="post"><i class="bi bi-save-fill ms-3"></i> Save and post</button></div>
+                            {% endif %}
+                        </div>
                     </div>
-                    
-                    <div class="col-sm-8 d-flex flex-row">
-
-                        <a href="{% url 'index' %}" class="btn btn-outline-danger">Cancel</a>
-                        {% if form_mode == 'preview' or form_mode == 'edit_existing' %}
-                            <a href="{% url 'delete_listing' listing.id %}" class="btn btn-danger ms-2">Delete listing</a>
-                        {% endif %}
-                        
-                        <div class="flex-grow-1">{# Spacer #}</div>
-                        
-                        {% if form_mode == 'create' %}
-                            <input type="submit" class="btn btn-outline-primary" name="preview" value="Save draft and preview">
-                        {% elif form_mode == 'preview' %}
-                            <input type="submit" class="btn btn-outline-primary me-2" name="save" value="Save without posting">
-                            <input type="submit" class="btn btn-primary" name="post" value="Save and post">
-                        {% elif form_mode == 'edit_existing' %}
-                            <input type="submit" class="btn btn-primary" name="save" value="Save changes">
-                        {% endif %}
-                    </div>
-                
                 </div>
             </form>
         </div>
