@@ -39,6 +39,7 @@ urlpatterns = [
     path("register", views.register, name="register"),
     path("search", views.search, name="search"),
     path("settings", views.settings, name="settings"),
+    path("submit/", views.submit_listing, name="submit_listing"),
     path("watchlist", views.watchlist, name="watchlist")
     # for testing 
     # path("datetime/", views.datetime, name="datetime"),

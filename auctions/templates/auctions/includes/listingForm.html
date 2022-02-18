@@ -1,10 +1,3 @@
-{% if form_mode == 'preview' %}
-    {% url 'preview_listing' as action_url %}
-{% elif form_mode == 'edit_existing' %}
-    {% url 'edit_listing' as action_url %}
-{% endif %}
-
-
 <div class="container">
     <div class="row">
         <div class="col-md-10">
@@ -34,7 +27,7 @@
             {% include 'auctions/includes/uploadImageForm.html' %}
 
 
-            <form action="{{action_url}}" method="POST" id="listingForm" enctype="multipart/form-data">
+            <form method="POST" id="listingForm" enctype="multipart/form-data">
                 {% csrf_token %}
 
                 {% comment%}
@@ -73,14 +66,30 @@
                     <div class="col col-12">
                         <div class="d-flex">
                             <div><a href="{% url 'index' %}" class="btn btn-outline-danger">Cancel</a></div>
+
                             {% if form_mode == 'preview' %}
-                                <div><a href="{% url 'delete_listing' listing.id %}" class="btn btn-danger ms-3"><i class="bi bi-trash me-1"></i> Delete listing</a></div>
+                                <div>
+                                    <a href="{% url 'delete_listing' listing.id %}" class="btn btn-danger ms-3">
+                                        <i class="bi bi-trash me-1"></i> Delete listing
+                                    </a>
+                                </div>
                             {% endif %}
+
                             <div class="flex-grow-1"></div>
-                            <div><button type="submit" class="btn btn-outline-primary" name="preview"><i class="bi bi-save"></i> Save draft</button></div>
+                            <div>
+                                <button type="submit" class="btn btn-outline-primary" formaction="{% url 'preview_listing' %}">
+                                    <i class="bi bi-save"></i> Save draft
+                                </button>
+                            </div>
+                            
                             {% if form_mode == 'preview' %}
-                                <div><button type="submit" class="btn btn-primary ms-2" name="post"><i class="bi bi-save-fill ms-3"></i> Save and post</button></div>
+                                <div>
+                                    <button type="submit" class="btn btn-primary ms-2" formaction="{% url 'submit_listing' %}">
+                                        <i class="bi bi-save-fill ms-3"></i> Save and post
+                                    </button>
+                                </div>
                             {% endif %}
+
                         </div>
                     </div>
                 </div>

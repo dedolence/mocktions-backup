@@ -1,11 +1,12 @@
 # Not going to use this after all, as I'd prefer writing the form manually to have better control over styles with Bootstrap
 
-from tkinter import Widget
 from django import forms
-from .models import Listing, UserImage
+from .models import Listing, UserImage, Category
 
 
-class NewListingForm(forms.ModelForm):
+category_choices = [(c.id, c.content) for c in Category.objects.all()]
+
+class NewListingCreateForm(forms.ModelForm):
     """For creating listing DRAFTS; i.e., no field is required."""
     class Meta:
         model = Listing
@@ -19,6 +20,18 @@ class NewListingForm(forms.ModelForm):
             'lifespan': forms.NumberInput(attrs={'class': 'form-control'})
         }
 
+
+class NewListingSubmitForm(forms.Form):
+    """For submitting listing drafts and creating active listings; i.e.,
+    all fields will be required.
+    """
+    title = forms.CharField(max_length=64, required=True)
+    description = forms.CharField(max_length=500, required=True)
+    starting_bid = forms.DecimalField(max_digits=8, decimal_places=2, required=True)
+    shipping = forms.DecimalField(max_digits=6, decimal_places=2, required=True)
+    category = forms.ChoiceField(choices=category_choices, required=True)
+    lifespan = forms.IntegerField(max_value=30, required=True)
+    
 
 class NewImageForm(forms.ModelForm):
     image_url = forms.URLField(

@@ -151,7 +151,7 @@ class Listing(models.Model):
     lifespan = models.IntegerField(
         default=LISTING_DRAFT_EXPIRATION_DAYS, 
         null=True, blank=True, 
-        help_text="days until listing expires."
+        help_text="days until listing expires, to a maximum of 30."
         )
     active = models.BooleanField(
         default=False, 

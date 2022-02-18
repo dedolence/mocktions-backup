@@ -17,7 +17,7 @@ from django.views.decorators.csrf import \
 
 from . import namelist, wordlist
 from .ajax_controls import *
-from .forms import ContactForm, NewImageForm, NewListingForm, RegistrationForm, ShippingInformation
+from .forms import ContactForm, NewImageForm, NewListingCreateForm, NewListingSubmitForm, RegistrationForm, ShippingInformation
 from .globals import *
 from .models import Bid, Category, Comment, UserImage, Listing, User
 from .notifications import *
@@ -109,12 +109,6 @@ def comment(request):
 @login_required
 def create_listing(request, listing_id=None):
     notification = NotificationTemplate()
-    context = {
-        'notifications': get_notifications(
-            request.user, 
-            reverse('create_listing')
-            )
-    }
     # check to see if this user has reached the cap on listing drafts
     temps = Listing.objects.filter(owner=request.user).filter(active=False).count()
     if temps >= LISTING_DRAFT_CAP:
@@ -129,10 +123,16 @@ def create_listing(request, listing_id=None):
         notification.save()
         return HttpResponseRedirect(reverse('drafts'))
     else:
-        context['form'] = NewListingForm()
-        context['form_mode'] = LISTING_FORM_CREATE_NEW
-        context['template'] = 'auctions/createListing.html'
-    return render(request, context['template'], context)
+        context = {
+            'notifications': get_notifications(
+                request.user, 
+                reverse('create_listing')
+                ),
+            'form': NewListingCreateForm(),
+            'form_mode': LISTING_FORM_CREATE_NEW,
+            'template': 'auctions/createListing.html'
+        }
+        return render(request, context['template'], context)
 
 
 @login_required
@@ -215,7 +215,7 @@ def edit_listing(request, listing_id):
                     )
             
             else:
-                edit_form = NewListingForm(instance=raw_listing)
+                edit_form = NewListingCreateForm(instance=raw_listing)
                 listing_bundle = get_listing(request, None, raw_listing)
                 return render(request, 'auctions/editListing.html', {
                     'listing_bundle': listing_bundle,
@@ -223,7 +223,7 @@ def edit_listing(request, listing_id):
                 })
         
         else:
-            edited_form = NewListingForm(request.POST, instance=raw_listing)
+            edited_form = NewListingCreateForm(request.POST, instance=raw_listing)
             if not edited_form.is_valid():
                 return render(request, "auctions/editListing.html", {
                     'listing_bundle': listing_bundle,
@@ -372,29 +372,26 @@ def preview_listing(request):
     save to a new database object and make the listing active.
     """
     notification = NotificationTemplate()
+    # save the POST data as a new temporary listing
+    form = NewListingCreateForm(request.POST)
+    new_listing = form.save()
+    image_ids = request.POST.getlist('images', None)
+    images = [UserImage.objects.get(pk=id) for id in image_ids]
+    # set the foriegnkey for each uploaded image to the new listing
+    for image in images:
+        image.listing = new_listing
+        image.save()
     context = {
         'notifications': get_notifications(
             request.user, 
             reverse('create_listing')
-            )
+            ),
+        'form': form,
+        'images': images,
+        'listing': new_listing,
+        'form_mode': LISTING_FORM_PREVIEW
     }
-    if 'preview' in request.POST:
-        # save the POST data as a new temporary listing
-        form = NewListingForm(request.POST)
-        new_listing = form.save()
-        image_ids = request.POST.getlist('images', None)
-        images = [UserImage.objects.get(pk=id) for id in image_ids]
-        # set the foriegnkey for each uploaded image to the new listing
-        for image in images:
-            image.listing = new_listing
-            image.save()
-        context['form'] = form
-        context['images'] = images
-        context['listing'] = new_listing
-        context['form_mode'] = LISTING_FORM_PREVIEW
-        return render(request, 'auctions/previewListing.html', context)
-    elif 'post' in request.POST:
-        pass
+    return render(request, 'auctions/previewListing.html', context)
 
 
 
@@ -650,9 +647,25 @@ def settings(request):
             })
 
 
-
 def shopping_cart(request):
     return HttpResponseRedirect(reverse('index'))
+
+
+@login_required
+def submit_listing(request):
+    notification = NotificationTemplate()
+    form_data = NewListingSubmitForm(request.POST)
+    image_ids = request.POST.getlist('images', None)
+    if form_data.is_valid() and image_ids is not None:
+        return render(request, 'auctions/tests/blankTest.html', {
+            'message': "Form was valid"
+        })
+    else:
+        return render(request, 'auctions/tests/blankTest.html', {
+            'message': "form wasn't valid",
+            'form': form_data
+        })
+
 
 
 def view_all_users(request):
