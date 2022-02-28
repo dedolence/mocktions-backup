@@ -11,7 +11,7 @@ The listing creation loop:
 - returns the form and images to a template for any final changes
 
 3) View: submit_listing
-TODO: figure out how to access the temporary listing
+(done) TODO: figure out how to access the temporary listing
     - set some attribute in the template. to prevent someone forging a different listing ID,
     make sure to check that the listing's owner matches the session user.
 TODO: create a form* and bind it with POST data and setting the instance to the temporary listing
