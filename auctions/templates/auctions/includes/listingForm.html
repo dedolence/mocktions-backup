@@ -29,6 +29,7 @@
 
             <form method="POST" id="listingForm" enctype="multipart/form-data">
                 {% csrf_token %}
+                <input type="hidden" name="listing_id" value="{{ listing.id }}">
 
                 {% comment%}
                     This select element won't be visible to the user, but will be populated by Javascript

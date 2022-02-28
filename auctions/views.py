@@ -10,7 +10,7 @@ from django.core import files
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
 from django.http.response import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.csrf import \
     csrf_exempt
@@ -23,7 +23,6 @@ from .models import Bid, Category, Comment, UserImage, Listing, User
 from .notifications import *
 from .strings import *
 from .utility import *
-from auctions import notifications
 
 # for testing
 # from .testing import *
@@ -110,7 +109,7 @@ def comment(request):
 def create_listing(request, listing_id=None):
     notification = NotificationTemplate()
     # check to see if this user has reached the cap on listing drafts
-    temps = Listing.objects.filter(owner=request.user).filter(active=False).count()
+    temps = Listing.objects.filter(owner=request.user, active=False).count()
     if temps >= LISTING_DRAFT_CAP:
         notification.build(
             request.user,
@@ -654,17 +653,48 @@ def shopping_cart(request):
 @login_required
 def submit_listing(request):
     notification = NotificationTemplate()
-    form_data = NewListingSubmitForm(request.POST)
+    context = {}
+    listing_id = request.POST.get('listing_id', None)
+    if listing_id is None:
+        notification.build(
+            request.user,
+            TYPE_WARNING,
+            ICON_GENERIC,
+            MESSAGE_GENERIC_ERROR,
+            True,
+            reverse('index')
+        )
+        return HttpResponseRedirect(reverse('index'))
+    
+    listing = get_object_or_404(Listing, pk=listing_id)
+    form = NewListingSubmitForm(request.POST, instance=listing)
+
     image_ids = request.POST.getlist('images', None)
-    if form_data.is_valid() and image_ids is not None:
-        return render(request, 'auctions/tests/blankTest.html', {
-            'message': "Form was valid"
-        })
-    else:
-        return render(request, 'auctions/tests/blankTest.html', {
-            'message': "form wasn't valid",
-            'form': form_data
-        })
+    if len(image_ids) < MIN_UPLOADS_PER_LISTING:
+        notification.build(
+            request.user,
+            TYPE_WARNING,
+            ICON_WARNING,
+            MESSAGE_LISTING_CREATION_IMAGES_REQUIRED,
+            True,
+            reverse('preview_listing')
+        )
+        
+
+    images = [UserImage.objects.get(pk=id) for id in image_ids]
+    if not form.is_valid():
+        context = {
+            'notifications': get_notifications(
+                request.user, 
+                reverse('create_listing')
+                ),
+            'form': form,
+            'images': images,
+            'listing': listing,
+            'form_mode': LISTING_FORM_PREVIEW
+        }
+        return render(request, context['template'], context)
+
 
 
 

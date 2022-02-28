@@ -1,0 +1,20 @@
+The listing creation loop:
+
+1) View: create_listing
+- produces a blank form with no field requirements and returns it with a template.
+
+2) View: preview_listing
+- creates an instance of the form using POST data.
+- saves this instance as a new row in DB (its "active" field is automatically false, indicating it is a temporary listing)
+- collects a list of database IDs corresponding to any images uploaded via a hidden select/option field in the form.
+- gets instances of all these images and sets their listing foreignkey field to match the temporary listing.
+- returns the form and images to a template for any final changes
+
+3) View: submit_listing
+TODO: figure out how to access the temporary listing
+    - set some attribute in the template. to prevent someone forging a different listing ID,
+    make sure to check that the listing's owner matches the session user.
+TODO: create a form* and bind it with POST data and setting the instance to the temporary listing
+TODO: check to see if it's valid, save and redirect to its page if so; error else.
+TODO: set foreignkey of any new image added in the preview stage to point to the listing
+* using a different form that does have requirements for all fields.

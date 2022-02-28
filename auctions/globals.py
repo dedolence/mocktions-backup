@@ -9,6 +9,7 @@ GEN = DocumentGenerator()
 # Thumbnail size
 THUMBNAIL_SIZE = (100, 100)
 MAX_UPLOADS_PER_LISTING = 10
+MIN_UPLOADS_PER_LISTING = 1
 
 # Notification styling
 ICON_DANGER = 'exclamation-octagon'

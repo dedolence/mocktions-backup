@@ -21,16 +21,26 @@ class NewListingCreateForm(forms.ModelForm):
         }
 
 
-class NewListingSubmitForm(forms.Form):
+class NewListingSubmitForm(forms.ModelForm):
     """For submitting listing drafts and creating active listings; i.e.,
     all fields will be required.
     """
-    title = forms.CharField(max_length=64, required=True)
-    description = forms.CharField(max_length=500, required=True)
-    starting_bid = forms.DecimalField(max_digits=8, decimal_places=2, required=True)
-    shipping = forms.DecimalField(max_digits=6, decimal_places=2, required=True)
-    category = forms.ChoiceField(choices=category_choices, required=True)
-    lifespan = forms.IntegerField(max_value=30, required=True)
+    def __init__(self, *args, **kwargs):
+        super(NewListingSubmitForm, self).__init__(*args, **kwargs)
+        for key in self.fields:
+            self.fields[key].required = True
+    
+    class Meta:
+        model = Listing
+        fields = ['title', 'description', 'starting_bid', 'shipping', 'category', 'lifespan']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control'}),
+            'starting_bid': forms.NumberInput(attrs={'class': 'form-control'}),
+            'shipping': forms.NumberInput(attrs={'class': 'form-control'}),
+            'category': forms.Select(attrs={'class': 'form-select'}),
+            'lifespan': forms.NumberInput(attrs={'class': 'form-control'})
+        }
     
 
 class NewImageForm(forms.ModelForm):

@@ -50,6 +50,7 @@ function populateTargets() {
 
 
 async function make_fetch(formData, url) {
+    // need some way to timeout a request
     const csrf_token = document.querySelector('[name=csrfmiddlewaretoken]').value;
     return fetch(url, {
         method: 'POST',

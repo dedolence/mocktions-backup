@@ -1,11 +1,12 @@
 # Notifications
 
 # This is the template used by generate_notification
-from .globals import MAX_UPLOADS_PER_LISTING
+from .globals import MAX_UPLOADS_PER_LISTING, MIN_UPLOADS_PER_LISTING
 
 
 MESSAGE_GENERIC_TEMPLATE = "<i class='bi bi-{icon} pe-2'></i> {message}"
 MESSAGE_GENERIC_LOGIN_REQUIRED = "You must be logged in to do that."
+MESSAGE_GENERIC_ERROR = "An error occurred, please try again or email me about it at nhahoyt+mocktions@gmail.com"
 
 # Splash message
 MESSAGE_SPLASH_WELCOME = ("<p><strong>Welcome to Mocktions!</strong></p>"
@@ -74,3 +75,6 @@ MESSAGE_REG_SUCCESS = ("<p><strong>Success!</strong> Welcome to Mocktions, a fak
 # Listing creation message
 MESSAGE_LISTING_CREATION_INVALID_USER = ("Couldn't access listing. Listing owner and user don't match. "
     + "This could happen if you logged in as a different user and tried to access a listing draft.")
+MESSAGE_LISTING_CREATION_IMAGES_REQUIRED = ("Each listing must have at least " + str(MIN_UPLOADS_PER_LISTING)
+    + " and no more than " + str(MAX_UPLOADS_PER_LISTING) + " images. Otherwise, how are people gonna know what"
+    + " they're buying?")
