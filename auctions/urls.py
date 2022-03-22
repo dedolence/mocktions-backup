@@ -40,8 +40,9 @@ urlpatterns = [
     path("search", views.search, name="search"),
     path("settings", views.settings, name="settings"),
     path("submit/", views.submit_listing, name="submit_listing"),
-    path("watchlist", views.watchlist, name="watchlist")
+    path("watchlist", views.watchlist, name="watchlist"),
     # for testing 
+    # path("bootstrap/", views.test_view, name="test_view")
     # path("datetime/", views.datetime, name="datetime"),
     # path("mockup/", views.viewMockup, name="mockup"),
     # path("picsum/", views.picsum, name="picsum"),

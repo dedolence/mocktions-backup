@@ -12,8 +12,8 @@ class NotificationTemplate():
         self.notification = Notification()
     
     def build(self, 
-        user, type, icon, message, 
-        autodelete=False, page='index') -> None:
+            user, type, icon, message, 
+            autodelete=False, page='index') -> None:
         """ For setting all values at once. """
         self.notification.user = user
         self.notification.type = type

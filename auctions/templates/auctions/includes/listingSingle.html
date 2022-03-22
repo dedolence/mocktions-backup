@@ -2,11 +2,11 @@
     <div class="card-body">
         <h5 class="card-title">{{ listing.title|default:"(No title)" }}</h5>
         <h6 class="text-muted">Category: {{ listing.category|default:"(Uncategorized)" }}</h6>
-        <div id="thumbnails" class="container d-flex flex-row flex-wrap p-0">
+        <div id="previewThumbnails" class="container d-flex flex-row flex-wrap p-0">
             {% for image in listing.all_images %}
                 <img id="image-{{ image.id }}" src="{{ image.thumbnail.url }}" alt="A picture of the item listed" class="img-thumbnail me-3" data-click-action="showImageViewModal" data-target="showImageViewModal">
             {% empty %}
-                <p>No images</p>
+                <p id="imagesPlaceholder">No images</p>
             {% endfor %}
         </div>
         <p class="card-text">{{ listing.description }}</p>
@@ -21,7 +21,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body d-flex justify-content-center mw-100">
-                <div><img id="modalImage" alt="A picture of the listing being sold" class="img-fluid"></div>
+                <div><img id="modalImagePlaceholder" alt="A picture of the listing being sold" class="img-fluid"></div>
             </div>
         </div>
     </div>

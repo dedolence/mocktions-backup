@@ -162,12 +162,6 @@ class Listing(models.Model):
     objects = models.Manager()
 
     @property
-    def is_expired(self):
-        expiration_date = self.timestamp + timedelta(days=self.lifespan)
-        today = timezone.now()
-        return True if expiration_date < today else False
-
-    @property
     def expiration(self):
         expiration_date = self.timestamp + timedelta(days=self.lifespan)
         today = timezone.now()

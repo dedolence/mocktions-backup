@@ -7,6 +7,7 @@ from .globals import MAX_UPLOADS_PER_LISTING, MIN_UPLOADS_PER_LISTING
 MESSAGE_GENERIC_TEMPLATE = "<i class='bi bi-{icon} pe-2'></i> {message}"
 MESSAGE_GENERIC_LOGIN_REQUIRED = "You must be logged in to do that."
 MESSAGE_GENERIC_ERROR = "An error occurred, please try again or email me about it at nhahoyt+mocktions@gmail.com"
+MESSAGE_GENERIC_PERMISSIONS = "You don't have permission to perform that action. Try bribery. Venmo: @Nathaniel_Hoyt"
 
 # Splash message
 MESSAGE_SPLASH_WELCOME = ("<p><strong>Welcome to Mocktions!</strong></p>"

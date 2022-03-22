@@ -1,0 +1,17 @@
+<div id="{{ mode }}" class="modal fade" tabindex="-1" aria-labelledby="{{ mode }}Label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-center">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="{{ mode }}Label">View or delete image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body d-flex justify-content-center mw-100">
+                <div><img id="modalImage" alt="A picture of the listing being sold" class="img-fluid"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal" data-click-action="{{ ajax.ajax_purge_media.name }}"><i class="bi bi-exclamation-octagon"></i> Delete Image</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>

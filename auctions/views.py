@@ -373,7 +373,10 @@ def preview_listing(request):
     notification = NotificationTemplate()
     # save the POST data as a new temporary listing
     form = NewListingCreateForm(request.POST)
-    new_listing = form.save()
+    new_listing = form.save(commit=False)
+    new_listing.owner = request.user
+    new_listing.save()
+    form.save_m2m()
     image_ids = request.POST.getlist('images', None)
     images = [UserImage.objects.get(pk=id) for id in image_ids]
     # set the foriegnkey for each uploaded image to the new listing
@@ -654,6 +657,8 @@ def shopping_cart(request):
 def submit_listing(request):
     notification = NotificationTemplate()
     context = {}
+
+    # find the temporary listing
     listing_id = request.POST.get('listing_id', None)
     if listing_id is None:
         notification.build(
@@ -664,11 +669,26 @@ def submit_listing(request):
             True,
             reverse('index')
         )
+        notification.save()
         return HttpResponseRedirect(reverse('index'))
     
     listing = get_object_or_404(Listing, pk=listing_id)
+    if listing.owner != request.user:
+        notification.build(
+            request.user,
+            TYPE_WARNING,
+            ICON_WARNING,
+            MESSAGE_GENERIC_PERMISSIONS,
+            True,
+            reverse('index')
+        )
+        notification.save()
+        return HttpResponseRedirect(reverse('index'))
+
+    # bind post data to a form; this form REQUIRES every field
     form = NewListingSubmitForm(request.POST, instance=listing)
 
+    # collect a list of the image IDs related to this listing
     image_ids = request.POST.getlist('images', None)
     if len(image_ids) < MIN_UPLOADS_PER_LISTING:
         notification.build(
@@ -677,11 +697,24 @@ def submit_listing(request):
             ICON_WARNING,
             MESSAGE_LISTING_CREATION_IMAGES_REQUIRED,
             True,
-            reverse('preview_listing')
+            reverse('submit_listing')
         )
-        
+        notification.save()
+        context = {
+            'notifications': get_notifications(
+                request.user, 
+                reverse('submit_listing')
+                ),
+            'form': form,
+            'listing': listing,
+            'form_mode': LISTING_FORM_PREVIEW,
+            'template': 'auctions/previewListing.html'
+        }
+        return render(request, context['template'], context)
+    
+    images = UserImage.objects.filter(id__in=image_ids)
 
-    images = [UserImage.objects.get(pk=id) for id in image_ids]
+    # check form and submit or return errors
     if not form.is_valid():
         context = {
             'notifications': get_notifications(
@@ -691,11 +724,19 @@ def submit_listing(request):
             'form': form,
             'images': images,
             'listing': listing,
-            'form_mode': LISTING_FORM_PREVIEW
+            'form_mode': LISTING_FORM_PREVIEW,
+            'template': reverse('preview_listing')
         }
         return render(request, context['template'], context)
-
-
+    else:
+        active_listing = form.save(commit=False)
+        active_listing.owner = request.user
+        active_listing.active = True
+        active_listing.save()
+        form.save_m2m()
+        return HttpResponseRedirect(
+            reverse("view_listing", args=[active_listing.id])
+        )
 
 
 def view_all_users(request):
@@ -727,10 +768,11 @@ def watchlist(request):
 
 
 # //////////////////////////////////////////////////////
-# UTILITY VIEW FUNCTIONS
+# TEST VIEW
 # //////////////////////////////////////////////////////
 
-
+""" def test_view(request):
+    return render(request, 'auctions/tests/bootstrapgrid.html') """
 
 
 

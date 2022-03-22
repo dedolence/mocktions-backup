@@ -14,7 +14,18 @@ The listing creation loop:
 (done) TODO: figure out how to access the temporary listing
     - set some attribute in the template. to prevent someone forging a different listing ID,
     make sure to check that the listing's owner matches the session user.
-TODO: create a form* and bind it with POST data and setting the instance to the temporary listing
-TODO: check to see if it's valid, save and redirect to its page if so; error else.
-TODO: set foreignkey of any new image added in the preview stage to point to the listing
+(done) TODO: create a form* and bind it with POST data and setting the instance to the temporary listing
+(done) TODO: check to see if it's valid, save and redirect to its page if so; error else.
+(done) TODO: set foreignkey of any new image added in the preview stage to point to the listing
 * using a different form that does have requirements for all fields.
+
+    Making a generic include for an imagethumbnail.
+    - read as a string when uploading a new image to a listing creat/edit: mode "edit"
+    - included in for loop by view listing: mode "view"
+    - edit mode: click to open a modal with edit controls
+    - view mode: click to open a modal with no edit controls
+    - generic modal:
+        - same flags
+        - include
+        - createListing.html and editListing.html will include it with edit flag
+        - viewListing.html will include it with view flag.

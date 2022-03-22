@@ -80,8 +80,9 @@ function ajax_test(elementArray, url) {
 // Upload an image an return its properties
 async function ajax_upload_media(elementArray, url) {
     // check to see if we can upload any more images
-    const thumbnailContainer = document.getElementById('thumbnails');
-    const currentImageCount = thumbnailContainer.children.length;
+    const formThumbnails = document.getElementById("formThumbnails");
+    const previewThumbnails = document.getElementById("previewThumbnails");
+    const currentImageCount = formThumbnails.children.length;
 
     let formData = new FormData();
         formData.append('currentImageCount', currentImageCount);
@@ -137,7 +138,14 @@ async function ajax_upload_media(elementArray, url) {
         //  html: "html string for appending to DOM"
         // }
         if (r.paths.length > 0) {
-            thumbnailContainer.innerHTML += r.html;
+            formThumbnails.innerHTML += r.html;
+            if (previewThumbnails) {
+                let placeholder = document.getElementById('imagesPlaceholder');
+                if (placeholder) {
+                    placeholder.parentElement.removeChild(placeholder);
+                }
+                previewThumbnails.innerHTML += r.html;
+            }
             // add image ids to a list that will be sent to server to be referenced by the listing
             let imageIdList = document.getElementById('selectImageInput');
             let i = 0, n = r.ids.length;
@@ -161,40 +169,27 @@ async function ajax_upload_media(elementArray, url) {
 }
 
 
-function showEditImageModal(elementArray, url=null) {
-    let modalElement = document.getElementById('editImageModal');
+function showEditImageModal(elementArray) {
+    let functionName = elementArray[0].dataset.clickAction;
     let imagePath = elementArray[0].dataset.imagePath;
+    let modalElement = document.getElementById(functionName);
     showImageModal(modalElement, imagePath)
 }
 
 
 function showImageViewModal(elementArray, url=null) {
     let modalElement = document.getElementById('viewImageModal');
-    let imagePath = elementArray[0].dataset.imagePath;
+    let imageElement = elementArray[0];
+    let imageId = imageElement.id.split('-')[1];
     showImageModal(modalElement, imagePath)
 }
 
 
 function showImageModal(modalElement, imagePath) {
     let modal = new bootstrap.Modal(modalElement);
-    const imagePlaceholder = findImagePlaceholder(modalElement);
+    let modalImagePlaceholder = document.getElementById('modalImagePlaceholder');
+        modalImagePlaceholder.src = imagePath;
     modal.show();
-    console.log(imagePlaceholder);
-    function findImagePlaceholder(element) {
-        console.log("checking element: " + element);
-        if (element.tagName === 'IMG' && element.id === 'modalImage') {
-            return element;
-        } else {
-            let i = 0; n = element.children.length;
-            if (n > 0) {
-                for (i, n; i < n; i++) {
-                    return findImagePlaceholder(element.children[i]);
-                }
-            } else {
-                return;
-            }
-        }
-    }
 }
 
 

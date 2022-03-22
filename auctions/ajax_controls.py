@@ -16,9 +16,11 @@ def ajax_build_image_thumbnail(request):
     response = {}
     for id in image_ids:
         image_instance = UserImage.objects.get(pk=id)
-        html_string += render_to_string('auctions/includes/imageThumbnail.html', {
+        context = {
+            'click_action': "showEditImageModal",
             'image': image_instance
-        })
+        }
+        html_string += render_to_string('auctions/includes/imageThumbnail.html', context)
     response['html'] = html_string
     return JsonResponse(response)
 

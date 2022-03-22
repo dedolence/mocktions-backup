@@ -183,7 +183,8 @@ def upload_images(request, files, listing=None) -> Array:
     for f in files:
         img_mod = UserImage(
             owner=request.user,
-            image=f
+            image=f,
+            listing=listing
         )
         img_mod.listing = listing
         img_mod.save_thumbnail()

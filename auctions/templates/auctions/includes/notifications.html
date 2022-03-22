@@ -1,6 +1,3 @@
-{% comment %}
-    notifications = queryset
-{% endcomment %}
 {% for notification in notifications %}
         {% autoescape off %}
             <div class="alert alert-{{notification.type}} alert-dismissible" role="alert" id="notification-{{notification.id}}" data-target="{{ ajax_dismiss_notification.name }}">

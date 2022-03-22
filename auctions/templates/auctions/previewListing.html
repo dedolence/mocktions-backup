@@ -9,7 +9,9 @@
     {% endblock breadcrumb %}
 
     {% if user.is_authenticated %}
-    
+
+        {% include 'auctions/includes/notifications.html' with notifications=notifications %}
+        
         <div class="container w-75 ml-0 p-0">
             <p class="lead">Here's how your listing will look:</p>
             {% include 'auctions/includes/listingSingle.html' with listing=listing %}
