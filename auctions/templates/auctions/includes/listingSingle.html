@@ -1,4 +1,5 @@
-<div class="card">
+{% load static %}
+{% comment %} <div class="card">
     <div class="card-body">
         <h5 class="card-title">{{ listing.title|default:"(No title)" }}</h5>
         <h6 class="text-muted">Category: {{ listing.category|default:"(Uncategorized)" }}</h6>
@@ -11,6 +12,60 @@
         </div>
         <p class="card-text">{{ listing.description }}</p>
     </div>
+</div>
+{% endcomment %}
+
+<div class="container border border-secondary mb-5 px-5">
+    <div class="row text-center mb-2">
+        <span class="my-2 fw-light h6">
+        {% if listing.expired == True %}
+            Listing is expired
+            <hr/>
+        {% else %}
+            {% if listing.active == True %}
+                Listing expires in 
+                {{ listing.expiration.days }} days, 
+                {{ listing.expiration.minutes }} minutes, 
+                {{ listing.expiration.seconds }} seconds
+                <hr/>
+            {% endif %}
+        {% endif %}
+        </span>
+    </div>
+    <div class="row mb-2">
+        <span class="px-0"><a href="{% url 'category' listing.category.id %}">{{ listing.category }}</a></span>
+    </div>
+    <div class="row mb-2 px-0">
+        <a href="{% url 'view_listing' listing.id %}" class="fs-2 lead text-decoration-none px-0">
+            {{ listing.title }}
+        </a>
+    </div>
+    <div class="row mb-2">
+        <div id="previewThumbnails" class="container d-flex flex-row flex-wrap p-0">
+            {% for image in listing.all_images %}
+                <img id="image-{{ image.id }}" src="{{ image.thumbnail.url }}" alt="A picture of the item listed" class="img-thumbnail me-3" data-click-action="showImageViewModal" data-target="showImageViewModal">
+            {% empty %}
+                <p id="imagesPlaceholder">No images</p>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="row mb-2">
+        <p class="px-0">{{ listing.description|truncatewords:200 }}</p>
+    </div>
+    {% if listing.active == True %}
+        <div class="row mb-2">
+            <hr/>
+            <div class="d-flex flex-row px-0 my-2 fw-light h6">
+                {% if listing.owner != request.user %}
+                    <div class="text-center my-2 fw-light h6">Posted by <a href="{% url 'view_user' listing.owner %}">{{ listing.owner }}</a> at {{ listing.timestamp }}</div>
+                {% else %}
+                        <div class="flex-grow-1 text-muted">You posted this on {{ listing.timestamp }}</div>
+                        <div class="me-2 mb-2 mb-sm-0"><a class="btn btn-outline-primary btn-sm">Edit listing <i class="bi bi-pencil-square"></i></a></div>
+                        <div><a class="btn btn-outline-danger btn-sm">Delete listing <i class="bi bi-trash"></i></a></div>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
 </div>
 
 <div id="viewImageModal" class="modal fade" tabindex="-1" aria-labelledby="viewImageModalLabel" aria-hidden="true">

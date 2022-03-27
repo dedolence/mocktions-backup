@@ -1,37 +1,28 @@
 {% extends 'auctions/layout.html' %}
 {% load static %}
 {% block body %}
-    <main class="container-fluid">
-        <header class="row">
-            {% block breadcrumb %}
-                {% include 'auctions/includes/breadcrumb.html' with page='View listing: ' listing_title=listing_bundle.listing.title %}
-            {% endblock breadcrumb %}
 
-            {# Parse any messages #}
-            {% include 'auctions/includes/notifications.html' with notifications=notifications %}
+    {% block breadcrumb %}
+        {% include 'auctions/includes/breadcrumb.html' with page='View listing: ' listing_title=listing.title %}
+    {% endblock breadcrumb %}
 
-            {% if expired %}
-                <div class="alert alert-danger">This listing has expired.</div>
+    {% include 'auctions/includes/notifications.html' with notifications=notifications %}
+
+    {% if listing.expired %}
+        <div class="alert alert-warning">This listing has expired.</div>
+    {% endif %}
+
+    <article class="row">
+        <div class="col-lg-9">
+            {% include 'auctions/includes/listingSingle.html' with listing=listing %}
+        </div>
+        <div class="col-lg-3">
+            {% if request.user != listing.owner %}
+                {% include 'auctions/includes/bidWidget.html' with listing=listing_bundle.listing expiration=listing_bundle.expiration_bundle %}
             {% endif %}
-        </header>
-        <article class="row">
-            <div class="col-lg-9">
-                {% if listing_bundle.listing.owner == request.user %}
-                    {% include 'auctions/includes/listingSingle.html' with listing=listing_bundle.listing expiration=listing_bundle.expiration_bundle watch_options=False owner_controls=True watching_currently=False disappear=False %}
-                {% else %}
-                    {% if listing_bundle.watching_currently == True %}
-                        {% include 'auctions/includes/listingSingle.html' with listing=listing_bundle.listing expiration=listing_bundle.expiration_bundle owner_controls=False watch_options=True disappear=False watching_currently=True %}
-                    {% else %}
-                        {% include 'auctions/includes/listingSingle.html' with listing=listing_bundle.listing expiration=listing_bundle.expiration_bundle watch_options=True watching_currently=False owner_controls=False disappear=False %}
-                    {% endif %}
-                {% endif %}
-            </div>
-            <div class="col-lg-3">
-                {% if request.user != listing_bundle.listing.owner %}
-                    {% include 'auctions/includes/bidWidget.html' with listing=listing_bundle.listing expiration=listing_bundle.expiration_bundle %}
-                {% endif %}
-            </div>
-        </article>
-        {% include 'auctions/includes/comment_block.html' with comments=comments listing_id=listing_bundle.listing.id %}
-    </main>
-{% endblock body %}
+        </div>
+    </article>
+
+    {% include 'auctions/includes/comment_block.html' with comments=comments listing_id=listing_bundle.listing.id %}
+
+{% endblock %}

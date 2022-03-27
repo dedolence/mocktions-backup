@@ -264,11 +264,13 @@ def listing_page(request, listing_id):
         request.user, 
         reverse('view_listing', args=[listing_id])
     )
-    listing_bundle = get_listing(request, listing_id)
-    comments = listing_bundle["listing"].listings_comments.all().order_by('-timestamp')
+    listing = Listing.objects.get(pk=listing_id)
+    #listing_bundle = get_listing(request, listing_id)
+    #comments = listing_bundle["listing"].listings_comments.all().order_by('-timestamp')
     return render(request, "auctions/viewListing.html", {
-        'listing_bundle': listing_bundle,
-        'comments': comments,
+        #'listing_bundle': listing_bundle,
+        'listing': listing,
+        #'comments': comments,
         'notifications': notifications
     })
 
@@ -285,21 +287,15 @@ def listings(request):
 
 def login_view(request):
     if request.method == "POST":
-        # Attempt to sign user in
-        username = request.POST["username"]
-        password = request.POST["password"]
-        user = authenticate(request, username=username, password=password)
-
-        # page to redirect to
-        if 'next' in request.POST:
-            next = request.POST['next']
-        else:
-            next = reverse('index')
+         # Attempt to sign user in
+        u = request.POST.get("username", None)
+        p = request.POST.get('password', None)
+        user = authenticate(request, username=u, password=p)
 
         # Check if authentication successful
         if user is not None:
             login(request, user)
-            return HttpResponseRedirect(next)
+            return HttpResponseRedirect(reverse("index"))
         else:
             return render(request, "auctions/login.html", {
                 "message": "Invalid username and/or password."

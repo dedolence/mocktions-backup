@@ -13,7 +13,7 @@
         <div id="formThumbnails" class="container d-flex flex-row flex-wrap p-0">
             {% if images %}
                 {% for image in images %}
-                    {% include 'auctions/includes/imageThumbnail.html' with image=image %}
+                    {% include 'auctions/includes/imageThumbnail.html' with image=image click_action='showEditImageModal' %}
                 {% endfor %}
             {% endif %}
         </div>

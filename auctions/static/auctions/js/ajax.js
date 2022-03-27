@@ -86,6 +86,7 @@ async function ajax_upload_media(elementArray, url) {
 
     let formData = new FormData();
         formData.append('currentImageCount', currentImageCount);
+        formData.append('click_action', 'showImageEditModal');
     
     let fileSourceElement;
 
@@ -169,7 +170,7 @@ async function ajax_upload_media(elementArray, url) {
 }
 
 
-function showEditImageModal(elementArray) {
+function showImageEditModal(elementArray) {
     let functionName = elementArray[0].dataset.clickAction;
     let imagePath = elementArray[0].dataset.imagePath;
     let modalElement = document.getElementById(functionName);
