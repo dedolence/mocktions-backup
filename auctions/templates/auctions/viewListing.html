@@ -12,14 +12,16 @@
         <div class="alert alert-warning">This listing has expired.</div>
     {% endif %}
 
-    <article class="row">
-        <div class="col-lg-9">
-            {% include 'auctions/includes/listingSingle.html' with listing=listing %}
-        </div>
-        <div class="col-lg-3">
-            {% if request.user != listing.owner %}
-                {% include 'auctions/includes/bidWidget.html' with listing=listing_bundle.listing expiration=listing_bundle.expiration_bundle %}
-            {% endif %}
+    <article class="container p-0 m-0">
+        <div class="row">
+            <div class="col-lg-9 mb-3">
+                {% include 'auctions/includes/listingSingle.html' with listing=listing %}
+            </div>
+            <div class="col-lg-3 mb-3">
+                {% if request.user != listing.owner %}
+                    {% include 'auctions/includes/bidWidget.html' with listing=listing %}
+                {% endif %}
+            </div>
         </div>
     </article>
 

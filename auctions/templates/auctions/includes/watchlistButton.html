@@ -1,0 +1,18 @@
+{% if in_watchlist %}
+    <button class="btn btn-outline-primary text-decoration-none" onclick="watchListing({{listing.id}})">
+        <i class="bi bi-heart-fill pe-1"></i> Remove from watchlist
+    </button>
+{% else %}
+    <button class="btn btn-outline-secondary text-decoration-none" onclick="watchListing({{listing.id}})">
+        <i class="bi bi-heart pe-1"></i> Add to watchlist
+    </button>
+{% endif %}
+
+<div class="toast align-items-center hide mt-2 position-absolute" role="alert" aria-live="assertive" aria-atomic="true" id="watchlistToast-{{ listing.id }}">
+    <div class="d-flex">
+        <div class="toast-body">
+            {{ toast_message }}
+        </div>
+    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+</div>

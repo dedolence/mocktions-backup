@@ -5,55 +5,61 @@
     expiration = a dict containing all the listing's expiration data
 {% endcomment %}
 
-<div class="border rounded my-3 p-3">
-
-    {% if expiration.expired == True %}
-
-        <h5 class="text-center">Bidding Is Closed</h5>
-        <hr />
-        <p>Starting bid: <b>${{ listing.starting_bid|floatformat:"2g" }}</b><p>
-        {% if listing.winning_bid is None or listing.winner is None %}
-            <p class="lead">No winner.</p>
+<div class="container border border-secondary px-5 pb-2">
+    <div class="row text-center mb-2">
+        <span class="my-2 fw-light h6">
+        {% if listing.expired == True %}
+            (Bidding is closed)
         {% else %}
-            <p class="lead">Winning bid: <b>${{ listing.winning_bid|floatformat:"2g"|default:"0" }}</b><p>
-            <p class="small">By user: <a href="{% url 'view_user' listing.winner|default:'' %}">{{ listing.winner|default:"No winner." }}</a></p>
+            Place a bid
         {% endif %}
-    
-    {% else %}
-        <h5 class="text-center">Place a Bid</h5>
-        <hr />
-        <p class="lead">Current bid: <b>${{ listing.current_bid|floatformat:"2g"|default:listing.starting_bid }}</b></p>
-        <p class="small">
-            {% if current_bid.user %}
-                Placed by <a href="{% url 'view_user' current_bid.user %}">{{ current_bid.user }}</a>
+        <hr/>
+        </span>
+    </div>
+    <div class="row mb-2">
+        <p class="fw-light">Starting bid: ${{ listing.starting_bid|floatformat:"2g" }}</p>
+        {% if listing.winning_bid != None %}
+            <p class="lead">
+                Winning bid: <strong>${{ listing.winning_bid|floatformat:"2g"|default:"0" }}</strong>
+            </p>
+            <br/>
+            <span class="text-muted">Winner: <a href="{% url 'view_user' listing.winner %}">{{ listing.winner }}</a></span>
+        {% else %}
+            <p class="fw-light">
+            {% if listing.current_bid is not None %}
+                    <strong>Current bid: ${{ listing.current_bid.amount|floatformat:"2g"|default:listing.starting_bid }}</strong>
+                    <br/>
+                    <small class="text-muted">By user <a href="{% url 'view_user' listing.current_bid.user %}">{{ listing.current_bid.user }}</a></small>
             {% else %}
-                No bids yet.
+                    No bids.
             {% endif %}
-        </p>
-
-        <p class="small">Auction ends in {{ expiration.days }}d {{expiration.hours}}h, {{expiration.seconds}}s</p>
-
+            </p>
+        {% endif %}
+    </div>
+    <div class="row mb-2">
         <form action="{% url 'place_bid' %}" method="POST">
-
             {% csrf_token %}
 
-            <label for="bidEntry-{{listing.id}}" class="form-label">Your bid:</label>
+            <div class="my-2 fw-light h6">
+                <hr/>
+                <label for="bidEntry-{{listing.id}}" class="form-label">Your bid:</label>
+            </div>
 
-            <div class="input-group mb-3">
+            <div class="input-group mb-2">
                 <span class="input-group-text">$</span>
-                <input type="text" class="form-control bid-entry" aria-label="Amount (to the nearest dollar)" name="bid" id="bidEntry-{{listing.id}}">
+                <input type="text" class="form-control bid-entry" aria-label="Amount (to the nearest dollar)" name="bid" id="bidEntry-{{listing.id}}"{% if not request.user.is_authenticated %} disabled{% endif %}>
                 <span class="input-group-text">.00</span>
                 {% if bid_message %}
                     <div class="text-danger small">{{ bid_message }}</div>
                 {% endif %}
             </div>
-
-            <div id="bidEntryHelp-{{listing.id}}" class="form-text small">Your bid must be greater than the current bid.</div>
+            {% if not request.user.is_authenticated %}
+            <span class="text-danger">You must <a href="{% url 'login' %}" class="link-danger">login</a> to place a bid</span>
+            {% endif %}
+            <div id="bidEntryHelp-{{listing.id}}" class="form-text small d-none">Your bid must be greater than the current bid.</div>
 
             <input type="hidden" name="listing-id" value="{{listing.id}}">
             <input type="submit" class="btn btn-primary mt-3" value="Place Bid">
         </form>
-
-    {% endif %}
-
+    </div>
 </div>

@@ -35,9 +35,47 @@ document.addEventListener("click", e => {
         })
         // automatically calls a function based only on its name
         var url = AJAX_URLS[clickAction] ? AJAX_URLS[clickAction] : null;
-        window[clickAction](elementArray, url);
+        window[clickAction](elementArray, url, e);
     }
 });
+
+
+function changeSlide(listingId, direction) {
+    // get current slide index
+    let currentSlideIndex;
+    const bannerImage = document.getElementById('banner-'+listingId);
+    const allImages = bannerImage.parentElement.children;
+    for (let i = 0; i < allImages.length; i++) {
+        if (!allImages[i].classList.contains('d-none')) {
+            currentSlideIndex = i;
+        }
+    }
+
+    // check to see if new slide goes out of bounds
+    let newSlideIndex = currentSlideIndex + direction;
+    if (newSlideIndex < 0) {
+        newSlideIndex = allImages.length - 1;
+    }
+    if (newSlideIndex > allImages.length - 1) {
+        newSlideIndex = 0;
+    }
+
+    // display new indexed image
+    for (let i = 0; i < allImages.length; i++) {
+        allImages[i].classList.add('d-none');
+    }
+    allImages[newSlideIndex].classList.remove('d-none');
+}
+
+
+function setImageBanner(listingId, newSlideIndex) {
+    const bannerImage = document.getElementById('banner-'+listingId);
+    const allImages = bannerImage.parentElement.children;
+    for (let i = 0; i < allImages.length; i++) {
+        allImages[i].classList.add('d-none');
+    }
+    allImages[newSlideIndex].classList.remove('d-none');
+}
 
 
 function populateTargets() {
@@ -66,7 +104,11 @@ async function make_fetch(formData, url) {
         }
     })
     .catch((error) => {
-        console.log(error);
+        // this catches 4xx and 5xx errors
+        // return a rejected promise so i can catch() it elsewhere
+        return new Promise((res, rej) => {
+            rej();
+        })
     })
 }
 
@@ -267,25 +309,23 @@ function reply_comment(r) {
     modal.show();
 }
 
-function watchListing(res, id, disappear) { 
-    let listing = document.getElementById("listing-" + id);
-    let toastElement = document.getElementById("toast-" + id);
-    let toastBody = document.getElementById("toast-body-" + id);
-    let buttonText = document.getElementById("toast-button-text-" + id);
-    let toastIcon = document.getElementById("toast-icon-" + id);
+function watchListing(listingId) {
+    const url = AJAX_URLS.ajax_watch_listing;
+    let formData = new FormData();
+        formData.append('listing_id', listingId)
+    
+    make_fetch(formData, url)
+    .then((r) => {
+        // find/replace the watchlist button group with the rendered html
+        let buttonContainer = document.getElementById('watchButton-' + listingId);
+            buttonContainer.innerHTML = r.html;
 
-    toastBody.innerHTML = res.message;
-        // toggle icon and text
-    if (!res.undo) {
-        toastIcon.classList.toggle("bi-heart");
-        toastIcon.classList.toggle("bi-heart-fill");
-        buttonText.innerHTML = res.button_text;
-    }
-        // create Toast instance
-    let toast = new bootstrap.Toast(toastElement);
-    // display Toast
-    toast.show();
-    if (disappear) {
-        $(listing).fadeOut();
-    }
+        // initialize and display the toast
+        let toastElement = document.getElementById('watchlistToast-' + listingId);
+        let toast = new bootstrap.Toast(toastElement, {'autohide': true, 'delay': 2000});
+        toast.show();
+    })
+    .catch((error) => {
+        console.log(error);
+    })
 }

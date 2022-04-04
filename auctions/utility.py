@@ -68,22 +68,23 @@ def get_image(request, url=None, page=None, listing=None) -> Array:
 
 
 def get_listing(request, id=None, listing=None) -> dict:
+    """TODO: This method is completely unnecessary at this point."""
     if not listing:
         listing = Listing.objects.get(pk=id)
 
     highest_bid = get_highest_bid(listing)
-    listing.current_bid = highest_bid.amount if highest_bid else listing.starting_bid
+    #listing.current_bid = highest_bid.amount if highest_bid else listing.starting_bid
     owner_controls = True if listing.owner == request.user else False
     watch_options = True if owner_controls == False else True
     watchlist = request.user.watchlist.all()
     watching_currently = True if listing in watchlist else False
-    expiration_bundle = get_expiration(listing)
+    # expiration_bundle = get_expiration(listing)
     return {
         'listing': listing,
-        'owner_controls': owner_controls,
-        'watch_options': watch_options,
-        'watching_currently': watching_currently,
-        'expiration_bundle': expiration_bundle
+        #'owner_controls': owner_controls,
+        #'watch_options': watch_options,
+        #'watching_currently': watching_currently,
+        #'expiration_bundle': expiration_bundle
     }
 
 
@@ -111,8 +112,8 @@ def get_page(request, raw_listings) -> tuple:
 
     ordered_listings = order_listings(categorized_listings, controls_dict['order_by'])
 
-    if not controls_dict['show_expired']:
-        ordered_listings = ordered_listings.filter(active=True)
+    #if not controls_dict['show_expired']:
+    ordered_listings = ordered_listings.filter(active=not controls_dict['show_expired'])
 
     pager = Paginator(ordered_listings, controls_dict['per_page'])
     current_page = pager.page(controls_dict['current_page'])
@@ -129,11 +130,8 @@ def get_page(request, raw_listings) -> tuple:
     controls_dict['next_next_page'] = controls_dict['current_page'] + 2
     controls_dict['last_page'] = pager.num_pages
 
-    formatted_listings = [
-        get_listing(request, id=None, listing=listing) 
-        for listing in current_page.object_list
-        ]
-
+    formatted_listings = [listing for listing in current_page.object_list]
+    
     return (controls_dict, formatted_listings)
 
 
@@ -157,24 +155,20 @@ def order_listings(listings, spec) -> QuerySet:
 
 
 def purge_listings(request) -> None:
-    """Since this isn't being run on a real server that can purge things in real time,
-    instead, every time index.html is loaded, flag any listings that are no longer active.
+    """Every time index.html is loaded, flag any listings that are no 
+    longer active and notify winners if necessary.
     """
     all_listings = Listing.objects.all()
     watchlist = request.user.watchlist.all()
 
     for listing in all_listings:
-        expiration = get_expiration(listing)
-        if expiration["expired"] and listing.active:
-            listing.active = False
-            highest_bid = get_highest_bid(listing)
-            if highest_bid:
-                listing.winning_bid = highest_bid.amount
-                listing.winner = highest_bid.user
-                notify_winner(highest_bid.user, listing)
+        if listing.active and listing.expired:
+            if listing.winner and listing.winning_bid:
+                notify_winner(listing.winner, listing)
             if listing in watchlist:
                 obj = request.user.watchlist.get(id=listing.id)
                 obj.delete()
+            listing.active = False
             listing.save()
 
 

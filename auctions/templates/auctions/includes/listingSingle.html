@@ -1,53 +1,43 @@
 {% load static %}
-{% comment %} <div class="card">
-    <div class="card-body">
-        <h5 class="card-title">{{ listing.title|default:"(No title)" }}</h5>
-        <h6 class="text-muted">Category: {{ listing.category|default:"(Uncategorized)" }}</h6>
-        <div id="previewThumbnails" class="container d-flex flex-row flex-wrap p-0">
-            {% for image in listing.all_images %}
-                <img id="image-{{ image.id }}" src="{{ image.thumbnail.url }}" alt="A picture of the item listed" class="img-thumbnail me-3" data-click-action="showImageViewModal" data-target="showImageViewModal">
-            {% empty %}
-                <p id="imagesPlaceholder">No images</p>
-            {% endfor %}
-        </div>
-        <p class="card-text">{{ listing.description }}</p>
-    </div>
-</div>
-{% endcomment %}
 
-<div class="container border border-secondary mb-5 px-5">
-    <div class="row text-center mb-2">
-        <span class="my-2 fw-light h6">
-        {% if listing.expired == True %}
-            Listing is expired
-            <hr/>
-        {% else %}
-            {% if listing.active == True %}
-                Listing expires in 
-                {{ listing.expiration.days }} days, 
-                {{ listing.expiration.minutes }} minutes, 
-                {{ listing.expiration.seconds }} seconds
+<div id="{{ listing.id }}" class="container border border-secondary px-5 h-100 mb-3">
+    {% if listing.active == True %}
+        <div class="row text-center mb-2">
+            <span class="my-2 fw-light h6">
+            {% if listing.expired == True %}
+                Listing is expired
                 <hr/>
+            {% else %}
+                {% if listing.active == True %}
+                    Listing expires in
+                    {{ listing.expiration.days }} days,
+                    {{ listing.expiration.minutes }} minutes,
+                    {{ listing.expiration.seconds }} seconds
+                    <hr/>
+                {% endif %}
             {% endif %}
-        {% endif %}
-        </span>
-    </div>
+            </span>
+        </div>
+    {% endif %}
     <div class="row mb-2">
-        <span class="px-0"><a href="{% url 'category' listing.category.id %}">{{ listing.category }}</a></span>
+        {% if listing.category.id %}
+            {% url 'category' listing.category.id as cat_url %}
+        {% else %}
+            {% url 'categories' as cat_url %}
+        {% endif %}
+        <span class="px-0"><a href="{{ cat_url }}" class="text-decoration-none">{{ listing.category|default:"Uncategorized" }}</a></span>
     </div>
-    <div class="row mb-2 px-0">
+    <div class="row mb-3 px-0">
         <a href="{% url 'view_listing' listing.id %}" class="fs-2 lead text-decoration-none px-0">
             {{ listing.title }}
         </a>
     </div>
     <div class="row mb-2">
-        <div id="previewThumbnails" class="container d-flex flex-row flex-wrap p-0">
-            {% for image in listing.all_images %}
-                <img id="image-{{ image.id }}" src="{{ image.thumbnail.url }}" alt="A picture of the item listed" class="img-thumbnail me-3" data-click-action="showImageViewModal" data-target="showImageViewModal">
-            {% empty %}
-                <p id="imagesPlaceholder">No images</p>
-            {% endfor %}
-        </div>
+        {% if listing.all_images %}
+            {% include 'auctions/includes/imageGrid.html' with images=listing.all_images listing_id=listing.id %}
+        {% else %}
+            {% include 'auctions/includes/imageGrid.html' with images=images listing_id=listing.id %}
+        {% endif %}
     </div>
     <div class="row mb-2">
         <p class="px-0">{{ listing.description|truncatewords:200 }}</p>
@@ -55,9 +45,20 @@
     {% if listing.active == True %}
         <div class="row mb-2">
             <hr/>
-            <div class="d-flex flex-row px-0 my-2 fw-light h6">
+            <div class="d-flex flex-row px-0 my-2 fw-light justify-content-between">
                 {% if listing.owner != request.user %}
-                    <div class="text-center my-2 fw-light h6">Posted by <a href="{% url 'view_user' listing.owner %}">{{ listing.owner }}</a> at {{ listing.timestamp }}</div>
+                    <div class="text-start flex-item fw-light">
+                        Posted by <a href="{% url 'view_user' listing.owner %}">{{ listing.owner }}</a> at {{ listing.timestamp }}
+                    </div>
+                    {% if listing.expired == False and request.user.is_authenticated %}
+                        <div class="text-end flex-item fw-light" id="watchButton-{{ listing.id }}">
+                            {% if listing in user.watchlist.all %}
+                                {% include 'auctions/includes/watchlistButton.html' with in_watchlist=True %}
+                            {% else %}
+                                {% include 'auctions/includes/watchlistButton.html' with in_watchlist=False %}
+                            {% endif %}
+                        </div>
+                    {% endif %}
                 {% else %}
                         <div class="flex-grow-1 text-muted">You posted this on {{ listing.timestamp }}</div>
                         <div class="me-2 mb-2 mb-sm-0"><a class="btn btn-outline-primary btn-sm">Edit listing <i class="bi bi-pencil-square"></i></a></div>

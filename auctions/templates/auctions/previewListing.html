@@ -15,7 +15,7 @@
         <div class="container w-75 ml-0 p-0">
             <p class="lead">Here's how your listing will look:</p>
             {% include 'auctions/includes/listingSingle.html' with listing=listing %}
-            {% include 'auctions/includes/listingForm.html' with listing_form=form preview_listing=True image_paths=image_paths %}
+            {% include 'auctions/includes/listingForm.html' with listing_form=form preview_listing=True images=images %}
         </div>
 
     {% else %}

@@ -1,7 +1,9 @@
+from multiprocessing import context
 import random
 import requests
 from django.core import serializers
 from django.http.response import JsonResponse
+from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.urls import path
 from .models import *
@@ -76,7 +78,6 @@ def ajax_reply_comment(request):
     return JsonResponse(response)
 
 
-
 def ajax_upload_media(request):
     response = {}
     images = None
@@ -118,15 +119,22 @@ def ajax_upload_media(request):
 
 
 def ajax_watch_listing(request):
-    response = {}
-    listing = Listing.objects.get(id=id)
-    watchlist = request.user.watchlist
-    if listing in watchlist.all():
-        watchlist.remove(listing)
-        response["message"] = "Removed from watchlist."
-        response["button_text"] = "Add to Watchlist"
+    listing_id = request.POST.get('listing_id', None)
+    listing = get_object_or_404(Listing, pk=listing_id)
+    context = {'listing': listing}
+
+    if not listing_id or not listing:
+        return JsonResponse({'message': MESSAGE_GENERIC_ERROR}, status=403)
     else:
-        watchlist.add(listing)
-        response["message"] = "Added to watchlist."
-        response["button_text"] = "Watching"
-    return JsonResponse(response)
+        if listing in request.user.watchlist.all():
+            request.user.watchlist.remove(listing)
+            context['toast_message'] = MESSAGE_WATCHLIST_REMOVED
+            context['in_watchlist'] = False
+        else:
+            request.user.watchlist.add(listing)
+            context['toast_message'] = MESSAGE_WATCHLIST_ADDED
+            context['in_watchlist'] = True
+    
+    return JsonResponse({
+        'html': render_to_string('auctions/includes/watchlistButton.html', context)
+        })

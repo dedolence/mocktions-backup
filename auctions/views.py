@@ -9,7 +9,6 @@ from django.contrib.auth.decorators import login_required
 from django.core import files
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
-from django.http.response import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.csrf import \
@@ -58,7 +57,7 @@ def category(request, category_id):
     return render(request, "auctions/category.html", {
         'category_id': category_id,
         'category_title': category_title,
-        'listing_bundles': page_tuple[1],
+        'listings': page_tuple[1],
         'controls_dict': page_tuple[0]
     })
 
@@ -177,8 +176,7 @@ def drafts(request):
 
 @login_required
 def edit_listing(request, listing_id):
-    raw_listing = Listing.objects.get(id=listing_id)
-    listing_bundle = get_listing(request, None, raw_listing)
+    listing = Listing.objects.get(id=listing_id)
     notification = NotificationTemplate()
     notification.build(
         request.user,
@@ -188,24 +186,24 @@ def edit_listing(request, listing_id):
         True,
         reverse('index')
     )
-    if request.user != raw_listing.owner:
+    if request.user != listing.owner:
         notification.set_message(
             ICON_DANGER, 
-            MESSAGE_LISTING_EDIT_PROHIBITED.format(raw_listing.title)
+            MESSAGE_LISTING_EDIT_PROHIBITED.format(listing.title)
             )
         notification.save()
         return HttpResponseRedirect(reverse("index"))
     else:
         # When first accessed, must check to make sure editing is allowed.
         if request.method == "GET":
-            highest_bid = get_highest_bid(raw_listing)
+            highest_bid = get_highest_bid(listing)
             if (
                 (highest_bid and 
-                highest_bid.amount != raw_listing.starting_bid)
+                highest_bid.amount != listing.starting_bid)
             ):
                 notification.set_message(
                     ICON_DANGER, 
-                    MESSAGE_LISTING_EDIT_PROHIBITED.format(raw_listing.title)
+                    MESSAGE_LISTING_EDIT_PROHIBITED.format(listing.title)
                     )
                 notification.set_page(reverse('view_listing', args=[listing_id]))
                 notification.save()
@@ -214,18 +212,17 @@ def edit_listing(request, listing_id):
                     )
             
             else:
-                edit_form = NewListingCreateForm(instance=raw_listing)
-                listing_bundle = get_listing(request, None, raw_listing)
+                edit_form = NewListingCreateForm(instance=listing)
                 return render(request, 'auctions/editListing.html', {
-                    'listing_bundle': listing_bundle,
+                    'listing': listing,
                     'edit_listing_form': edit_form
                 })
         
         else:
-            edited_form = NewListingCreateForm(request.POST, instance=raw_listing)
+            edited_form = NewListingCreateForm(request.POST, instance=listing)
             if not edited_form.is_valid():
                 return render(request, "auctions/editListing.html", {
-                    'listing_bundle': listing_bundle,
+                    'listing': listing,
                     'edit_listing_form': edited_form
                 })
             
@@ -235,12 +232,12 @@ def edit_listing(request, listing_id):
                     request.user,
                     TYPE_SUCCESS,
                     ICON_SUCCESS,
-                    MESSAGE_LISTING_EDIT_SUCCESSFUL.format(raw_listing.title),
+                    MESSAGE_LISTING_EDIT_SUCCESSFUL.format(listing.title),
                     True,
-                    reverse('view_listing', args=[listing_id]))
+                    reverse('view_listing', args=[listing.id]))
                 notification.save()
                 return HttpResponseRedirect(
-                    reverse("view_listing", args=[raw_listing.id]))
+                    reverse("view_listing", args=[listing.id]))
 
 
 def index(request):
@@ -254,16 +251,19 @@ def index(request):
         listing_page_tuple = get_page(request, active_listings_raw)
         return render(request, "auctions/index.html", {
             'listing_controls': listing_page_tuple[0],
-            'listing_bundles': listing_page_tuple[1],
+            'listings': listing_page_tuple[1],
             'notifications': notifications
         })
 
 
 def listing_page(request, listing_id):
-    notifications = get_notifications(
-        request.user, 
-        reverse('view_listing', args=[listing_id])
-    )
+    if request.user.is_authenticated:
+        notifications = get_notifications(
+            request.user, 
+            reverse('view_listing', args=[listing_id])
+        )
+    else:
+        notifications = None
     listing = Listing.objects.get(pk=listing_id)
     #listing_bundle = get_listing(request, listing_id)
     #comments = listing_bundle["listing"].listings_comments.all().order_by('-timestamp')
@@ -281,7 +281,7 @@ def listings(request):
     page_tuple = get_page(request, all_listings)
     return render(request, "auctions/listings.html", {
         'controls_dict': page_tuple[0],
-        'listing_bundles': page_tuple[1]
+        'listings': page_tuple[1]
     })
 
 
@@ -758,7 +758,7 @@ def watchlist(request):
     listing_page_tuple = get_page(request, active_listings_raw)
     return render(request, "auctions/watchlist.html", {
         'listing_controls': listing_page_tuple[0],
-        'listing_bundles': listing_page_tuple[1],
+        'listings': listing_page_tuple[1],
         'notifications': notifications
     })
 

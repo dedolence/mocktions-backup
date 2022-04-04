@@ -49,6 +49,8 @@ MESSAGE_LISTING_UPLOAD_TOO_LARGE = ("Sorry, that file was too large to upload. I
     + "that's kinda pathetic but I have to move on and fix some other stuff now. "
     + "Try uploading something smaller. Ok, bye.")
 MESSAGE_WATCHLIST_PROMPT = "Add to watchlist"
+MESSAGE_WATCHLIST_ADDED = "Listing added to watchlist"
+MESSAGE_WATCHLIST_REMOVED = "Listing removed from watchlist"
 MESSAGE_LISTING_DRAFT_SAVED = ("Your listing has been saved to drafts. You can leave this "
     + "page and finish editing it later if you want.")
 MESSAGE_LISTING_DRAFT_CAP_EXCEEDED = ("You currently have too many listing drafts already. "

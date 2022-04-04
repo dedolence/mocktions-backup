@@ -82,7 +82,7 @@ def get_expiration(listing) -> dict:
 class Bid(models.Model):
     amount = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=False) # max_digits includes decimal places!
     user = models.ForeignKey('User', on_delete=PROTECT, null=True)
-    listing = models.ForeignKey('Listing', on_delete=CASCADE, null=True)
+    listing = models.ForeignKey('Listing', on_delete=CASCADE, null=True, related_name="bids")
     def __str__(self):
         return f"Amount: {self.amount} by {self.user_id}"
 
@@ -186,6 +186,24 @@ class Listing(models.Model):
     @property
     def all_images(self):
         return self.images.all()
+
+    @property
+    def current_bid(self):
+        return self.bids.all().order_by('-amount').first() or None
+
+    @property
+    def winner(self):
+        if self.expired == True:
+            return self.current_bid.user or None
+        else:
+            return None
+    
+    @property
+    def winning_bid(self):
+        if self.expired == True:
+            return self.current_bid.amount or None
+        else:
+            return None
 
 
 class Notification(models.Model):

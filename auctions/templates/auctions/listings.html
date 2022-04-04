@@ -19,16 +19,8 @@
     {% endblock control_block_upper %}
 
     {% block listing_block %}
-        {% for listing_bundle in listing_bundles %}
-            {% if listing_bundle.listing.owner == request.user %}
-                {% include 'auctions/includes/listingSingle.html' with listing=listing_bundle.listing %}
-            {% else %}
-                {% if listing_bundle.watching_currently == True %}
-                    {% include 'auctions/includes/listingSingle.html' with listing=listing_bundle.listing %}
-                {% else %}
-                    {% include 'auctions/includes/listingSingle.html' with listing=listing_bundle.listing %}
-                {% endif %}
-            {% endif %}
+        {% for listing in listings %}
+            {% include 'auctions/includes/listingSingle.html' with listing=listing %}
         {% empty %}
             <p class="lead text-center">No listings found.</p>
         {% endfor %}

@@ -1,15 +1,14 @@
 {# This should probably just be a generic Listing template; why bother having a separate one just for drafts? #}
-<div class="card">
+<div class="card mb-3">
     <div class="card-body">
         <h5 class="card-title">{{ listing.title|default:"(No title)" }}</h5>
         <h6 class="text-muted">Category: {{ listing.category|default:"(Uncategorized)" }}</h6>
-        <div id="thumbnails" class="container d-flex flex-row flex-wrap p-0">
-            {% for image in listing.all_images %}
-                <img src="{{ image.thumbnail.url }}" alt="A picture of the item listed">
-            {% empty %}
-                <p>No image</p>
-            {% endfor %}
-        </div>
         <p class="card-text">{{ listing.description }}</p>
+        <hr/>
+        <div class="d-flex flex-row fw-light justify-content-between">
+            <div class="flex-grow-1 text-muted">Created: {{ listing.timestamp }}</div>
+            <div class="me-2 mb-2 mb-sm-0"><a href="{% url 'edit_listing' listing.id %}" class="btn btn-outline-primary btn-sm">Edit draft <i class="bi bi-pencil-square"></i></a></div>
+            <div><a href="{% url 'delete_listing' listing.id %}" class="btn btn-outline-danger btn-sm">Delete draft <i class="bi bi-trash"></i></a></div>
+        </div>
     </div>
 </div>

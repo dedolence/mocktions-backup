@@ -10,16 +10,8 @@
 {% endblock control_block_upper %}
 
 {% block listing_block %}
-    {% for listing_bundle in listing_bundles %}
-        {% if listing_bundle.listing.user == request.user %}
-            {% include 'auctions/includes/listing_single.html' with listing=listing_bundle.listing expiration=listing_bundle.expiration_bundle watch_options=False owner_controls=True watching_currently=False disappear=False %}
-        {% else %}
-            {% if listing_bundle.watching_currently == True %}
-                {% include 'auctions/includes/listing_single.html' with listing=listing_bundle.listing expiration=listing_bundle.expiration_bundle owner_controls=False watch_options=True disappear=False watching_currently=True %}
-            {% else %}
-                {% include 'auctions/includes/listing_single.html' with listing=listing_bundle.listing expiration=listing_bundle.expiration_bundle watch_options=True watching_currently=False owner_controls=False disappear=False %}
-            {% endif %}
-        {% endif %}
+    {% for listing in listings %}
+        {% include 'auctions/includes/listingSingle.html' with listing=listing %}
     {% empty %}
         <h3>No listings found for this category.</h3>
     {% endfor %}

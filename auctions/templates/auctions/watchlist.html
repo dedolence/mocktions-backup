@@ -8,8 +8,8 @@
         {% url 'watchlist' as control_url %}
         {% include 'auctions/includes/listingControls.html' with numbers_only=False controls=listing_controls control_url=control_url %}
 
-        {% for listing_bundle in listing_bundles %}
-            {% include 'auctions/includes/listing_single.html' with listing=listing_bundle.listing expiration=listing_bundle.expiration_bundle watch_options=False owner_controls=False watching_currently=True disappear=True %}
+        {% for listing in listings %}
+            {% include 'auctions/includes/listingSingle.html' with listing=listing %}
         {% empty %}
             <h5>No listings were found.</h5>
         {% endfor %}
