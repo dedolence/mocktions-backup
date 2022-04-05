@@ -82,6 +82,8 @@ def ajax_upload_media(request):
     response = {}
     images = None
     current_image_count = request.POST.get('currentImageCount', None)
+    # click_action defines what should happen when the thumbnail is clicked
+    # (either show an edit modal or a view modal)
     click_action = request.POST.get('click_action', None)
     if int(current_image_count) >= MAX_UPLOADS_PER_LISTING:
         response['error'] = MESSAGE_LISTING_MAX_UPLOADS_EXCEEDED

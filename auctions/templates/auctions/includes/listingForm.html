@@ -10,11 +10,12 @@
             </div>
 
             {# Display option to generate a random listing #}
-            {% if new_listing %}
+            {% if form_mode == "create" %}
                 <div class="row mb-4">
-                    <label for="randomInput" class="col-form-label col-sm-4 form-check-label">Generate a random listing</label>
-                    <div class="col-md-8">
-                        <input type="checkbox" class="form-check-input align-bottom mt-2" name="random" id="randomInput">
+                    <div class="col">
+                        <button type="button" class="btn btn-outline-primary" onclick="generateRandomListing()">
+                            Generate a random listing
+                        </button>
                     </div>
                 </div>
             {% endif %}
@@ -24,7 +25,7 @@
             <p class="lead my-4">Please fill out all fields.</p>
 
             {# Include the subform for adding images to this listing #}
-            {% include 'auctions/includes/uploadImageForm.html' %}
+            {% include 'auctions/includes/uploadImageForm.html' with images=listing.all_images %}
 
 
             <form method="POST" id="listingForm" enctype="multipart/form-data">
@@ -38,13 +39,13 @@
                     listing.
                 {% endcomment %}
                 <select class="d-none" name="images" id="selectImageInput" multiple>
-                    {% for image in images %}
+                    {% for image in listing.all_images %}
                         <option value="{{ image.id }}" selected></option>
                     {% endfor %}
                 </select>
 
                 {# Display field forms according to the modelform #}
-                {% for field in listing_form %}
+                {% for field in form %}
                     <div class="row mb-4">
                         <div class="col-sm-4">
                             <label for="{{ field.id_for_label }}" class="col-form-label d-block">{{ field.label }}:</label>
@@ -68,8 +69,8 @@
                         <div class="d-flex">
                             <div><a href="{% url 'index' %}" class="btn btn-outline-danger">Cancel</a></div>
 
-                            {% if form_mode == 'preview' %}
-                                <div>
+                            {% if form_mode == 'edit' %}
+                                <div class="me-2">
                                     <a href="{% url 'delete_listing' listing.id %}" class="btn btn-danger ms-3">
                                         <i class="bi bi-trash me-1"></i> Delete listing
                                     </a>
@@ -77,15 +78,26 @@
                             {% endif %}
 
                             <div class="flex-grow-1"></div>
+                            
+                            {% if form_mode == 'create' %}
+                                {% url 'create_listing' as form_action %}
+                            {% elif form_mode == 'edit' %}
+                                {% url 'edit_listing' listing.id as form_action %}
+                            {% endif %}
                             <div>
-                                <button type="submit" class="btn btn-outline-primary" formaction="{% url 'preview_listing' %}">
-                                    <i class="bi bi-save"></i> Save draft
+                                <button type="submit" class="btn btn-outline-primary" formaction="{{ form_action }}">
+                                    <i class="bi bi-save"></i>
+                                    {% if listing.active == True %}
+                                     Save changes
+                                    {% else %}
+                                     Save draft
+                                    {% endif %}
                                 </button>
                             </div>
                             
-                            {% if form_mode == 'preview' %}
+                            {% if form_mode == 'edit' %}
                                 <div>
-                                    <button type="submit" class="btn btn-primary ms-2" formaction="{% url 'submit_listing' %}">
+                                    <button type="submit" class="btn btn-primary ms-2" formaction="{% url 'submit_listing' listing.id %}">
                                         <i class="bi bi-save-fill ms-3"></i> Save and post
                                     </button>
                                 </div>
