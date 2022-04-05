@@ -163,4 +163,9 @@ So once again:
     all_images = a property that returns a QuerySet containing the UserImage objects associated with the listing.
         Why? Avoids having to do a separate query for the images, which would need to be sent as another context variable to a template.
         Not a big deal perhaps, but it keeps the logic of fetching a listing's images neatly tucked into the Listing class itself.
-        
+
+
+4/4
+    Revamp creation process again:
+    Preview and edit are identical: they both render a listing and a form for editing it, and lead to either posting it 
+    or saving it as a draft. 

@@ -39,7 +39,7 @@ MESSAGE_LISTING_BID_SUCCESSFUL = ("Your bid was placed successfully!")
 MESSAGE_LISTING_EXPIRED = ("This listing has expired.")
 MESSAGE_LISTING_EDIT_SUCCESSFUL = "The listing, \"{},\" has been successfully edited."
 MESSAGE_LISTING_EDIT_PROHIBITED = ("The listing, \"{},\" cannot be edited. This is either "
-+ "because the listing currently has bids on it, or because the listing does "
++ "because the listing currently has bids on it, is expired, or because the listing does "
 + "not belong to you.<br/>If this listing belongs to you, you may still "
 + "delete the listing.")
 MESSAGE_LISTING_MAX_UPLOADS_EXCEEDED = ("Too many images: a listing can only have a "

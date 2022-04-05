@@ -17,7 +17,7 @@ def get_highest_bid(listing) -> Bid:
     return bids.first()
 
 
-def get_image(request, url=None, page=None, listing=None) -> Array:
+def get_image(request, url=None, page=None, listing=None) -> UserImage:
     """ Can be called with or without the url parameter. When no url
     is provided, a random image will be returned.
     """
@@ -45,7 +45,8 @@ def get_image(request, url=None, page=None, listing=None) -> Array:
         notification.save()
         if not page:
             page = reverse('index')
-        return HttpResponseRedirect(page)   
+        # TODO: this doesn't redirect, it just returns a redirect object to the javascript
+        return HttpResponseRedirect(page)
     # source for saving image to temp file:
     # Mayank Jain https://medium.com/@jainmickey
     img_temp = tempfile.NamedTemporaryFile(delete=True)
@@ -64,7 +65,7 @@ def get_image(request, url=None, page=None, listing=None) -> Array:
     img_mod.listing = listing
     img_mod.save_thumbnail()
     img_mod.save()
-    return [img_mod]
+    return img_mod
 
 
 def get_listing(request, id=None, listing=None) -> dict:

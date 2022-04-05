@@ -51,7 +51,7 @@ function changeSlide(listingId, direction) {
         }
     }
 
-    // check to see if new slide goes out of bounds
+    // check to see if new slide index goes out of bounds
     let newSlideIndex = currentSlideIndex + direction;
     if (newSlideIndex < 0) {
         newSlideIndex = allImages.length - 1;
@@ -103,7 +103,7 @@ async function make_fetch(formData, url) {
             throw Error(res.statusText);
         }
     })
-    .catch((error) => {
+    .catch(() => {
         // this catches 4xx and 5xx errors
         // return a rejected promise so i can catch() it elsewhere
         return new Promise((res, rej) => {
@@ -112,12 +112,6 @@ async function make_fetch(formData, url) {
     })
 }
 
-function ajax_test(elementArray, url) {
-    make_fetch(null, url)
-    .then(r => {
-        elementArray[0].innerHTML = r.message;
-    })
-}
 
 // Upload an image an return its properties
 async function ajax_upload_media(elementArray, url) {

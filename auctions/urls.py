@@ -35,11 +35,11 @@ urlpatterns = [
     path("listings/view/<int:listing_id>", views.listing_page, name="view_listing"),
     path("login", views.login_view, name="login"),
     path("logout", views.logout_view, name="logout"),
-    path('preview/', views.preview_listing, name="preview_listing"),
+    # path('preview/', views.preview_listing, name="preview_listing"), OBSOLETE
     path("register", views.register, name="register"),
     path("search", views.search, name="search"),
     path("settings", views.settings, name="settings"),
-    path("submit/", views.submit_listing, name="submit_listing"),
+    path("submit/<int:listing_id>", views.submit_listing, name="submit_listing"),
     path("watchlist", views.watchlist, name="watchlist"),
     # for testing 
     # path("bootstrap/", views.test_view, name="test_view")

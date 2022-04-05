@@ -1,7 +1,6 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-
     {% block breadcrumb %}
         {% include 'auctions/includes/breadcrumb.html' with page='Edit listing: ' listing_title=listing.title %}
     {% endblock breadcrumb %}
@@ -10,7 +9,7 @@
         <div class="container w-75 ml-0 p-0">
         
         {% include 'auctions/includes/listingSingle.html' with listing=listing %}
-        {% include 'auctions/includes/listingForm.html' with listing_form=form edit_listing=True image_paths=image_paths %}
+        {% include 'auctions/includes/listingForm.html' with listing_form=form listing=listing form_mode="edit" %}
 
     {% else %}
 

@@ -1,6 +1,8 @@
 import decimal
 import random
+from secrets import randbelow
 import tempfile
+from tkinter import image_names
 import uuid
 
 import requests
@@ -13,6 +15,7 @@ from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.csrf import \
     csrf_exempt
+from django.views.decorators.http import require_http_methods
 
 from . import namelist, wordlist
 from .ajax_controls import *
@@ -105,7 +108,12 @@ def comment(request):
 
 
 @login_required
+@require_http_methods(["GET", "POST"])
 def create_listing(request, listing_id=None):
+    """GET: generate a blank form and render template.
+    POST: Create a Listing object, attach images, and redirect
+    to edit_listing.py.
+    """
     notification = NotificationTemplate()
     # check to see if this user has reached the cap on listing drafts
     temps = Listing.objects.filter(owner=request.user, active=False).count()
@@ -120,17 +128,31 @@ def create_listing(request, listing_id=None):
         )
         notification.save()
         return HttpResponseRedirect(reverse('drafts'))
+    
+    if request.method == "GET":
+        form = NewListingCreateForm()
+        return render(request, 'auctions/createListing.html', {
+            'form': form
+        })
     else:
-        context = {
-            'notifications': get_notifications(
-                request.user, 
-                reverse('create_listing')
-                ),
-            'form': NewListingCreateForm(),
-            'form_mode': LISTING_FORM_CREATE_NEW,
-            'template': 'auctions/createListing.html'
-        }
-        return render(request, context['template'], context)
+        form = NewListingCreateForm(request.POST)
+        if 'randomize' in request.POST:
+            listing = generate_listing(request)
+        else:
+            listing = form.save(commit=False)
+            # set image foreign keys to point to this listing.
+            image_ids = request.POST.getlist('images', None)
+            if image_ids and len(image_ids) > 0:
+                for id in image_ids:
+                    image = UserImage.objects.get(pk=id)
+                    image.listing = listing
+                    image.save()
+                # create a listing object but don't save it yet
+                listing.owner = request.user
+                listing.active = False
+                listing.save()
+
+        return HttpResponseRedirect(reverse('edit_listing', args=[listing.id]))
 
 
 @login_required
@@ -176,68 +198,45 @@ def drafts(request):
 
 @login_required
 def edit_listing(request, listing_id):
-    listing = Listing.objects.get(id=listing_id)
+    """Edit a listing; functions as a preview as well. If routed
+    to via create_listing, a Listing must be generated. Otherwise,
+    get the Listing that already exists."""
     notification = NotificationTemplate()
-    notification.build(
-        request.user,
-        TYPE_DANGER,
-        ICON_DANGER,
-        '',
-        True,
-        reverse('index')
-    )
-    if request.user != listing.owner:
+
+    listing = get_object_or_404(Listing, pk=listing_id)
+    # check whether editing is permitted
+    if (request.user != listing.owner 
+        or listing.current_bid 
+        or listing.expired):
         notification.set_message(
             ICON_DANGER, 
             MESSAGE_LISTING_EDIT_PROHIBITED.format(listing.title)
             )
         notification.save()
         return HttpResponseRedirect(reverse("index"))
+
+    if request.method == "GET":
+        # redirected here after a draft listing is created
+        form = NewListingCreateForm(instance=listing)
     else:
-        # When first accessed, must check to make sure editing is allowed.
-        if request.method == "GET":
-            highest_bid = get_highest_bid(listing)
-            if (
-                (highest_bid and 
-                highest_bid.amount != listing.starting_bid)
-            ):
-                notification.set_message(
-                    ICON_DANGER, 
-                    MESSAGE_LISTING_EDIT_PROHIBITED.format(listing.title)
-                    )
-                notification.set_page(reverse('view_listing', args=[listing_id]))
-                notification.save()
-                return HttpResponseRedirect(
-                    reverse("view_listing", args=[listing_id])
-                    )
-            
-            else:
-                edit_form = NewListingCreateForm(instance=listing)
-                return render(request, 'auctions/editListing.html', {
-                    'listing': listing,
-                    'edit_listing_form': edit_form
-                })
+        # redirected here from editListing.html
+        form = NewListingCreateForm(request.POST, instance=listing)
+        form.save()
+        # in case there are new images, link them to this listing
+        image_ids = request.POST.getlist('images', None)
+        if image_ids and len(image_ids) > 0:
+            for id in image_ids:
+                image = UserImage.objects.get(pk=id)
+                image.listing = listing
+                image.save()
+
+    context = {
+        'listing': listing,
+        'form': form
+    }
+    return render(request, 'auctions/editListing.html', context)
         
-        else:
-            edited_form = NewListingCreateForm(request.POST, instance=listing)
-            if not edited_form.is_valid():
-                return render(request, "auctions/editListing.html", {
-                    'listing': listing,
-                    'edit_listing_form': edited_form
-                })
-            
-            else:
-                edited_form.save()
-                notification.build(
-                    request.user,
-                    TYPE_SUCCESS,
-                    ICON_SUCCESS,
-                    MESSAGE_LISTING_EDIT_SUCCESSFUL.format(listing.title),
-                    True,
-                    reverse('view_listing', args=[listing.id]))
-                notification.save()
-                return HttpResponseRedirect(
-                    reverse("view_listing", args=[listing.id]))
+
 
 
 def index(request):
@@ -360,12 +359,11 @@ def place_bid(request):
         return HttpResponseRedirect(
             reverse("view_listing", args=[listing_id]))
 
+"""
+OBSOLETE
 
 @login_required
 def preview_listing(request):
-    """ Either save changes made to the draft, or
-    save to a new database object and make the listing active.
-    """
     notification = NotificationTemplate()
     # save the POST data as a new temporary listing
     form = NewListingCreateForm(request.POST)
@@ -390,6 +388,7 @@ def preview_listing(request):
         'form_mode': LISTING_FORM_PREVIEW
     }
     return render(request, 'auctions/previewListing.html', context)
+"""
 
 
 
@@ -650,24 +649,12 @@ def shopping_cart(request):
 
 
 @login_required
-def submit_listing(request):
+def submit_listing(request, listing_id):
     notification = NotificationTemplate()
     context = {}
 
     # find the temporary listing
     listing_id = request.POST.get('listing_id', None)
-    if listing_id is None:
-        notification.build(
-            request.user,
-            TYPE_WARNING,
-            ICON_GENERIC,
-            MESSAGE_GENERIC_ERROR,
-            True,
-            reverse('index')
-        )
-        notification.save()
-        return HttpResponseRedirect(reverse('index'))
-    
     listing = get_object_or_404(Listing, pk=listing_id)
     if listing.owner != request.user:
         notification.build(
@@ -684,8 +671,12 @@ def submit_listing(request):
     # bind post data to a form; this form REQUIRES every field
     form = NewListingSubmitForm(request.POST, instance=listing)
 
-    # collect a list of the image IDs related to this listing
+    # set foreign keys of any new images, validate number
     image_ids = request.POST.getlist('images', None)
+    for id in image_ids:
+        image = UserImage.objects.get(pk=id)
+        image.listing = listing
+        image.save()
     if len(image_ids) < MIN_UPLOADS_PER_LISTING:
         notification.build(
             request.user,
@@ -693,43 +684,31 @@ def submit_listing(request):
             ICON_WARNING,
             MESSAGE_LISTING_CREATION_IMAGES_REQUIRED,
             True,
-            reverse('submit_listing')
+            reverse('edit_listing')
         )
         notification.save()
         context = {
             'notifications': get_notifications(
                 request.user, 
-                reverse('submit_listing')
+                reverse('edit_listing')
                 ),
             'form': form,
             'listing': listing,
             'form_mode': LISTING_FORM_PREVIEW,
-            'template': 'auctions/previewListing.html'
+            'template': 'auctions/editListing.html'
         }
         return render(request, context['template'], context)
     
-    images = UserImage.objects.filter(id__in=image_ids)
-
     # check form and submit or return errors
     if not form.is_valid():
-        context = {
-            'notifications': get_notifications(
-                request.user, 
-                reverse('create_listing')
-                ),
+        return render(request, 'auctions/editListing.html', {
             'form': form,
-            'images': images,
-            'listing': listing,
-            'form_mode': LISTING_FORM_PREVIEW,
-            'template': reverse('preview_listing')
-        }
-        return render(request, context['template'], context)
+            'listing': listing
+        })
     else:
         active_listing = form.save(commit=False)
-        active_listing.owner = request.user
         active_listing.active = True
         active_listing.save()
-        form.save_m2m()
         return HttpResponseRedirect(
             reverse("view_listing", args=[active_listing.id])
         )
@@ -778,30 +757,30 @@ def watchlist(request):
 # //////////////////////////////////////////////////////
 
 
-def generate_listing(amount, request):
-    listings = []
-    for i in range(amount):
-        listing = {
-            'title': generateTitle(),
-            'image_url': get_image(request),
-            'description': generateDescription()[0:500],
-            'starting_bid': random.randint(1,9999),
-            'shipping': random.randint(5, 50),
-            'category': random.randint(1, 8),
-            'lifespan': random.randint(1, 5)
-        }
-        listings.append(listing)
+def generate_listing(request):
+    listing = Listing.objects.create(
+        owner = request.user,
+        category = random.choice(Category.objects.all()),
+        title = generate_title(),
+        description = generate_description()[0:400],
+        starting_bid = random.randint(1,9999),
+        shipping = random.randint(5, 50),
+        lifespan = random.randint(1, 30)
+    )
     
-    return listings if (amount>1) else listings[0]
+    for i in range(0, random.randint(1,10)):
+        image = get_image(request, None, None, listing)
+    
+    return listing
 
 
-def generateTitle():
+def generate_title():
     adj = random.choice(wordlist.adjectives)
     noun = random.choice(wordlist.nouns)
     return f"{adj.capitalize()} {noun}"
 
 
-def generateImage():
+def generate_image():
     # sorta inefficient because the api loads a random image but only looks at the response headers for the id to generate a static URL,
     # so the image is ultimately served twice, first here and again when its absolute URL is called :(
     # but since this is only for testing purposes really it doesn't matter so much, and it's only 200px square images
@@ -810,7 +789,7 @@ def generateImage():
     return f'https://picsum.photos/id/{image_id}/200'
 
 
-def generateDescription():
+def generate_description():
     return GEN.paragraph()
 
 
@@ -822,7 +801,7 @@ def picsum(request):
         'url': image_url
     })
 
-def generateName():
+def generate_name():
     firstname = random.choice(namelist.firstnames)
     lastname = random.choice(namelist.lastnames)
     return (firstname, lastname)

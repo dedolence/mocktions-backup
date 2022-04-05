@@ -8,7 +8,7 @@
 
     {% if user.is_authenticated %}
         <div class="container w-75 ml-0 p-0">
-            {% include 'auctions/includes/listingForm.html' with listing_form=form form_mode=form_mode %}
+            {% include 'auctions/includes/listingForm.html' with form=form form_mode="create" %}
         </div>
     {% else %}
 
