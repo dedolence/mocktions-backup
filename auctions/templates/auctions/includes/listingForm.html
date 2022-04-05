@@ -9,28 +9,28 @@
                 {% endif %}
             </div>
 
-            {# Display option to generate a random listing #}
-            {% if form_mode == "create" %}
-                <div class="row mb-4">
-                    <div class="col">
-                        <button type="button" class="btn btn-outline-primary" onclick="generateRandomListing()">
-                            Generate a random listing
-                        </button>
-                    </div>
-                </div>
-            {% endif %}
-
-
             <hr class="my-5"/>
             <p class="lead my-4">Please fill out all fields.</p>
 
-            {# Include the subform for adding images to this listing #}
-            {% include 'auctions/includes/uploadImageForm.html' with images=listing.all_images %}
-
-
             <form method="POST" id="listingForm" enctype="multipart/form-data">
                 {% csrf_token %}
+
+                {# Display option to generate a random listing #}
+                {% if form_mode == "create" %}
+                    <div class="row mb-4">
+                        <div class="col">
+                            <button type="submit" class="btn btn-outline-primary" formaction="{% url 'create_listing' %}" name="randomize">
+                                Generate a random listing
+                            </button>
+                        </div>
+                    </div>
+                    <hr/>
+                {% endif %}
+                
                 <input type="hidden" name="listing_id" value="{{ listing.id }}">
+
+                {# Include the subform for adding images to this listing #}
+                {% include 'auctions/includes/uploadImageForm.html' with images=listing.all_images %}
 
                 {% comment%}
                     This select element won't be visible to the user, but will be populated by Javascript

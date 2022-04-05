@@ -1,5 +1,6 @@
 import decimal
 import random
+from secrets import randbelow
 import tempfile
 from tkinter import image_names
 import uuid
@@ -135,19 +136,21 @@ def create_listing(request, listing_id=None):
         })
     else:
         form = NewListingCreateForm(request.POST)
-        # create a listing object but don't save it yet
-        listing = form.save(commit=False)
-        listing.owner = request.user
-        listing.active = False
-        listing.save()
-
-        # set image foreign keys to point to this listing.
-        image_ids = request.POST.getlist('images', None)
-        if image_ids and len(image_ids) > 0:
-            for id in image_ids:
-                image = UserImage.objects.get(pk=id)
-                image.listing = listing
-                image.save()
+        if 'randomize' in request.POST:
+            listing = generate_listing(request)
+        else:
+            listing = form.save(commit=False)
+            # set image foreign keys to point to this listing.
+            image_ids = request.POST.getlist('images', None)
+            if image_ids and len(image_ids) > 0:
+                for id in image_ids:
+                    image = UserImage.objects.get(pk=id)
+                    image.listing = listing
+                    image.save()
+                # create a listing object but don't save it yet
+                listing.owner = request.user
+                listing.active = False
+                listing.save()
 
         return HttpResponseRedirect(reverse('edit_listing', args=[listing.id]))
 
@@ -681,24 +684,27 @@ def submit_listing(request, listing_id):
             ICON_WARNING,
             MESSAGE_LISTING_CREATION_IMAGES_REQUIRED,
             True,
-            reverse('submit_listing')
+            reverse('edit_listing')
         )
         notification.save()
         context = {
             'notifications': get_notifications(
                 request.user, 
-                reverse('submit_listing')
+                reverse('edit_listing')
                 ),
             'form': form,
             'listing': listing,
             'form_mode': LISTING_FORM_PREVIEW,
-            'template': 'auctions/previewListing.html'
+            'template': 'auctions/editListing.html'
         }
         return render(request, context['template'], context)
     
     # check form and submit or return errors
     if not form.is_valid():
-        return HttpResponseRedirect(reverse('edit_listing', args=[listing_id]))
+        return render(request, 'auctions/editListing.html', {
+            'form': form,
+            'listing': listing
+        })
     else:
         active_listing = form.save(commit=False)
         active_listing.active = True
@@ -751,30 +757,30 @@ def watchlist(request):
 # //////////////////////////////////////////////////////
 
 
-def generate_listing(amount, request):
-    listings = []
-    for i in range(amount):
-        listing = {
-            'title': generateTitle(),
-            'image_url': get_image(request),
-            'description': generateDescription()[0:500],
-            'starting_bid': random.randint(1,9999),
-            'shipping': random.randint(5, 50),
-            'category': random.randint(1, 8),
-            'lifespan': random.randint(1, 5)
-        }
-        listings.append(listing)
+def generate_listing(request):
+    listing = Listing.objects.create(
+        owner = request.user,
+        category = random.choice(Category.objects.all()),
+        title = generate_title(),
+        description = generate_description()[0:400],
+        starting_bid = random.randint(1,9999),
+        shipping = random.randint(5, 50),
+        lifespan = random.randint(1, 30)
+    )
     
-    return listings if (amount>1) else listings[0]
+    for i in range(0, random.randint(1,10)):
+        image = get_image(request, None, None, listing)
+    
+    return listing
 
 
-def generateTitle():
+def generate_title():
     adj = random.choice(wordlist.adjectives)
     noun = random.choice(wordlist.nouns)
     return f"{adj.capitalize()} {noun}"
 
 
-def generateImage():
+def generate_image():
     # sorta inefficient because the api loads a random image but only looks at the response headers for the id to generate a static URL,
     # so the image is ultimately served twice, first here and again when its absolute URL is called :(
     # but since this is only for testing purposes really it doesn't matter so much, and it's only 200px square images
@@ -783,7 +789,7 @@ def generateImage():
     return f'https://picsum.photos/id/{image_id}/200'
 
 
-def generateDescription():
+def generate_description():
     return GEN.paragraph()
 
 
@@ -795,7 +801,7 @@ def picsum(request):
         'url': image_url
     })
 
-def generateName():
+def generate_name():
     firstname = random.choice(namelist.firstnames)
     lastname = random.choice(namelist.lastnames)
     return (firstname, lastname)
