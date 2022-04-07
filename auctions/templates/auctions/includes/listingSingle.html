@@ -62,7 +62,7 @@
                 {% else %}
                         <div class="flex-grow-1 text-muted">You posted this on {{ listing.timestamp }}</div>
                         <div class="me-2 mb-2 mb-sm-0"><a href="{% url 'edit_listing' listing.id %}" class="btn btn-outline-primary btn-sm">Edit listing <i class="bi bi-pencil-square"></i></a></div>
-                        <div><a class="btn btn-outline-danger btn-sm">Delete listing <i class="bi bi-trash"></i></a></div>
+                        <div><a href="{% url 'delete_listing' listing.id %}" class="btn btn-outline-danger btn-sm">Delete listing <i class="bi bi-trash"></i></a></div>
                 {% endif %}
             </div>
         </div>

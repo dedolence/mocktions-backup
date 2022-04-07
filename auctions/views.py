@@ -1,4 +1,5 @@
 import decimal
+from http.client import HTTPResponse
 import random
 from secrets import randbelow
 import tempfile
@@ -158,33 +159,36 @@ def create_listing(request):
 
 @login_required
 def delete_listing(request, listing_id):
-    listing_bundle = get_listing(request, id=listing_id)
+    listing = get_object_or_404(Listing, pk=listing_id)
     notification = NotificationTemplate()
-    notification.build(
-        request.user,
-        TYPE_DANGER,
-        ICON_DANGER,
-        MESSAGE_USER_DELETE_PROHIBITED,
-        True
-    )
-    if request.user != listing_bundle["listing"].owner:
+    
+    if request.user != listing.owner:
+        notification.build(
+            request.user,
+            TYPE_DANGER,
+            ICON_DANGER,
+            MESSAGE_USER_DELETE_PROHIBITED,
+            True
+        )
         notification.save()
-        return HttpResponseRedirect(reverse("index"))
+        return HttpResponseRedirect(reverse('index'))
+    
+    if request.method == "GET":
+        return render(request, 'auctions/deleteListing.html', {
+            'listing': listing
+        })
     else:
-        if request.method == "GET":
-            return render(request, 'auctions/deleteListing.html', {
-                'listing_bundle': listing_bundle
-            })
-        else:
-            listing = Listing.objects.get(pk=listing_id)
-            listing.delete()
-            notification.set_type = TYPE_INFO
-            notification.set_message(
-                ICON_GENERIC,
-                MESSAGE_USER_LISTING_DELETED.format(listing.title)
-            )
-            notification.save()
-            return HttpResponseRedirect(reverse("index"))
+        listing.delete()
+        notification.build(
+            request.user,
+            TYPE_SUCCESS,
+            ICON_SUCCESS,
+            MESSAGE_USER_LISTING_DELETED,
+            True
+        )
+        notification.save()
+        return HttpResponseRedirect(reverse('index'))
+    
 
 
 @login_required
@@ -254,7 +258,7 @@ def index(request):
         notifications = get_notifications(request.user, reverse('index'))
         active_listings_raw = Listing.objects.filter(owner=request.user)
         listing_page_tuple = get_page(request, active_listings_raw)
-        return render(request, "auctions/index.html", {
+        return render(request, "auctions/indexex.html", {
             'listing_controls': listing_page_tuple[0],
             'listings': listing_page_tuple[1],
             'notifications': notifications

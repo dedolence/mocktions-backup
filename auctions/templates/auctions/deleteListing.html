@@ -3,14 +3,24 @@
 {% block body %}
 
     {% block breadcrumb %}
-        {% include 'auctions/includes/breadcrumb.html' with page='Delete listing: ' listing_title=listing_bundle.listing.title %}
+        {% include 'auctions/includes/breadcrumb.html' with page='Delete listing: ' listing_title=listing.title %}
     {% endblock breadcrumb %}
 
-    <div class="alert alert-danger">Delete listing?</div>
+    <div class="alert alert-danger" role="alert">
+        <h4 class="alert-heading"><i class="bi bi-exclamation-octagon"></i> Delete listing?</h4>
+        <hr/>
+        <p>Deleting a listing cannot be undone.</p>
+    </div>
 
-    {% include 'auctions/includes/listing_single.html' with listing=listing_bundle.listing expiration=listing_bundle.expiration_bundle %}
+    {% if listing.current_bid %}
+        <div class="alert alert-warning" role="alert">
+            <i class="bi bi-exclamation-triangle"></i> This listing currently has a high bid of ${{ listing.current_bid.amount }} from user <a href="{% url 'view_user' listing.current_bid.user %}" class="alert-link">{{ listing.current_bid.user }}</a>.
+        </div>
+    {% endif %}
 
-    <form action="{% url 'delete_listing' listing_bundle.listing.id %}" method="POST">
+    {% include 'auctions/includes/listingSingle.html' with listing=listing %}
+
+    <form action="{% url 'delete_listing' listing.id %}" method="POST">
         {% csrf_token %}
         <input type="submit" value="Delete Listing" class="btn btn-danger">
     </form>
