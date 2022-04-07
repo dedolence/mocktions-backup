@@ -93,7 +93,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
 
-AUTH_PASSWORD_VALIDATORS = [
+""" AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
@@ -106,7 +106,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
-]
+] """
 
 
 # Internationalization
@@ -128,8 +128,12 @@ USE_TZ = True
 
 STATIC_URL = '/static/auctions/'
 
-LOGIN_URL = '/login'
+LOGIN_URL = '/accounts/login/'
+
+LOGIN_REDIRECT_URL = '/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'auctions/images/user_uploads/')
 
 MEDIA_URL = 'images/user_uploads/'
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

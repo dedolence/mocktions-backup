@@ -21,25 +21,17 @@
                     </div>
                 </div>
                 <p class="lead">(Required) User credentials</p>
-                {% for field in cred_form %}
-                    <label for="{{ field.id_for_label }}" class="col-md-4 col-form-label">
-                        {{ field.label }}
-                    </label>
-                    <div class="col-md-8">
-                        {{ field }}
-                        <div class="text-danger text-small">
-                            <ul class="ml-0">
-                                {% for error in field.errors  %}
-                                    <li class="text-danger small">{{ error }}</li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-                {% endfor %}
-                <hr class="my-5"/>
-                <p class="lead">(Optional) Contact information</p>
-                {% for field in bio_form %}
-                    {% if field.name != 'email' %}
+                <div class="row">
+                    {% for field in auth_form %}
+                        {% if forloop.counter0 == 3 %}
+                            <hr class="my-5"/>
+                            <p class="lead">(Optional) Biographical information</p>
+                        {% endif %}
+
+                        {% if forloop.counter0 == 6 %}
+                            <hr class="my-5"/>
+                            <p class="lead">(Optional) Contact information</p>
+                        {% endif %}
                         <label for="{{ field.id_for_label }}" class="col-md-4 col-form-label">
                             {{ field.label }}
                         </label>
@@ -53,28 +45,10 @@
                                 </ul>
                             </div>
                         </div>
-                    {% endif %}
-                {% endfor %}
-                <hr class="my-5"/>
-                <p class="lead">(Optional) Shipping information</p>
-                {% for field in ship_form %}
-                    <label for="{{ field.id_for_label }}" class="col-md-4 col-form-label">
-                        {{ field.label }}
-                    </label>
-                    <div class="col-md-8">
-                        {{ field }}
-                        <div class="text-danger text-small">
-                            <ul class="ml-0">
-                                {% for error in field.errors  %}
-                                    <li class="text-danger small">{{ error }}</li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-                {% endfor %}
+                    {% endfor %}
+                </div>
                 <div class="row my-3">
                     <div class="col">
-                        <input type="reset" class="btn btn-outline-secondary me-5" value="Clear">
                         <input type="submit" class="btn btn-primary px-4" value="Register" name="submit">
                     </div>
                 </div>

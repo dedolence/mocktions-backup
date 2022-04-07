@@ -1,0 +1,11 @@
+{% extends 'auctions/layout.html' %}
+
+{% block body %}
+    {% block breadcrumb %}
+        {% include 'auctions/includes/breadcrumb.html' with page='Logged out' %}
+    {% endblock breadcrumb %}
+
+    <p class="lead">You have been logged out.</p>
+    <p><a href="{% url 'login' %}">Click here</a> to log back in.</p>
+{% endblock body %}
+

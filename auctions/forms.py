@@ -1,8 +1,9 @@
 # Not going to use this after all, as I'd prefer writing the form manually to have better control over styles with Bootstrap
 
 from django import forms
-from .models import Listing, UserImage, Category
-
+from .models import Listing, User, UserImage, Category
+from django.contrib.auth.forms import UserCreationForm
+from django.conf import settings
 
 category_choices = [(c.id, c.content) for c in Category.objects.all()]
 
@@ -72,39 +73,112 @@ class NewImageForm(forms.ModelForm):
             'image': 'Upload an image:'
         }
 
-class RegistrationForm(forms.Form):
-    username = forms.CharField(
-        label="Username", 
+
+class RegistrationForm(UserCreationForm):
+
+    first_name = forms.CharField(
+        label="First name", 
         max_length=50,
+        required=False,
         widget=forms.TextInput(
-            attrs={'class': 'form-control', 'placeholder': 'Username'}
+            attrs={'class': 'form-control', 'placeholder': 'First name'}
         )
     )
 
-    email = forms.EmailField(
-        label="Email address", 
-        max_length=100,
+    last_name = forms.CharField(
+        label="Last name", 
+        max_length=50,
+        required=False,
         widget=forms.TextInput(
+            attrs={'class': 'form-control', 'placeholder': 'Last name'}
+        )
+    )
+    
+    email = forms.CharField(
+        label="Email address",
+        max_length=100,
+        required=False,
+        widget=forms.EmailInput(
             attrs={'class': 'form-control', 'placeholder': 'Email address'}
         )
     )
-
-    password = forms.CharField(
-        label="Password", 
-        max_length=50,
-        widget=forms.PasswordInput(
-            attrs={'class': 'form-control', 'placeholder': 'Password'}
+    
+    phone = forms.CharField(
+        label="Phone number", 
+        max_length=20,
+        required=False,
+        widget=forms.TextInput(
+            attrs={'class': 'form-control', 'placeholder': 'Phone number'}
         )
     )
 
-    confirm_password = forms.CharField(
-        label="Confirm your password",
+    street = forms.CharField(
+        label="Street", 
         max_length=50,
-        widget=forms.PasswordInput(
-            attrs={'class': 'form-control', 'placeholder': 'Confirm your password'}
+        required=False,
+        widget=forms.TextInput(
+            attrs={'class': 'form-control', 'placeholder': 'Street'}
         )
     )
 
+    city = forms.CharField(
+        label="City", 
+        max_length=50,
+        required=False,
+        widget=forms.TextInput(
+            attrs={'class': 'form-control', 'placeholder': 'City'}
+        )
+    )
+
+    state = forms.CharField(
+        label="State/Region/Province", 
+        max_length=50,
+        required=False,
+        widget=forms.TextInput(
+            attrs={'class': 'form-control', 'placeholder': 'State/Region/Province'}
+        )
+    )
+
+    postcode = forms.CharField(
+        label="Postal code", 
+        max_length=20,
+        required=False,
+        widget=forms.TextInput(
+            attrs={'class': 'form-control', 'placeholder': 'Postal code'}
+        )
+    )
+
+    country = forms.CharField(
+        label="Country", 
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(
+            attrs={'class': 'form-control', 'placeholder': 'Country'}
+        )
+    )
+
+    class Meta:
+        model = User
+        fields = [
+            'username',
+            'password1', 
+            'password2',
+            'first_name',
+            'last_name',
+            'email', 
+            'street',
+            'city',
+            'state',
+            'postcode',
+            'country',
+            'phone'
+            ]
+    
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.fields['username'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Username'})
+        self.fields['password1'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Password'})
+        self.fields['password2'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Confirm Password'})
 
 class ContactForm(forms.Form):
     first_name = forms.CharField(

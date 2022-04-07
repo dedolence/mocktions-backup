@@ -19,7 +19,9 @@ ajax_urls_include = [
 
 urlpatterns = [
     path("", views.index, name="index"),
-    path("accounts/<str:username>", views.view_user, name="view_user"),
+    path("accounts/", include('django.contrib.auth.urls')),
+    path("accounts/profile/<str:username>/", views.view_user, name="view_user"),
+    path("accounts/profile/", views.view_all_users, name="view_all_users"),
     path("ajax/", include(ajax_urls_include)),
     path("bid", views.place_bid, name="place_bid"),
     path("cart", views.shopping_cart, name="shopping_cart"),
@@ -33,9 +35,9 @@ urlpatterns = [
     path("edit/<int:listing_id>", views.edit_listing, name="edit_listing"),
     path("listings/", views.listings, name="all_listings"),
     path("listings/view/<int:listing_id>", views.listing_page, name="view_listing"),
-    path("login", views.login_view, name="login"),
-    path("logout", views.logout_view, name="logout"),
-    # path('preview/', views.preview_listing, name="preview_listing"), OBSOLETE
+    #path("login", views.login_view, name="login"),
+    #path("logout", views.logout_view, name="logout"),
+    #path('preview/', views.preview_listing, name="preview_listing"), OBSOLETE
     path("register", views.register, name="register"),
     path("search", views.search, name="search"),
     path("settings", views.settings, name="settings"),

@@ -1,8 +1,8 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
 from .models import Notification, User, Listing, Bid, Comment, Category, UserImage
 
-# Register your models here.
-admin.site.register(User)
+admin.site.register(User, UserAdmin)
 admin.site.register(Listing)
 admin.site.register(Bid)
 admin.site.register(Comment)

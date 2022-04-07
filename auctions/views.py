@@ -7,6 +7,7 @@ import uuid
 
 import requests
 from django.contrib.auth import authenticate, login, logout
+# from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.core import files
 from django.db import IntegrityError
@@ -19,7 +20,7 @@ from django.views.decorators.http import require_http_methods
 
 from . import namelist, wordlist
 from .ajax_controls import *
-from .forms import ContactForm, NewImageForm, NewListingCreateForm, NewListingSubmitForm, RegistrationForm, ShippingInformation
+from .forms import NewListingCreateForm, NewListingSubmitForm, RegistrationForm
 from .globals import *
 from .models import Bid, Category, Comment, UserImage, Listing, User
 from .notifications import *
@@ -109,7 +110,7 @@ def comment(request):
 
 @login_required
 @require_http_methods(["GET", "POST"])
-def create_listing(request, listing_id=None):
+def create_listing(request):
     """GET: generate a blank form and render template.
     POST: Create a Listing object, attach images, and redirect
     to edit_listing.py.
@@ -189,7 +190,8 @@ def delete_listing(request, listing_id):
 @login_required
 def drafts(request):
     notifications = get_notifications(request.user, reverse('drafts'))
-    drafts = Listing.objects.filter(owner=request.user).filter(active=False)
+    results = Listing.objects.filter(owner=request.user, active=False)
+    drafts = [listing for listing in results if listing.expired == False]
     return render(request, 'auctions/drafts.html', {
         'drafts': drafts,
         'notifications': notifications
@@ -208,10 +210,14 @@ def edit_listing(request, listing_id):
     if (request.user != listing.owner 
         or listing.current_bid 
         or listing.expired):
-        notification.set_message(
-            ICON_DANGER, 
-            MESSAGE_LISTING_EDIT_PROHIBITED.format(listing.title)
-            )
+        notification.build(
+            request.user,
+            TYPE_WARNING,
+            ICON_WARNING,
+            MESSAGE_LISTING_EDIT_PROHIBITED.format(listing.title),
+            True,
+            reverse('index')
+        )
         notification.save()
         return HttpResponseRedirect(reverse("index"))
 
@@ -359,85 +365,36 @@ def place_bid(request):
         return HttpResponseRedirect(
             reverse("view_listing", args=[listing_id]))
 
-"""
-OBSOLETE
-
-@login_required
-def preview_listing(request):
-    notification = NotificationTemplate()
-    # save the POST data as a new temporary listing
-    form = NewListingCreateForm(request.POST)
-    new_listing = form.save(commit=False)
-    new_listing.owner = request.user
-    new_listing.save()
-    form.save_m2m()
-    image_ids = request.POST.getlist('images', None)
-    images = [UserImage.objects.get(pk=id) for id in image_ids]
-    # set the foriegnkey for each uploaded image to the new listing
-    for image in images:
-        image.listing = new_listing
-        image.save()
-    context = {
-        'notifications': get_notifications(
-            request.user, 
-            reverse('create_listing')
-            ),
-        'form': form,
-        'images': images,
-        'listing': new_listing,
-        'form_mode': LISTING_FORM_PREVIEW
-    }
-    return render(request, 'auctions/previewListing.html', context)
-"""
-
-
 
 def register(request):
     notification = NotificationTemplate()
     if request.method == "POST":
-        username = request.POST["username"]
-        email = request.POST["email"]
-
-        # Ensure password matches confirmation
-        password = request.POST["password"]
-        confirmation = request.POST["confirm_password"]
-        if password != confirmation:
-            return render(request, "auctions/register.html", {
-                "message": MESSAGE_REG_PASSWORD_MISMATCH
+        form = RegistrationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            user = authenticate(
+                username=form.cleaned_data['username'],
+                password=form.cleaned_data['password1']
+                )
+            login(request, user)
+            notification.build(
+                user,
+                TYPE_SUCCESS,
+                ICON_SUCCESS,
+                MESSAGE_REG_SUCCESS,
+                False,
+                reverse('index')
+            )
+            notification.save()
+            return HttpResponseRedirect(reverse('index'))
+        else:
+            return render(request, 'auctions/register.html', {
+                'auth_form': form
             })
-
-        # Attempt to create new user
-        try:
-            user = User.objects.create_user(username, email, password)
-
-            # apply any other biographical details
-            for k, v in request.POST.items():
-                setattr(user, k, v)
-            
-            user.save()
-        except IntegrityError:
-            return render(request, "auctions/register.html", {
-                "message": MESSAGE_REG_USERNAME_TAKEN
-            })
-        login(request, user)
-        notification.build(
-            user,
-            TYPE_SUCCESS,
-            ICON_SUCCESS,
-            MESSAGE_REG_SUCCESS,
-            False,
-            reverse('index')
-        )
-        notification.save()
-        return HttpResponseRedirect(reverse("index"))
     else:
-        cred_form = RegistrationForm()
-        bio_form = ContactForm()
-        ship_form = ShippingInformation()
-        return render(request, "auctions/register.html", {
-            'cred_form': cred_form,
-            'bio_form': bio_form,
-            'ship_form': ship_form
+        form = RegistrationForm()
+        return render(request, 'auctions/register.html', {
+            'auth_form': form
         })
 
 
@@ -463,7 +420,8 @@ def search(request):
     
 
 def settings(request):
-    if not request.user.is_authenticated:
+    pass
+    """ if not request.user.is_authenticated:
         return render(request, reverse("index"))
     else:
         profile_picture_form = NewImageForm()
@@ -642,7 +600,7 @@ def settings(request):
                     request.user, reverse('settings')
                     )
             })
-
+ """
 
 def shopping_cart(request):
     return HttpResponseRedirect(reverse('index'))

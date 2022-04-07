@@ -1,7 +1,5 @@
-import math
-import os
-from unittest.util import _MAX_LENGTH
 import uuid
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models.deletion import CASCADE, PROTECT
@@ -81,7 +79,7 @@ def get_expiration(listing) -> dict:
 
 class Bid(models.Model):
     amount = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=False) # max_digits includes decimal places!
-    user = models.ForeignKey('User', on_delete=PROTECT, null=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=PROTECT, null=True)
     listing = models.ForeignKey('Listing', on_delete=CASCADE, null=True, related_name="bids")
     def __str__(self):
         return f"Amount: {self.amount} by {self.user_id}"
@@ -96,35 +94,16 @@ class Category(models.Model):
 class Comment(models.Model):
     content = models.TextField(max_length=200, null=True, blank=False)
     listing = models.ForeignKey('Listing', on_delete=CASCADE, blank=False, related_name="listings_comments")
-    user = models.ForeignKey('User', on_delete=PROTECT, null=True, related_name="users_comments")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=PROTECT, null=True, related_name="users_comments")
     replyTo = models.ForeignKey('Comment', on_delete=CASCADE, null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
-
-
-""" class Listing(models.Model):
-    image_url = models.CharField(max_length=200, null=True, blank=False)
-    title = models.CharField(max_length=64, null=True, blank=False)
-    description = models.TextField(max_length=500, null=True, blank=False)
-    starting_bid = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=False)
-    shipping = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=False)
-    owner = models.ForeignKey('User', on_delete=PROTECT, null=True)
-    winner = models.ForeignKey('User', on_delete=PROTECT, related_name='won_listings', null=True, blank=True)
-    winning_bid = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
-    category = models.ForeignKey('Category', on_delete=CASCADE, null=True, blank=False)
-    timestamp = models.DateTimeField(auto_now_add=True, null=True)
-    active = models.BooleanField(default=True, null=False)
-    lifespan = models.IntegerField(default=1, help_text="days until listing expires.")
-    objects = models.Manager()
-
-    def __str__(self) -> str:
-        return "Listing: " + self.title """
 
 
 class Listing(models.Model):
     """ Temporary listing that mirrors Listing but with no requirements."""
     owner = models.ForeignKey(
-        'User', 
-        on_delete=PROTECT, 
+        settings.AUTH_USER_MODEL, 
+        on_delete=CASCADE, 
         null=True, 
         blank=False, 
         related_name="all_listings"
@@ -193,8 +172,8 @@ class Listing(models.Model):
 
     @property
     def winner(self):
-        if self.expired == True:
-            return self.current_bid.user or None
+        if self.expired == True and self.current_bid:
+            return self.current_bid.user
         else:
             return None
     
@@ -207,7 +186,7 @@ class Listing(models.Model):
 
 
 class Notification(models.Model):
-    user = models.ForeignKey('User', on_delete=CASCADE, related_name="notifications")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=CASCADE, related_name="notifications", blank=True)
     content = models.CharField(max_length=200, null=False, blank=False)
     timestamp = models.DateTimeField(auto_now_add=True)
     type = models.CharField(max_length=50, blank=True, null=False, default='primary', 
@@ -237,7 +216,7 @@ class User(AbstractUser):
 # note: i was initially concerned about filename conflicts, but it looks like Django
 # appends random characters to filenames if there is a conflict.
 class UserImage(models.Model):
-    owner = models.ForeignKey(User, on_delete=CASCADE, blank=True)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=CASCADE, blank=True)
     listing = models.ForeignKey(
         Listing, 
         on_delete=CASCADE, 
