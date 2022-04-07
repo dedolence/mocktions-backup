@@ -23,8 +23,8 @@ class NotificationTemplate():
             strings.MESSAGE_GENERIC_TEMPLATE
         ).format(icon=icon, message=message)
 
-    def set_autodelete(self, ad):
-        self.notification.autodelete = ad
+    def set_autodelete(self, autodelete):
+        self.notification.autodelete = autodelete
         
     def set_message(self, icon, message):
         self.notification.content = (

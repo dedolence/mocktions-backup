@@ -33,11 +33,13 @@ def ajax_delete_comment(request):
 
 
 def ajax_dismiss_notification(request):
-    try:
-        notification = Notification.objects.get(pk=id)
+    notification_id = request.POST.get('notification_id', None)
+    if notification_id:
+        notification = Notification.objects.get(pk=notification_id)
         notification.delete()
-    except Notification.ObjectDoesNotExist:
-        pass
+        return JsonResponse({})
+    else:
+        return JsonResponse({}, status=404)
 
 
 def ajax_generate_comment(request):

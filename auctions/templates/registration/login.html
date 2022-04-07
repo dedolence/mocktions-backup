@@ -8,9 +8,24 @@
 
     {% block logged_out %}{% endblock logged_out %}
 
-    {% if message %}
-        <div class="alert alert-info">{% autoescape off %}{{ message }}{% endautoescape %}</div>
-    {% endif %}
+    <div class="alert alert-info">
+        <p><strong>Welcome to Mocktions!</strong></p>
+        <p>While you're here, I'd appreciate it if you could try out some of the features.
+        To make it easier, I've added buttons to fill out most forms with randomly-
+        generated information.</p><p>For instance, you can generate a random user by 
+        clicking on <a href='register' class='alert-link'>register</a> 
+        and then clicking the "Generate a random user" button. However, if you'd 
+        like, you can also log in with one of the following generic users: 
+        <ul>
+            <li><strong>Username - <em>Password</em></strong></li>
+            <li>alice - <em>default</em></li>
+            <li>bob - <em>default</em></li>
+            <li>charlie - <em>default</em></li>
+        </ul>
+        <p>If you notice any problems, please let me know 
+        by emailing me at <a href='mailto:nhahoyt+mocktions@gmail.com' class='alert-link'>
+        nhahoyt@gmail.com</a>. Thanks!</p>
+    </div>
 
     {% if form.errors %}
             <div class="alert alert-warning">Username and password didn't match.</div>

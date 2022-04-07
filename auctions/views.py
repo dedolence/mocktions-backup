@@ -179,12 +179,14 @@ def delete_listing(request, listing_id):
         })
     else:
         listing.delete()
+        notification = NotificationTemplate()
         notification.build(
             request.user,
             TYPE_SUCCESS,
             ICON_SUCCESS,
-            MESSAGE_USER_LISTING_DELETED,
-            True
+            MESSAGE_USER_LISTING_DELETED.format(listing.title),
+            False,
+            reverse('index')
         )
         notification.save()
         return HttpResponseRedirect(reverse('index'))
@@ -255,10 +257,13 @@ def index(request):
     else:
         # purge listings that have expired
         purge_listings(request)
+        notification = NotificationTemplate()
+        notification.build(request.user, TYPE_INFO, ICON_GENERIC, "blank", False, reverse('index'))
+        notification.save()
         notifications = get_notifications(request.user, reverse('index'))
         active_listings_raw = Listing.objects.filter(owner=request.user)
         listing_page_tuple = get_page(request, active_listings_raw)
-        return render(request, "auctions/indexex.html", {
+        return render(request, "auctions/index.html", {
             'listing_controls': listing_page_tuple[0],
             'listings': listing_page_tuple[1],
             'notifications': notifications
@@ -730,7 +735,7 @@ def generate_listing(request):
         lifespan = random.randint(1, 30)
     )
     
-    for i in range(0, random.randint(1,10)):
+    for i in range(0, random.randint(1, MAX_UPLOADS_PER_LISTING)):
         image = get_image(request, None, None, listing)
     
     return listing
