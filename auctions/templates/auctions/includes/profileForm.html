@@ -1,0 +1,89 @@
+{% if form_action == 'settings' %}
+    {% url 'settings' as form_url %}
+{% elif form_action == 'register' %}
+    {% url 'register' as form_url %}
+{% endif %}
+
+<form action="{{ form_url }}" method="post" class="container my-5 p-0">
+    {% csrf_token %}
+    <div class="col-md-8">
+        <div class="container-fluid">
+            {% if form_action == 'register' %}
+                <div class="row mb-3">
+                    <div class="col-sm-4">
+                        <input id="randomUserButton" type="button" value="Generate a random user" class="btn btn-outline-primary" onclick="generateUser()">
+                    </div>
+                    <hr class="my-5"/>
+                </div>
+            {% endif %}
+                
+            {% for field in form %}
+                {% if form_action == 'register' %}
+                    {% if forloop.counter0 == 0 %}
+                        <div class="row">
+                            <div class="col-md-4"></div>
+                            <div class="col-md-8">
+                                <p class="lead  mb-4">(Required) User credentials</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if forloop.counter0 == 3 %}
+                        <div class="row">
+                            <hr class="my-5"/>
+                            <div class="col-md-4"></div>
+                            <div class="col-md-8">
+                                <p class="lead mb-4">(Optional) Biographical information</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if forloop.counter0 == 6 %}
+                        <div class="row">
+                            <hr class="my-5"/>
+                            <div class="col-md-4"></div>
+                            <div class="col-md-8">
+                                <p class="lead mb-4">(Optional) Contact information</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% elif form_action == 'settings' %}
+                    {% if forloop.counter0 == 0 %}
+                        {% include 'auctions/includes/uploadImage.html' %}
+                        <div class="row">
+                            <hr class="my-5"/>
+                            <p class="lead mb-4">(Optional) Biographical information</p>
+                        </div>
+                    {% endif %}
+                    {% if forloop.counter0 == 3 %}
+                        <div class="row">
+                            <hr class="my-5"/>
+                            <p class="lead mb-4">(Optional) Contact information</p>
+                        </div>
+                    {% endif %}
+                {% endif %}
+                <div class="row">
+                    <label for="{{ field.id_for_label }}" class="col-md-4 col-form-label">
+                        {{ field.label }}
+                    </label>
+                    <div class="col-md-8">
+                        {{ field }}
+                        <div class="text-danger text-small">
+                            <ul class="ml-0">
+                                {% for error in field.errors  %}
+                                    <li class="text-danger small">{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+
+            <div class="row my-3">
+                <div class="col-md-4"></div>
+                <div class="col-md-8">
+                    <input type="submit" class="btn btn-primary px-4" value="Submit" name="submit">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4"></div>
+</form>

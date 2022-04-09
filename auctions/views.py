@@ -4,6 +4,7 @@ import random
 from secrets import randbelow
 import tempfile
 from tkinter import image_names
+from urllib.request import HTTPRedirectHandler
 import uuid
 
 import requests
@@ -21,7 +22,7 @@ from django.views.decorators.http import require_http_methods
 
 from . import namelist, wordlist
 from .ajax_controls import *
-from .forms import NewListingCreateForm, NewListingSubmitForm, RegistrationForm
+from .forms import BioForm, NewListingCreateForm, NewListingSubmitForm, RegistrationForm
 from .globals import *
 from .models import Bid, Category, Comment, UserImage, Listing, User
 from .notifications import *
@@ -257,9 +258,6 @@ def index(request):
     else:
         # purge listings that have expired
         purge_listings(request)
-        notification = NotificationTemplate()
-        notification.build(request.user, TYPE_INFO, ICON_GENERIC, "blank", False, reverse('index'))
-        notification.save()
         notifications = get_notifications(request.user, reverse('index'))
         active_listings_raw = Listing.objects.filter(owner=request.user)
         listing_page_tuple = get_page(request, active_listings_raw)
@@ -392,18 +390,18 @@ def register(request):
                 ICON_SUCCESS,
                 MESSAGE_REG_SUCCESS,
                 False,
-                reverse('index')
+                reverse('settings')
             )
             notification.save()
-            return HttpResponseRedirect(reverse('index'))
+            return HttpResponseRedirect(reverse('settings'))
         else:
             return render(request, 'auctions/register.html', {
-                'auth_form': form
+                'form': form
             })
     else:
         form = RegistrationForm()
         return render(request, 'auctions/register.html', {
-            'auth_form': form
+            'form': form
         })
 
 
@@ -428,8 +426,28 @@ def search(request):
     })
     
 
+@login_required
 def settings(request):
-    pass
+    if request.method == "GET":
+        form = BioForm(instance=request.user)
+        return render(request, 'auctions/settings.html', {
+            'form': form
+        })
+    else:
+        form = BioForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            notification = NotificationTemplate()
+            notification.build(
+                request.user,
+                TYPE_SUCCESS,
+                ICON_SUCCESS,
+                MESSAGE_USER_PROFILE_UPDATE_SUCCESS,
+                True,
+                reverse('settings')
+            )
+            notification.save()
+            return HttpResponseRedirect(reverse('settings'))
     """ if not request.user.is_authenticated:
         return render(request, reverse("index"))
     else:

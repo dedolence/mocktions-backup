@@ -2,11 +2,11 @@
 AJAX_URLS
 
 
-async function make_fetch(formData, url) {
+async function make_fetch(formData, url, method="POST") {
     // need some way to timeout a request
     const csrf_token = document.querySelector('[name=csrfmiddlewaretoken]').value;
     return fetch(url, {
-        method: 'POST',
+        method: method,
         body: formData,
         headers: {'X-CSRFToken': csrf_token}
     })
@@ -31,8 +31,8 @@ async function make_fetch(formData, url) {
 // Upload an image an return its properties
 async function ajax_upload_media(elementArray, url) {
     // check to see if we can upload any more images
-    const formThumbnails = document.getElementById("formThumbnails");
-    const previewThumbnails = document.getElementById("previewThumbnails");
+    const formThumbnails = $("formThumbnails");
+    const previewThumbnails = $("previewThumbnails");
     const currentImageCount = formThumbnails.children.length;
 
     let formData = new FormData();
@@ -67,23 +67,12 @@ async function ajax_upload_media(elementArray, url) {
     });
     
     // load a loading progress modal because this can take some time
-    const loadingModalElement = document.getElementById('loadingImageModal');
+    const loadingModalElement = $('loadingImageModal');
     const loadingModal = new bootstrap.Modal(loadingModalElement);
     loadingModal.show();
 
     make_fetch(formData, url)
-    .then(r => {
-        if (r.error) {
-            let errorDiv = generateListingFormError(r.error);
-            let errorContainer = document.getElementById('formErrors');
-            errorContainer.appendChild(errorDiv);
-            loadingModal.hide();
-        }
-        else {
-            return r;
-        }
-    })
-    .then(r => {
+    .then((r) => {
         // r = {
         //  paths: [source paths for images], 
         //  ids: [primary keys], 
@@ -92,14 +81,14 @@ async function ajax_upload_media(elementArray, url) {
         if (r.paths.length > 0) {
             formThumbnails.innerHTML += r.html;
             if (previewThumbnails) {
-                let placeholder = document.getElementById('imagesPlaceholder');
+                let placeholder = $('imagesPlaceholder');
                 if (placeholder) {
                     placeholder.parentElement.removeChild(placeholder);
                 }
                 previewThumbnails.innerHTML += r.html;
             }
             // add image ids to a list that will be sent to server to be referenced by the listing
-            let imageIdList = document.getElementById('selectImageInput');
+            let imageIdList = $('selectImageInput');
             let i = 0, n = r.ids.length;
             for (i, n; i < n; i++) {
                 let optionElement = document.createElement('option');
@@ -118,6 +107,13 @@ async function ajax_upload_media(elementArray, url) {
         // the modal if it's still being displayed. 
         window.setTimeout(() => { loadingModal.hide(); }, 1000);
     })
+    .catch((error) => {
+        let errorDiv = generateListingFormError(error);
+        let errorContainer = $('uploadImageError');
+        errorContainer.appendChild(errorDiv);;
+        loadingModal.hide();
+    });
+    
 }
 
 
@@ -147,7 +143,7 @@ function ajax_purge_media(elementArray, url) {
         // remove this from targets as it's no longer target-able
         TARGETS.splice(TARGETS.indexOf(img_target), 1);
         img_target.parentElement.removeChild(img_target);
-        let imageIdList = document.getElementById('selectImageInput');
+        let imageIdList = $('selectImageInput');
         let i = 0; n = imageIdList.children.length;
         for (i, n; i < n; i++) {
             let child = imageIdList.children[i];

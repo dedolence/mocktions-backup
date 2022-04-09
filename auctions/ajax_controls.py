@@ -51,10 +51,6 @@ def ajax_generate_comment(request):
     return JsonResponse(response)
 
 
-def ajax_generate_user(request):
-    return requests.get('https://randomuser.me/api/').json()["results"][0]
-
-
 def ajax_purge_media(request):
     img_id = request.POST.get('img_id', None)
     img_mod = UserImage.objects.get(pk=img_id)

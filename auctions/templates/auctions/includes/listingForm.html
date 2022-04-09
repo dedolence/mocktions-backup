@@ -6,13 +6,13 @@
             <div id="formErrors">
                 {% if form.non_field_errors %}
                     <div class="row mb-4"><p class="mark">{{ form.non_field_errors }}</p></div>
+                    <hr class="my-5"/>
                 {% endif %}
             </div>
 
-            <hr class="my-5"/>
             <p class="lead my-4">Please fill out all fields.</p>
 
-            <form method="POST" id="listingForm" enctype="multipart/form-data">
+            <form method="POST" id="listingForm" enctype="multipart/form-data" class="container-fluid p-0 m-0">
                 {% csrf_token %}
 
                 {# Display option to generate a random listing #}
@@ -29,20 +29,17 @@
                 
                 <input type="hidden" name="listing_id" value="{{ listing.id }}">
 
+                <div class="row mb-4">
+                    <label class="col-form label col-md-4" for="id_upload_image">Include at least one image (maximum 10 images):</label>
+                    <div class="col-md-8">
+                        <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addImageModal" type="button">
+                            <i class="bi bi-card-image"></i> Add image
+                        </button>
+                    </div>
+                </div>
+                
                 {# Include the subform for adding images to this listing #}
-                {% include 'auctions/includes/uploadImageForm.html' with images=listing.all_images %}
-
-                {% comment%}
-                    This select element won't be visible to the user, but will be populated by Javascript
-                    with the database IDs of any images that the user uploads for the listing. Those will
-                    be sent to the server and, if this listing is saved, linked via foreignkey to this new
-                    listing.
-                {% endcomment %}
-                <select class="d-none" name="images" id="selectImageInput" multiple>
-                    {% for image in listing.all_images %}
-                        <option value="{{ image.id }}" selected></option>
-                    {% endfor %}
-                </select>
+                {% include 'auctions/includes/uploadImage.html' with images=listing.all_images %}
 
                 {# Display field forms according to the modelform #}
                 {% for field in form %}

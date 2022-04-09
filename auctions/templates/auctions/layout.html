@@ -17,6 +17,10 @@
         <script src = "https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
         {% endcomment %}
         <script>
+            function $(id) {
+                return document.getElementById(id);
+            }
+            
             const AJAX_URLS = {
                 {% for func in ajax %}
                     {{ func }}: "{% url func %}",

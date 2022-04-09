@@ -74,7 +74,7 @@ class NewImageForm(forms.ModelForm):
         }
 
 
-class RegistrationForm(UserCreationForm):
+class BioForm(forms.ModelForm):
 
     first_name = forms.CharField(
         label="First name", 
@@ -160,6 +160,23 @@ class RegistrationForm(UserCreationForm):
     class Meta:
         model = User
         fields = [
+            'first_name',
+            'last_name',
+            'email',
+            'street',
+            'city',
+            'state',
+            'postcode',
+            'country',
+            'phone'
+            ]
+
+
+class RegistrationForm(UserCreationForm, BioForm):
+
+    class Meta:
+        model = User
+        fields = [
             'username',
             'password1', 
             'password2',
@@ -180,45 +197,6 @@ class RegistrationForm(UserCreationForm):
         self.fields['password1'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Password'})
         self.fields['password2'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Confirm Password'})
 
-class ContactForm(forms.Form):
-    first_name = forms.CharField(
-        label="First name", 
-        max_length=50,
-        required=False,
-        widget=forms.TextInput(
-            attrs={'class': 'form-control', 'placeholder': 'First name'}
-        )
-    )
-
-    last_name = forms.CharField(
-        label="Last name", 
-        max_length=50,
-        required=False,
-        widget=forms.TextInput(
-            attrs={'class': 'form-control', 'placeholder': 'Last name'}
-        )
-    )
-    
-    email = forms.CharField(
-        label="Email address",
-        max_length=100,
-        required=False,
-        widget=forms.EmailInput(
-            attrs={'class': 'form-control', 'placeholder': 'Email address'}
-        )
-    )
-    
-    phone = forms.CharField(
-        label="Phone number", 
-        max_length=20,
-        required=False,
-        widget=forms.TextInput(
-            attrs={'class': 'form-control', 'placeholder': 'Phone number'}
-        )
-    )
-
-
-class ShippingInformation(forms.Form):
     street = forms.CharField(
         label="Street", 
         max_length=50,

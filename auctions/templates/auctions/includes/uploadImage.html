@@ -1,0 +1,39 @@
+<div class="row" id="uploadImageError"></div>
+<div class="row">
+    <div class="col-md-4"></div>
+    <div class="col-md-8">
+        <div id="formThumbnails" class="container d-flex flex-row flex-wrap p-0">
+            {% if images %}
+                {% for image in images %}
+                    {% include 'auctions/includes/imageThumbnail.html' with image=image click_action='showEditImageModal' %}
+                {% endfor %}
+            {% endif %}
+            {% comment%}
+                This select element won't be visible to the user, but will be populated by Javascript
+                with the database IDs of any images that the user uploads for the listing. Those will
+                be sent to the server and, if this listing is saved, linked via foreignkey to this new
+                listing.
+            {% endcomment %}
+            <select class="d-none" name="images" id="selectImageInput" multiple>
+                {% for image in images %}
+                    <option value="{{ image.id }}" selected></option>
+                {% endfor %}
+            </select>
+        </div>
+
+        {% include 'auctions/includes/addImageModal.html' %}
+
+        {% include 'auctions/includes/imageModal.html' with mode='showEditImageModal' %}
+
+        <div id="loadingImageModal" class="modal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="loadingImageModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-center">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <h3 id="loadingImageModalLabel">Loading image...</h3>
+                        <p>This can take a little while sometimes.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

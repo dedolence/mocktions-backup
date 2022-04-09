@@ -63,6 +63,7 @@ MESSAGE_USER_LISTING_DELETE_PROMPT = "Are you sure you want to delete this listi
 MESSAGE_USER_PICTURE_UPLOAD_SUCCESS = "Upload successful!"
 MESSAGE_USER_PICTURE_UPLOAD_FAILURE = "Upload failed. Try a different picture maybe?"
 MESSAGE_USER_PICTURE_UPLOAD_FORMAT = "Upload failed. File format must be .jpg/.jpeg, .gif, .png, or .tiff."
+MESSAGE_USER_PROFILE_UPDATE_SUCCESS = "Profile updated."
 
 # Registration messages
 MESSAGE_REG_PASSWORD_MISMATCH = "Passwords must match."

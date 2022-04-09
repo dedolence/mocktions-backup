@@ -9,7 +9,6 @@ ajax_urls_include = [
     path('comment/delete/', ajax_controls.ajax_delete_comment, name='ajax_delete_comment'),
     path('notification/dismiss', ajax_controls.ajax_dismiss_notification, name='ajax_dismiss_notification'),
     path('comment/generate/', ajax_controls.ajax_generate_comment, name='ajax_generate_comment'),
-    path('user/generate/', ajax_controls.ajax_generate_user, name='ajax_generate_user'),
     path('media/purge/', ajax_controls.ajax_purge_media, name='ajax_purge_media'),
     path('comment/reply/', ajax_controls.ajax_reply_comment, name='ajax_reply_comment'),
     path('media/upload/', ajax_controls.ajax_upload_media, name='ajax_upload_media'),
