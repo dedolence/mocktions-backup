@@ -129,6 +129,8 @@ function generateUser() {
         postcodeField.value = res.location.postcode;
         countryField.value = res.location.country;
         phoneField.value = res.phone;
+
+        ajax_upload_media([], AJAX_URLS.ajax_upload_media);
     })
 }
 

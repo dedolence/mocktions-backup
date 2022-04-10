@@ -204,7 +204,9 @@ class Notification(models.Model):
 class User(AbstractUser):
     default_image = static('auctions/images/user_avatar.png')
     watchlist = models.ManyToManyField('Listing', blank=True)
-    profile_picture = models.CharField(max_length=100, default=default_image)
+    #profile_picture = models.CharField(max_length=100, default=default_image)
+    #profile_picture = models.ForeignKey('UserImage', on_delete=PROTECT, blank=True)
+    profile_pic = models.ForeignKey('UserImage', on_delete=PROTECT, blank=True, null=True)
     street = models.CharField(max_length=100, blank=True)
     city = models.CharField(max_length=100, blank=True)
     state = models.CharField(max_length=100, blank=True)
@@ -216,7 +218,7 @@ class User(AbstractUser):
 # note: i was initially concerned about filename conflicts, but it looks like Django
 # appends random characters to filenames if there is a conflict.
 class UserImage(models.Model):
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=CASCADE, blank=True)
+    #owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=CASCADE, blank=True, default=None)
     listing = models.ForeignKey(
         Listing, 
         on_delete=CASCADE, 

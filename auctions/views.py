@@ -150,10 +150,10 @@ def create_listing(request):
                     image = UserImage.objects.get(pk=id)
                     image.listing = listing
                     image.save()
-                # create a listing object but don't save it yet
-                listing.owner = request.user
-                listing.active = False
-                listing.save()
+                
+            listing.owner = request.user
+            listing.active = False
+            listing.save()
 
         return HttpResponseRedirect(reverse('edit_listing', args=[listing.id]))
 
@@ -374,26 +374,42 @@ def place_bid(request):
 
 
 def register(request):
+    if (request.user.is_authenticated):
+        return HttpResponseRedirect(reverse('index'))
+    
     notification = NotificationTemplate()
     if request.method == "POST":
         form = RegistrationForm(request.POST)
         if form.is_valid():
+            # create and authenticate user
             user = form.save()
             user = authenticate(
                 username=form.cleaned_data['username'],
                 password=form.cleaned_data['password1']
                 )
             login(request, user)
+            
+            # set profile picture, if provided
+            image_id = request.POST.getlist('images', None)[0]
+            if (image_id):
+                image = UserImage.objects.get(pk=image_id)
+                image.owner = user
+                image.save()
+                user.profile_pic = image
+                user.save()
+            
+            # create a welcome message
             notification.build(
                 user,
                 TYPE_SUCCESS,
                 ICON_SUCCESS,
                 MESSAGE_REG_SUCCESS,
                 False,
-                reverse('settings')
+                reverse('index')
             )
             notification.save()
-            return HttpResponseRedirect(reverse('settings'))
+
+            return HttpResponseRedirect(reverse('index'))
         else:
             return render(request, 'auctions/register.html', {
                 'form': form
@@ -437,6 +453,13 @@ def settings(request):
         form = BioForm(request.POST, instance=request.user)
         if form.is_valid():
             form.save()
+
+            if "images" in request.POST:
+                image_id = request.POST.getlist('images', None)[0]
+                image = UserImage.objects.get(pk=image_id)
+                request.user.profile_pic = image
+                request.user.save()
+
             notification = NotificationTemplate()
             notification.build(
                 request.user,
@@ -754,7 +777,9 @@ def generate_listing(request):
     )
     
     for i in range(0, random.randint(1, MAX_UPLOADS_PER_LISTING)):
-        image = get_image(request, None, None, listing)
+        image = get_image(request, None)
+        image.listing = listing
+        image.save()
     
     return listing
 

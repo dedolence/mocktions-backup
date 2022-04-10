@@ -13,7 +13,7 @@
                         </li>
                         <li class="list-group-item mb-3 pb-4">
                             <label class="lead mb-3" for="id_upload_image">Or, upload an image from your computer.</label>
-                            <input type="file" id="id_upload_image" name="upload_image" class="form-control" data-target="{{ ajax.ajax_upload_media.name }}" multiple="multiple">
+                            <input type="file" id="id_upload_image" name="upload_image" class="form-control" data-target="{{ ajax.ajax_upload_media.name }}" {{ multiple }}>
                         </li>
                         <li class="list-group-item mb-3 pb-4">
                             <label class="lead mb-3" for="id_url_image">Or, add an image from the internet.</label>

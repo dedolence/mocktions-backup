@@ -39,7 +39,7 @@
                 </div>
                 
                 {# Include the subform for adding images to this listing #}
-                {% include 'auctions/includes/uploadImage.html' with images=listing.all_images %}
+                {% include 'auctions/includes/uploadImage.html' with images=listing.all_images multiple="multiple" %}
 
                 {# Display field forms according to the modelform #}
                 {% for field in form %}

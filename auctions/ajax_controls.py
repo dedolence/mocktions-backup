@@ -99,7 +99,7 @@ def ajax_upload_media(request):
         else:
             # User provided URL of an image
             url = request.POST.get('url', None)
-            images = [get_image(request, url, reverse('create_listing'))]
+            images = [get_image(request, url)]
         
         if images:
             image_ids = [i.id for i in images]

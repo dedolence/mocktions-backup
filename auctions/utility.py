@@ -17,11 +17,10 @@ def get_highest_bid(listing) -> Bid:
     return bids.first()
 
 
-def get_image(request, url=None, page=None, listing=None) -> UserImage:
+def get_image(request, url=None) -> UserImage:
     """ Can be called with or without the url parameter. When no url
     is provided, a random image will be returned.
     """
-    notification = NotificationTemplate()
     if url:
         src_url = url
         filename = url.split('/')[-1].split('.')[0] + ".jpg"
@@ -33,39 +32,24 @@ def get_image(request, url=None, page=None, listing=None) -> UserImage:
     res = requests.get(src_url, stream=True)
     # make sure it's an image
     content_types = 'image/gif', 'image/jpeg', 'image/png', 'image/tiff'
-    if res.headers['content-type'] not in content_types:
-        notification.build(
-            request.user,
-            TYPE_WARNING,
-            ICON_WARNING,
-            MESSAGE_USER_PICTURE_UPLOAD_FORMAT,
-            True,
-            page
+    if res.headers['content-type'] in content_types:
+        # source for saving image to temp file:
+        # Mayank Jain https://medium.com/@jainmickey
+        img_temp = tempfile.NamedTemporaryFile(delete=True)
+        for block in res.iter_content(1024 * 8):
+            if not block:
+                break
+            img_temp.write(block)
+        img_source = files.images.ImageFile(
+            img_temp, 
+            name=filename
+            )
+        img_mod = UserImage(
+            image=img_source
         )
-        notification.save()
-        if not page:
-            page = reverse('index')
-        # TODO: this doesn't redirect, it just returns a redirect object to the javascript
-        return HttpResponseRedirect(page)
-    # source for saving image to temp file:
-    # Mayank Jain https://medium.com/@jainmickey
-    img_temp = tempfile.NamedTemporaryFile(delete=True)
-    for block in res.iter_content(1024 * 8):
-        if not block:
-            break
-        img_temp.write(block)
-    img_source = files.images.ImageFile(
-        img_temp, 
-        name=filename
-        )
-    img_mod = UserImage(
-        owner=request.user,
-        image=img_source
-    )
-    img_mod.listing = listing
-    img_mod.save_thumbnail()
-    img_mod.save()
-    return img_mod
+        img_mod.save_thumbnail()
+        img_mod.save()
+        return img_mod
 
 
 def get_listing(request, id=None, listing=None) -> dict:
@@ -177,7 +161,6 @@ def upload_images(request, files, listing=None) -> Array:
     uploaded_images = []
     for f in files:
         img_mod = UserImage(
-            owner=request.user,
             image=f,
             listing=listing
         )

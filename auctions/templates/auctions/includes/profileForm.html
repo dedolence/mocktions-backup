@@ -4,7 +4,7 @@
     {% url 'register' as form_url %}
 {% endif %}
 
-<form action="{{ form_url }}" method="post" class="container my-5 p-0">
+<form action="{{ form_url }}" method="POST" class="container my-5 p-0" enctype="multipart/form-data" >
     {% csrf_token %}
     <div class="col-md-8">
         <div class="container-fluid">
@@ -35,6 +35,17 @@
                                 <p class="lead mb-4">(Optional) Biographical information</p>
                             </div>
                         </div>
+                        <div class="row my-4">
+                            <div class="col-md-4">
+                                Add a profile picture
+                            </div>
+                            <div class="col-md-8">
+                                <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addImageModal" type="button">
+                                    <i class="bi bi-card-image"></i> Add image
+                                </button>
+                            </div>
+                        </div>
+                        {% include 'auctions/includes/uploadImage.html' %}
                     {% endif %}
                     {% if forloop.counter0 == 6 %}
                         <div class="row">
@@ -47,11 +58,21 @@
                     {% endif %}
                 {% elif form_action == 'settings' %}
                     {% if forloop.counter0 == 0 %}
-                        {% include 'auctions/includes/uploadImage.html' %}
                         <div class="row">
                             <hr class="my-5"/>
                             <p class="lead mb-4">(Optional) Biographical information</p>
                         </div>
+                        <div class="row my-4">
+                            <div class="col-md-4">
+                                Add a profile picture
+                            </div>
+                            <div class="col-md-8">
+                                <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#addImageModal" type="button">
+                                    <i class="bi bi-card-image"></i> Add image
+                                </button>
+                            </div>
+                        </div>
+                        {% include 'auctions/includes/uploadImage.html' %}
                     {% endif %}
                     {% if forloop.counter0 == 3 %}
                         <div class="row">

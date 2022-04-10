@@ -14,14 +14,14 @@
                 be sent to the server and, if this listing is saved, linked via foreignkey to this new
                 listing.
             {% endcomment %}
-            <select class="d-none" name="images" id="selectImageInput" multiple>
-                {% for image in images %}
-                    <option value="{{ image.id }}" selected></option>
-                {% endfor %}
-            </select>
         </div>
+        <select class="d-none" name="images" id="selectImageInput" multiple data-max="{{ img_max }}">
+            {% for image in images %}
+                <option value="{{ image.id }}" selected></option>
+            {% endfor %}
+        </select>
 
-        {% include 'auctions/includes/addImageModal.html' %}
+        {% include 'auctions/includes/addImageModal.html' with multiple=multiple %}
 
         {% include 'auctions/includes/imageModal.html' with mode='showEditImageModal' %}
 

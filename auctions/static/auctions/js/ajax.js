@@ -30,16 +30,26 @@ async function make_fetch(formData, url, method="POST") {
 
 // Upload an image an return its properties
 async function ajax_upload_media(elementArray, url) {
+    console.log(elementArray, url);
     // check to see if we can upload any more images
     const formThumbnails = $("formThumbnails");
-    const previewThumbnails = $("previewThumbnails");
+    //const previewThumbnails = $("previewThumbnails");
     const currentImageCount = formThumbnails.children.length;
+    const imageIdList = $('selectImageInput');
+    const errorContainer = $('uploadImageError');
+    //const placeholder = $('imagesPlaceholder');
+    let fileSourceElement;
+    // allow multiple file uploads?
+    let multiple = $('id_upload_image').multiple? true : false;
 
     let formData = new FormData();
         formData.append('currentImageCount', currentImageCount);
         formData.append('click_action', 'showImageEditModal');
-    
-    let fileSourceElement;
+
+    // loading progress modal
+    const loadingModalElement = $('loadingImageModal');
+    const loadingModal = new bootstrap.Modal(loadingModalElement);
+    loadingModal.show();
 
     // iterate through the elements and see which type of image we're fetching:
     // user can choose to add an image from a URL or upload from their computer.
@@ -65,12 +75,8 @@ async function ajax_upload_media(elementArray, url) {
             return;
         }
     });
-    
-    // load a loading progress modal because this can take some time
-    const loadingModalElement = $('loadingImageModal');
-    const loadingModal = new bootstrap.Modal(loadingModalElement);
-    loadingModal.show();
 
+    // send the file/url to the server, receive formatted HTMl in response
     make_fetch(formData, url)
     .then((r) => {
         // r = {
@@ -79,16 +85,19 @@ async function ajax_upload_media(elementArray, url) {
         //  html: "html string for appending to DOM"
         // }
         if (r.paths.length > 0) {
-            formThumbnails.innerHTML += r.html;
-            if (previewThumbnails) {
-                let placeholder = $('imagesPlaceholder');
-                if (placeholder) {
-                    placeholder.parentElement.removeChild(placeholder);
-                }
-                previewThumbnails.innerHTML += r.html;
+            if (multiple) {
+                formThumbnails.innerHTML += r.html;
+                /* if (previewThumbnails) {
+                    if (placeholder) {
+                        placeholder.parentElement.removeChild(placeholder);
+                    }
+                    previewThumbnails.innerHTML += r.html;
+                } */
+            } else {
+                formThumbnails.innerHTML = r.html;
+                imageIdList.innerHTML = '';
             }
             // add image ids to a list that will be sent to server to be referenced by the listing
-            let imageIdList = $('selectImageInput');
             let i = 0, n = r.ids.length;
             for (i, n; i < n; i++) {
                 let optionElement = document.createElement('option');
@@ -109,7 +118,6 @@ async function ajax_upload_media(elementArray, url) {
     })
     .catch((error) => {
         let errorDiv = generateListingFormError(error);
-        let errorContainer = $('uploadImageError');
         errorContainer.appendChild(errorDiv);;
         loadingModal.hide();
     });
