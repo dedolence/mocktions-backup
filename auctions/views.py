@@ -390,8 +390,9 @@ def register(request):
             login(request, user)
             
             # set profile picture, if provided
-            image_id = request.POST.getlist('images', None)[0]
-            if (image_id):
+            image_ids = request.POST.getlist('images', None)
+            if (image_ids):
+                image_id = image_ids[0]
                 image = UserImage.objects.get(pk=image_id)
                 image.owner = user
                 image.save()

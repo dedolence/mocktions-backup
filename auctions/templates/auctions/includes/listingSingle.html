@@ -47,7 +47,7 @@
             <hr/>
             <div class="d-flex flex-row px-0 my-2 fw-light justify-content-between">
                 {% if listing.owner != request.user %}
-                    <div class="text-start flex-item fw-light">
+                    <div class="text-start flex-item fw-light me-5">
                         Posted by <a href="{% url 'view_user' listing.owner %}">{{ listing.owner }}</a> at {{ listing.timestamp }}
                     </div>
                     {% if listing.expired == False and request.user.is_authenticated %}

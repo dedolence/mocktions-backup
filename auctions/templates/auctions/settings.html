@@ -9,7 +9,11 @@
     <div class="tab-content mt-5" id="indexTabContent">
         <div class="row mb-5">
             <div class="col-md-2">
-                <img src="{{ request.user.profile_pic.image.url }}" class="img-fluid" style="border-radius: 50% 50%;" alt="User's profile image">
+                {% if request.user.profile_pic %}
+                    <img src="{{ request.user.profile_pic.image.url }}" class="img-fluid" style="border-radius: 50% 50%;" alt="Profile picture">
+                {% else %}
+                    <img src="{% static 'auctions/images/user_avatar.png' %}" class="img-fluid" style="border-radius: 50% 50%;" alt="Profile picture">
+                {% endif %}
             </div>
             <div class="col-md-10 d-flex align-items-center">
                 <div>

@@ -19,7 +19,11 @@
                         {% comment %} <a href="{% url 'index' %}" class="nav-link">Logged in as: <em>{{ request.user }}</em></a> {% endcomment %}
                         <div style="position: relative; width: 50px;">
                             <a href="{% url 'index' %}">
-                                <img src="{{ request.user.profile_pic.image.url }}" class="img-fluid" style="border-radius: 50% 50%;">
+                                {% if request.user.profile_pic %}
+                                    <img src="{{ request.user.profile_pic.image.url }}" class="img-fluid" style="border-radius: 50% 50%;">
+                                {% else %}
+                                    <img src="{% static 'auctions/images/user_avatar.png' %}" class="img-fluid" style="border-radius: 50% 50%;">
+                                {% endif %}
                             </a>
                         </div>
                     {% else %}
