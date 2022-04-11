@@ -22,7 +22,7 @@ urlpatterns = [
     path("accounts/profile/<str:username>/", views.view_user, name="view_user"),
     path("accounts/profile/", views.view_all_users, name="view_all_users"),
     path("ajax/", include(ajax_urls_include)),
-    path("bid", views.place_bid, name="place_bid"),
+    path("bid/<int:listing_id>", views.place_bid, name="place_bid"),
     path("cart", views.shopping_cart, name="shopping_cart"),
     path("categories", views.categories, name="categories"),
     path("categories/<int:category_id>", views.category, name="category"),

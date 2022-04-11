@@ -37,28 +37,27 @@
         {% endif %}
     </div>
     <div class="row mb-2">
-        <form action="{% url 'place_bid' %}" method="POST">
+        <form action="{% url 'place_bid' listing.id %}" method="POST">
             {% csrf_token %}
-
+            {{ bid_form.user }}
+            {{ bid_form.listing }}
             <div class="my-2 fw-light h6">
                 <hr/>
                 <label for="bidEntry-{{listing.id}}" class="form-label">Your bid:</label>
             </div>
-
             <div class="input-group mb-2">
                 <span class="input-group-text">$</span>
-                <input type="text" class="form-control bid-entry" aria-label="Amount (to the nearest dollar)" name="bid" id="bidEntry-{{listing.id}}"{% if not request.user.is_authenticated %} disabled{% endif %}>
+                {% comment %} <input type="text" class="form-control bid-entry" aria-label="Amount (to the nearest dollar)" name="bid"{% if not request.user.is_authenticated %} disabled{% endif %}>
+                {% endcomment %}
+                {{ bid_form.amount }}
                 <span class="input-group-text">.00</span>
-                {% if bid_message %}
-                    <div class="text-danger small">{{ bid_message }}</div>
-                {% endif %}
             </div>
+            <div class="text-danger small">{{ bid_form.non_field_errors }}{{ bid_form.amount.errors }}</div>
             {% if not request.user.is_authenticated %}
             <span class="text-danger">You must <a href="{% url 'login' %}" class="link-danger">login</a> to place a bid</span>
             {% endif %}
             <div id="bidEntryHelp-{{listing.id}}" class="form-text small d-none">Your bid must be greater than the current bid.</div>
 
-            <input type="hidden" name="listing-id" value="{{listing.id}}">
             <input type="submit" class="btn btn-primary mt-3" value="Place Bid">
         </form>
     </div>

@@ -1,6 +1,7 @@
 import uuid
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.deletion import CASCADE, PROTECT
 from django.templatetags.static import static
@@ -84,6 +85,13 @@ class Bid(models.Model):
     def __str__(self):
         return f"Amount: {self.amount} by {self.user_id}"
 
+    def clean(self):
+        if not self.listing.current_bid:
+            high_bid = self.listing.starting_bid
+        else:
+            high_bid = self.listing.current_bid.amount
+        if self.amount and high_bid > self.amount:
+                raise ValidationError('Your bid must be greated than the current high bid.')
 
 class Category(models.Model):
     content = models.CharField(max_length=64, null=True, blank=False)

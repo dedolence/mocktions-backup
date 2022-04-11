@@ -12,6 +12,7 @@ from django.contrib.auth import authenticate, login, logout
 # from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.core import files
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
@@ -22,7 +23,7 @@ from django.views.decorators.http import require_http_methods
 
 from . import namelist, wordlist
 from .ajax_controls import *
-from .forms import BioForm, NewListingCreateForm, NewListingSubmitForm, RegistrationForm
+from .forms import BioForm, NewBidForm, NewListingCreateForm, NewListingSubmitForm, RegistrationForm
 from .globals import *
 from .models import Bid, Category, Comment, UserImage, Listing, User
 from .notifications import *
@@ -274,15 +275,14 @@ def listing_page(request, listing_id):
             request.user, 
             reverse('view_listing', args=[listing_id])
         )
-    else:
-        notifications = None
-    listing = Listing.objects.get(pk=listing_id)
+
+    listing = get_object_or_404(Listing, pk=listing_id)
+    bid_form = NewBidForm(initial={'user': request.user, 'listing': listing})
     #listing_bundle = get_listing(request, listing_id)
     #comments = listing_bundle["listing"].listings_comments.all().order_by('-timestamp')
     return render(request, "auctions/viewListing.html", {
-        #'listing_bundle': listing_bundle,
         'listing': listing,
-        #'comments': comments,
+        'bid_form': bid_form,
         'notifications': notifications
     })
 
@@ -324,7 +324,7 @@ def logout_view(request):
 
 
 @login_required
-def place_bid(request):
+def place_bid(request, listing_id):
     notification = NotificationTemplate()
     notification.build(
                     request.user,
@@ -336,41 +336,22 @@ def place_bid(request):
     if request.method == "GET":
         return HttpResponseRedirect(reverse("index"))
     else:
-        listing_id = request.POST["listing-id"]
-        notification.set_page(reverse('view_listing', args=[listing_id]))
-        listing_bundle = get_listing(request, listing_id)
-        if listing_bundle['expiration_bundle']['expired'] == True:
-            notification.save()
+        listing = get_object_or_404(Listing, pk=listing_id)
+        bid_form = NewBidForm(request.POST)
+        if not bid_form.is_valid():
+            return render(request, 'auctions/viewListing.html', {
+                'listing': listing,
+                'bid_form': bid_form,
+                'notifications': get_notifications(
+                    request.user, 
+                    reverse('view_listing', args=[listing.id])
+                    )
+            })
         else:
-            bid = request.POST["bid"]
-            if not bid.isdigit():
-                notification.set_message(ICON_WARNING, MESSAGE_LISTING_BID_FORMATTING)
-                notification.save()
-            elif int(bid) > 99999:
-                notification.set_message(ICON_WARNING,MESSAGE_LISTING_BID_TOO_HIGH)
-                notification.save()
-            elif int(bid) <= listing_bundle["listing"].current_bid:
-                notification.set_message(ICON_WARNING,MESSAGE_LISTING_BID_TOO_LOW)
-                notification.save()
-            else:
-                new_bid = Bid.objects.create(
-                    amount=decimal.Decimal(bid), 
-                    user=request.user, 
-                    listing=listing_bundle["listing"])
-                new_bid.save()
-                listing_bundle = get_listing(request, listing_id)
-                notification.build(
-                    request.user,
-                    TYPE_SUCCESS,
-                    ICON_SUCCESS,
-                    MESSAGE_LISTING_BID_SUCCESSFUL,
-                    True,
-                    reverse('view_listing', args=[listing_id])
-                )
-                notification.save()
-                
-        return HttpResponseRedirect(
-            reverse("view_listing", args=[listing_id]))
+            new_bid = bid_form.save()
+            # build notification
+            return HttpResponseRedirect(reverse('view_listing', args=[listing.id]))
+
 
 
 def register(request):

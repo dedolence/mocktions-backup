@@ -1,11 +1,28 @@
 # Not going to use this after all, as I'd prefer writing the form manually to have better control over styles with Bootstrap
 
 from django import forms
-from .models import Listing, User, UserImage, Category
+from .models import Bid, Listing, User, UserImage, Category
 from django.contrib.auth.forms import UserCreationForm
 from django.conf import settings
 
 category_choices = [(c.id, c.content) for c in Category.objects.all()]
+
+
+class NewBidForm(forms.ModelForm):
+    class Meta:
+        model = Bid
+        fields = ['amount', 'listing', 'user']
+        widgets = {
+            'amount': forms.TextInput(
+                attrs={
+                        'class': 'form-control',
+                        'aria-label': 'Amount (to the nearest dollar)'
+                    }
+            ),
+            'listing': forms.HiddenInput(),
+            'user': forms.HiddenInput()
+        }
+
 
 class NewListingCreateForm(forms.ModelForm):
     """For creating listing DRAFTS; i.e., no field is required."""

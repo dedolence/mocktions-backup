@@ -17,7 +17,7 @@
                 <li class="nav-item p-2">
                     {% if request.user.is_authenticated %}
                         {% comment %} <a href="{% url 'index' %}" class="nav-link">Logged in as: <em>{{ request.user }}</em></a> {% endcomment %}
-                        <div style="position: relative; width: 50px;">
+                        <div style="position: relative; width: 30px;">
                             <a href="{% url 'index' %}">
                                 {% if request.user.profile_pic %}
                                     <img src="{{ request.user.profile_pic.image.url }}" class="img-fluid" style="border-radius: 50% 50%;">

@@ -19,7 +19,7 @@
             </div>
             <div class="col-lg-3 mb-3">
                 {% if request.user != listing.owner %}
-                    {% include 'auctions/includes/bidWidget.html' with listing=listing %}
+                    {% include 'auctions/includes/bidWidget.html' with listing=listing bid_form=bid_form %}
                 {% endif %}
             </div>
         </div>
