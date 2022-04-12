@@ -1,3 +1,16 @@
-<div class="me-3 mb-3 image-thumbnail border" style="background-image: url('{{ image.image.url }}')" id="img_thumbnail-{{ image.id }}">
-    <a href="#" class="stretched-link" data-click-action="{{ click_action }}" data-target="{{ click_action }}" data-image-path='{{ image.image.url }}'></a>
+{% comment %} <div class="border border-dark d-inline-flex flex-column align-items-center m-2 p-2">
+    <div class="image-thumbnail" style="background-image: url('{{ image.image.url }}')" id="img_thumbnail-{{ image.id }}"></div>
+    <div class="m-2">
+        <button class="btn btn-outline-secondary btn-sm"><i class="bi bi-x-circle-fill"></i> Remove</button>
+    </div>
+</div> {% endcomment %}
+{% comment %} 
+<div class="border position-relative">
+    <div class="image-thumbnail" style="background-image: url('{{ image.image.url }}')" id="img_thumbnail-{{ image.id }}"></div>
+    <div class="m-2 position-absolute top-0 end-0"><i class="bi bi-x-circle"></i></div>
+</div> {% endcomment %}
+
+<div class="card me-4 mb-4">
+    <img src="{{ image.image.url }}" class="card-img-top" alt="A picture of the listing being sold">
+    <a href="{% url 'remove_image' listing.id image.id %}" class="btn btn-outline-secondary btn-sm m-2"><i class="bi bi-x-circle-fill"></i> Remove</a>
 </div>

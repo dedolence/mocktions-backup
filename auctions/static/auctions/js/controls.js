@@ -173,30 +173,6 @@ function setImageBanner(listingId, newSlideIndex) {
 }
 
 
-function showImageEditModal(elementArray) {
-    let functionName = elementArray[0].dataset.clickAction;
-    let imagePath = elementArray[0].dataset.imagePath;
-    let modalElement = $(functionName);
-    showImageModal(modalElement, imagePath)
-}
-
-
-function showImageModal(modalElement, imagePath) {
-    let modal = new bootstrap.Modal(modalElement);
-    let modalImagePlaceholder = $('modalImagePlaceholder');
-        modalImagePlaceholder.src = imagePath;
-    modal.show();
-}
-
-
-function showImageViewModal(elementArray, url=null) {
-    let modalElement = $('viewImageModal');
-    let imageElement = elementArray[0];
-    let imageId = imageElement.id.split('-')[1];
-    showImageModal(modalElement, imagePath)
-}
-
-
 function watchListing(listingId) {
     const url = AJAX_URLS.ajax_watch_listing;
     let formData = new FormData();

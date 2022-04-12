@@ -5,7 +5,7 @@
         <div id="formThumbnails" class="container d-flex flex-row flex-wrap p-0">
             {% if images %}
                 {% for image in images %}
-                    {% include 'auctions/includes/imageThumbnail.html' with image=image click_action='showEditImageModal' %}
+                    {% include 'auctions/includes/imageThumbnail.html' with image=image listing=listing %}
                 {% endfor %}
             {% endif %}
             {% comment%}
@@ -22,8 +22,6 @@
         </select>
 
         {% include 'auctions/includes/addImageModal.html' with multiple=multiple %}
-
-        {% include 'auctions/includes/imageModal.html' with mode='showEditImageModal' %}
 
         <div id="loadingImageModal" class="modal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="loadingImageModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-center">

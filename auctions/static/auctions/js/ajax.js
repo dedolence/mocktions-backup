@@ -30,13 +30,13 @@ async function make_fetch(formData, url, method="POST") {
 
 // Upload an image an return its properties
 async function ajax_upload_media(elementArray, url) {
-    console.log(elementArray, url);
     // check to see if we can upload any more images
     const formThumbnails = $("formThumbnails");
     //const previewThumbnails = $("previewThumbnails");
     const currentImageCount = formThumbnails.children.length;
     const imageIdList = $('selectImageInput');
     const errorContainer = $('uploadImageError');
+    const listingId = $('listingId').value;
     //const placeholder = $('imagesPlaceholder');
     let fileSourceElement;
     // allow multiple file uploads?
@@ -44,7 +44,7 @@ async function ajax_upload_media(elementArray, url) {
 
     let formData = new FormData();
         formData.append('currentImageCount', currentImageCount);
-        formData.append('click_action', 'showImageEditModal');
+        formData.append('listing_id', listingId);
 
     // loading progress modal
     const loadingModalElement = $('loadingImageModal');

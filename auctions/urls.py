@@ -21,6 +21,7 @@ urlpatterns = [
     path("accounts/", include('django.contrib.auth.urls')),
     path("accounts/profile/<str:username>/", views.view_user, name="view_user"),
     path("accounts/profile/", views.view_all_users, name="view_all_users"),
+    path("add_image/", views.add_image, name="add_image"),
     path("ajax/", include(ajax_urls_include)),
     path("bid/<int:listing_id>", views.place_bid, name="place_bid"),
     path("cart", views.shopping_cart, name="shopping_cart"),
@@ -39,6 +40,7 @@ urlpatterns = [
     #path("logout", views.logout_view, name="logout"),
     #path('preview/', views.preview_listing, name="preview_listing"), OBSOLETE
     path("register", views.register, name="register"),
+    path("remove_image/<int:listing_id>/<int:image_id>", views.remove_image, name="remove_image"),
     path("search", views.search, name="search"),
     path("settings", views.settings, name="settings"),
     path("submit/<int:listing_id>", views.submit_listing, name="submit_listing"),

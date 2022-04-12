@@ -36,7 +36,6 @@ from .utility import *
 
 # //////////////////////////////////////////////////////
 # URL PATH VIEWS
-#   -ajax
 #   -category
 #   -categories
 #   -comment
@@ -55,6 +54,69 @@ from .utility import *
 #   -view_all_users
 #   -view_user
 # //////////////////////////////////////////////////////
+
+
+def add_image(request, listing_id):
+    notification = NotificationTemplate()
+    # check current image count
+    listing = get_object_or_404(Listing, pk=listing_id)
+    uploaded_image_count = listing.all_images.count()
+
+    if request.user is not listing.owner:
+        notification.build(
+            request.user,
+            TYPE_WARNING,
+            ICON_WARNING,
+            MESSAGE_LISTING_EDIT_PROHIBITED,
+            True,
+        )
+        return HttpResponseRedirect(reverse('index'))
+    
+    if uploaded_image_count >= MAX_UPLOADS_PER_LISTING:
+        notification.build(
+            request.user,
+            TYPE_WARNING,
+            ICON_WARNING,
+            MESSAGE_LISTING_MAX_UPLOADS_EXCEEDED,
+            True,
+            reverse('edit_listing', args=[listing_id])
+        )
+        notification.save()
+        return HttpResponseRedirect(reverse('edit_listing', args=[listing_id]))
+
+    if request.FILES:
+        files = request.FILES.getlist('files', None)
+        total_images = len(files) + uploaded_image_count
+        if total_images > MAX_UPLOADS_PER_LISTING:
+            notification.build(
+                        request.user,
+                        TYPE_WARNING,
+                        ICON_WARNING,
+                        MESSAGE_LISTING_MAX_UPLOADS_EXCEEDED,
+                        True,
+                        reverse('edit_listing', args=[listing_id])
+                    )
+            notification.save()
+            return HttpResponseRedirect(reverse('edit_listing', args=[listing_id]))
+        
+        try:
+            images = upload_images(request, files)
+        except Image.DecompressionBombError:
+            notification.build(
+                request.user,
+                TYPE_DANGER,
+                ICON_DANGER,
+                MESSAGE_LISTING_UPLOAD_TOO_LARGE,
+                True,
+                reverse('edit_listing', args=[listing_id])
+            )
+            return HttpResponseRedirect(reverse('edit_listing', args=[listing_id]))
+    else:
+        # User provided URL of an image
+        url = request.POST.get('url', None)
+        images = [get_image(request, url)]
+    
+    return HttpResponseRedirect(reverse('edit_listing', args=[listing_id]))
 
 
 def category(request, category_id):
@@ -401,6 +463,12 @@ def register(request):
         return render(request, 'auctions/register.html', {
             'form': form
         })
+
+
+def remove_image(request, listing_id, image_id):
+    image = get_object_or_404(UserImage, pk=image_id)
+    image.delete()
+    return HttpResponseRedirect(reverse('edit_listing', args=[listing_id]))
 
 
 def search(request):
