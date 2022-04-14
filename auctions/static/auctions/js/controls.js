@@ -70,7 +70,7 @@ function commentEdit(id) {
     const modal = new bootstrap.Modal(modalElement);
 
     const textInputElement = $('edit_content');
-    const originalComment = $('commentText-' + id).innerHTML;
+    const originalComment = $('commentText-' + id).innerText;
     const originalIdInput = $('originalCommentId');
     
     textInputElement.innerHTML = originalComment;
@@ -98,7 +98,7 @@ function commentReply(id) {
         const listingInput = $('reply_listing'); 
         
         originalAuthorElement.innerHTML = originalAuthor;
-        originalCommentElement.innerHTML = commentObj.fields.content;
+        originalCommentElement.innerHTML = commentObj.fields.content.trim();
         replyToInput.value = commentObj.pk;
         listingInput.value = commentObj.fields.listing; // just in case Django doesn't
         modal.show();
