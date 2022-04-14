@@ -1,5 +1,6 @@
 {# Comment reply modal #}
 <form action="{% url 'comment' %}" method="POST">
+    {% csrf_token %}
     <div class="modal fade" id="replyModal" tabindex="-1" aria-labelledby="replyModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -13,8 +14,11 @@
                         <p id="originalCommentContent" class="text-break"></p>
                     </div>
                     <div class="form-floating">
-                        {{ form }}
+                        {{ reply_form.content }}
+                        {{ reply_form.content.label_tag }}
                     </div>
+                    {{ reply_form.listing }}
+                    {{ reply_form.replyTo }}
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

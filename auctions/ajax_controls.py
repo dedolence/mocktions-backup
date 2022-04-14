@@ -28,8 +28,24 @@ def ajax_build_image_thumbnail(request):
 
 
 def ajax_delete_comment(request):
-    comment = Comment.objects.get(pk=id)
-    comment.delete()
+    comment_id = request.POST.get('comment_id', None)
+    if comment_id:
+        comment = get_object_or_404(Comment, pk=comment_id)
+        if comment.user == request.user:
+            """ 
+            # problem: this comment may have replies. if it's deleted, that could be confusing.
+            # what i want is for any replies to indicate that they are responding to 
+            # a comment that has been deleted.
+            #
+            # solution:
+            # find all replies to this comment; point their replyTo foreignkey field to point
+            # instead to a generic comment with the content, "(Original message deleted by user)"
+            # """
+            comment.delete()
+            return JsonResponse({}, status=200)
+        else:
+            error_string = f"Comment user: {comment.user}\nRequest user: {request.user}"
+            return JsonResponse({'error':error_string}, status=403)
 
 
 def ajax_dismiss_notification(request):

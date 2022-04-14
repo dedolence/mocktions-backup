@@ -34,19 +34,18 @@ class CommentForm(forms.ModelForm):
             'content': 'Leave a comment here'
         }
         widgets = {
-            'content': forms.Textarea(attrs={'class': 'form-control'}),
-            'listing': forms.HiddenInput(),
-            'replyTo': forms.HiddenInput()
+            'content': forms.Textarea(attrs={'class': 'form-control', 'autocomplete': 'off'}),
+            'listing': forms.HiddenInput(attrs={'autocomplete': 'off'}),
+            'replyTo': forms.HiddenInput(attrs={'autocomplete': 'off'})
         }
 
 
 class CommentEditForm(CommentForm):
-    comment_id = forms.CharField(widget=forms.HiddenInput())
+    comment_id = forms.CharField(widget=forms.HiddenInput(attrs={'autocomplete': 'off'}))
 
 
 class CommentReplyForm(CommentForm):
     pass
-
 
 class NewListingCreateForm(forms.ModelForm):
     """For creating listing DRAFTS; i.e., no field is required."""

@@ -3,7 +3,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models.deletion import CASCADE, PROTECT
+from django.db.models.deletion import CASCADE, PROTECT, SET
 from django.templatetags.static import static
 
 from .globals import THUMBNAIL_SIZE, LISTING_DRAFT_EXPIRATION_DAYS
@@ -73,6 +73,7 @@ def get_expiration(listing) -> dict:
     }
 
 
+
 # //////////////////////////////////////////////////////
 # MODELS
 # //////////////////////////////////////////////////////
@@ -103,8 +104,17 @@ class Comment(models.Model):
     content = models.TextField(max_length=200, null=True, blank=False)
     listing = models.ForeignKey('Listing', on_delete=CASCADE, blank=False, related_name="comments")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=PROTECT, null=True, related_name="users_comments")
-    replyTo = models.ForeignKey('Comment', on_delete=CASCADE, null=True, blank=True)
+    replyTo = models.ForeignKey('Comment', on_delete=SET(1), null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
+
+    def delete(self, *args, **kwargs):
+        """ Prevent deleting the generic "Message deleted" comment that replaces
+        deleted comments to preserve comment threads.
+        """
+        if self.id == 1:
+            return
+        else:
+            super().delete(*args, **kwargs)
 
 
 class Listing(models.Model):
@@ -245,3 +255,8 @@ class UserImage(models.Model):
     def save_thumbnail(self, *args, **kwargs):
         self.thumbnail = make_thumbnail(self.image)
         super().save(*args, **kwargs)
+
+#---------------------------------------------------------
+
+def get_default_comment():
+    return Comment.objects.get(pk=1)

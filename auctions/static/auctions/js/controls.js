@@ -75,15 +75,60 @@ function commentEdit(id) {
     
     textInputElement.innerHTML = originalComment;
     originalIdInput.value = id;
-    
+
     modal.show();
 }
 
 
-function commentReply(id) {}
+function commentReply(id) {
+    const url = AJAX_URLS.ajax_reply_comment;
+    const formData = new FormData();
+          formData.append('comment_id', id);
+
+    make_fetch(formData, url)
+    .then((r) => {
+        const modalElement = $('replyModal');
+        const modal = new bootstrap.Modal(modalElement);
+
+        const replyToInput = $('reply_replyTo');
+        const originalAuthorElement = $('originalCommentAuthor');
+        const originalCommentElement = $('originalCommentContent');
+        const commentObj = JSON.parse(r.comment)[0];
+        const originalAuthor = r.author;
+        const listingInput = $('reply_listing'); 
+        
+        originalAuthorElement.innerHTML = originalAuthor;
+        originalCommentElement.innerHTML = commentObj.fields.content;
+        replyToInput.value = commentObj.pk;
+        listingInput.value = commentObj.fields.listing; // just in case Django doesn't
+        modal.show();
+    })
+
+}
 
 
-function commentDelete(id) {}
+function commentDelete(id) {
+    const modalElement = $('deleteCommentModal');
+    const modal = new bootstrap.Modal(modalElement);
+
+    const quoteElement = $('deleteOriginalComment');
+    const originalComment = $('commentText-' + id);
+    quoteElement.innerHTML = originalComment.innerHTML;
+
+    const submitButton = $('deleteSubmitButton');
+    submitButton.addEventListener('click', function() {
+        const url = AJAX_URLS.ajax_delete_comment;
+        const formData = new FormData();
+              formData.append('comment_id', id);
+        make_fetch(formData, url)
+        .then((r) => {
+            const originalComment = $('comment-' + id);
+            originalComment.parentElement.removeChild(originalComment);
+            modal.hide();
+        });
+    })
+    modal.show();
+}
 
 
 function generateListingFormError(error) {

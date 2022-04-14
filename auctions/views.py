@@ -154,6 +154,8 @@ def comment(request):
         
         if form.is_valid():
             comment = form.save()
+            comment.user = request.user
+            comment.save()
             return HttpResponseRedirect(reverse('view_listing', args=[listing_id]))
         else:
             return render(request, "auctions/viewListing.html", {
@@ -163,11 +165,6 @@ def comment(request):
                 'comment_edit_form': CommentEditForm(),
                 'comment_reply_form': CommentReplyForm()
             })
-
-
-@require_http_methods(['POST'])
-def comment_edit(request):
-    pass
 
 
 @require_http_methods(['POST'])
@@ -338,14 +335,24 @@ def listing_page(request, listing_id):
             request.user, 
             reverse('view_listing', args=[listing_id])
         )
+    else:
+        notifications = None
 
     listing = get_object_or_404(Listing, pk=listing_id)
-    bid_form = NewBidForm(initial={'user': request.user, 'listing': listing})
-    comment_form = CommentForm(initial={'user': request.user, 'listing': listing})
-    comment_edit_form = CommentEditForm(auto_id='edit_%s', initial={'user': request.user, 'listing': listing})
-    comment_reply_form = CommentReplyForm(auto_id='reply_%s', initial={'user': request.user, 'listing': listing})
-    #listing_bundle = get_listing(request, listing_id)
-    #comments = listing_bundle["listing"].listings_comments.all().order_by('-timestamp')
+    initial_dict = {
+        'user': request.user,
+        'listing': listing
+    }
+    bid_form = NewBidForm(initial=initial_dict)
+    comment_form = CommentForm(initial=initial_dict)
+    comment_edit_form = CommentEditForm(
+        auto_id='edit_%s', 
+        initial=initial_dict
+        )
+    comment_reply_form = CommentReplyForm(
+        auto_id='reply_%s',
+        initial=initial_dict
+        )
     return render(request, "auctions/viewListing.html", {
         'listing': listing,
         'bid_form': bid_form,
