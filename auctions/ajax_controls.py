@@ -44,10 +44,10 @@ def ajax_dismiss_notification(request):
 
 def ajax_generate_comment(request):
     response = {}
-    message = ''
+    comment = ''
     for i in range(0, random.randint(1,5)):
-        message += GEN.sentence()
-    response["message"] = message
+        comment += GEN.sentence()
+    response["comment"] = comment[0:200]
     return JsonResponse(response)
 
 
@@ -68,9 +68,10 @@ def ajax_purge_media(request):
 
 def ajax_reply_comment(request):
     response = {}
-    # Filter must be used instead of get to return iterable for serializer
+    # Filter() must be used instead of get() to return iterable for serializer
     # (or wrap the queryset in [] to list-ify it).
-    comment = Comment.objects.filter(pk=id)
+    comment_id = request.POST.get('comment_id', None)
+    comment = Comment.objects.filter(pk=comment_id)
     response["comment"] = serializers.serialize("json", comment)
     response["author"] = comment.first().user.username
     return JsonResponse(response)

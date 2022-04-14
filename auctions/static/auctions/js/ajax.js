@@ -28,6 +28,54 @@ async function make_fetch(formData, url, method="POST") {
 }
 
 
+function ajax_dismiss_notification(elementArray, url) {
+    let notificationElement = elementArray[0];
+    let notificationId = notificationElement.id.split('-')[1]
+    let formData = new FormData()
+        formData.append('notification_id', notificationId)
+    
+        make_fetch(formData, url)
+        .then((r) => {
+            notificationElement.parentElement.removeChild(notificationElement);
+        })
+        .catch((error) => {
+            console.log(error);
+        })
+}
+
+
+function ajax_generate_comment(elementArray, url) {
+    const textInputElement = $('id_content');
+    make_fetch(null, url)
+    .then((r) => {
+        const comment = r.comment;
+        textInputElement.innerHTML = comment;
+        console.log(textInputElement);
+    })
+}
+
+
+function ajax_purge_media(elementArray, url) {
+    let img_target = elementArray[0];
+    const img_id = img_target.id.split('-')[1];
+    const formData = new FormData();
+    formData.append('img_id', img_id);
+    let request = make_fetch(formData, url);
+    request.then(() => {
+        // remove this from targets as it's no longer target-able
+        TARGETS.splice(TARGETS.indexOf(img_target), 1);
+        img_target.parentElement.removeChild(img_target);
+        let imageIdList = $('selectImageInput');
+        let i = 0; n = imageIdList.children.length;
+        for (i, n; i < n; i++) {
+            let child = imageIdList.children[i];
+            if (child.value === img_id) {
+                imageIdList.removeChild(child);
+            }
+        }
+    })
+}
+
 // Upload an image an return its properties
 async function ajax_upload_media(elementArray, url) {
     // check to see if we can upload any more images
@@ -122,42 +170,4 @@ async function ajax_upload_media(elementArray, url) {
         loadingModal.hide();
     });
     
-}
-
-
-function ajax_dismiss_notification(elementArray, url) {
-    let notificationElement = elementArray[0];
-    let notificationId = notificationElement.id.split('-')[1]
-    let formData = new FormData()
-        formData.append('notification_id', notificationId)
-    
-        make_fetch(formData, url)
-        .then((r) => {
-            notificationElement.parentElement.removeChild(notificationElement);
-        })
-        .catch((error) => {
-            console.log(error);
-        })
-}
-
-
-function ajax_purge_media(elementArray, url) {
-    let img_target = elementArray[0];
-    const img_id = img_target.id.split('-')[1];
-    const formData = new FormData();
-    formData.append('img_id', img_id);
-    let request = make_fetch(formData, url);
-    request.then(() => {
-        // remove this from targets as it's no longer target-able
-        TARGETS.splice(TARGETS.indexOf(img_target), 1);
-        img_target.parentElement.removeChild(img_target);
-        let imageIdList = $('selectImageInput');
-        let i = 0; n = imageIdList.children.length;
-        for (i, n; i < n; i++) {
-            let child = imageIdList.children[i];
-            if (child.value === img_id) {
-                imageIdList.removeChild(child);
-            }
-        }
-    })
 }

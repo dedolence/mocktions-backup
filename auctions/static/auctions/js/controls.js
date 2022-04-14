@@ -65,24 +65,6 @@ function changeSlide(listingId, direction) {
 }
 
 
-function editComment(id) {
-    let anchor = $("commentInputAnchor");
-    let comment_text = $("commentText-" + id);
-    let comment_box = $("commentInput");
-    let submit_button = $("commentSubmitButton");
-    let hidden_id = $("commentId");
-    comment_box.innerHTML = comment_text.innerText;
-    submit_button.value = "Save Changes";
-    hidden_id.value = id;
-    // set height to show entire comment
-    comment_box.style.height = 'auto';
-    comment_box.style.height = comment_box.scrollHeight + 10 + "px";
-    comment_box.focus();
-    anchor.scrollIntoView();
-
-}
-
-
 function generateListingFormError(error) {
     let alertElement = document.createElement('div');
         alertElement.className = "alert alert-danger alert-dismissible";
@@ -141,25 +123,6 @@ function populateTargets() {
     document.querySelectorAll('*[data-target]').forEach(function(e) {
         TARGETS.push(e);
     });
-}
-
-
-function reply_comment(r) {
-    const orig_comment = (JSON.parse(r.comment))[0];
-        // author is not part of the serialized model data, added separately
-    const orig_author = r.author; 
-    const modalElement = $("replyModal");
-    const originalCommentId = $("originalCommentId");
-    const modal = new bootstrap.Modal(modalElement);
-
-        // This works fine, but...
-    originalCommentId.value = orig_comment.pk;
-        // ...for some unimaginable reason, jquery is the only thing that works.
-        // Calls to innerHTML or innerText simply do not apply. No idea why.
-    $("#originalCommentAuthor").html(orig_author);
-    $("#originalCommentContent").html(orig_comment.fields.content);
-    $("#commentInputLabel").html("Reply to " + orig_author + ": ");
-    modal.show();
 }
 
 

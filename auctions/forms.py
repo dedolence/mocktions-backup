@@ -1,7 +1,8 @@
 # Not going to use this after all, as I'd prefer writing the form manually to have better control over styles with Bootstrap
 
+from xml.etree.ElementTree import Comment
 from django import forms
-from .models import Bid, Listing, User, UserImage, Category
+from .models import Bid, Listing, User, UserImage, Category, Comment
 from django.contrib.auth.forms import UserCreationForm
 from django.conf import settings
 
@@ -22,6 +23,30 @@ class NewBidForm(forms.ModelForm):
             'listing': forms.HiddenInput(),
             'user': forms.HiddenInput()
         }
+
+
+
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ['content', 'listing', 'user', 'replyTo']
+        labels = {
+            'content': 'Leave a comment here'
+        }
+        widgets = {
+            'content': forms.Textarea(attrs={'class': 'form-control'}),
+            'listing': forms.HiddenInput(),
+            'user': forms.HiddenInput(),
+            'replyTo': forms.HiddenInput()
+        }
+
+
+class CommentEditForm(CommentForm):
+    comment_id = forms.CharField(widget=forms.HiddenInput())
+
+
+class CommentReplyForm(CommentForm):
+    pass
 
 
 class NewListingCreateForm(forms.ModelForm):

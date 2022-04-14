@@ -23,7 +23,7 @@ from django.views.decorators.http import require_http_methods
 
 from . import namelist, wordlist
 from .ajax_controls import *
-from .forms import BioForm, NewBidForm, NewListingCreateForm, NewListingSubmitForm, RegistrationForm
+from .forms import BioForm, CommentEditForm, CommentForm, CommentReplyForm, NewBidForm, NewListingCreateForm, NewListingSubmitForm, RegistrationForm
 from .globals import *
 from .models import Bid, Category, Comment, UserImage, Listing, User
 from .notifications import *
@@ -137,40 +137,25 @@ def categories(request):
     })
 
 
+@require_http_methods(['POST'])
 def comment(request):
-    if request.method == 'GET':
-        return HttpResponseRedirect(reverse("index"))
-    else:
-        # need to perform some kinda validation on the input here
-        content = request.POST["content"]
-        listing = Listing.objects.get(pk=request.POST["listing_id"])
-        user = request.user
-        
-        # this will only be set if creating a new reply to another comment
-        original_comment_id = request.POST.get("original_comment_id", None)
-        if original_comment_id:
-            replyTo = Comment.objects.get(pk=original_comment_id)
-            content = request.POST["reply_content"]
-        else:
-            replyTo = None
+    listing_id = request.POST.get('listing', None)
+    listing = get_object_or_404(Listing, pk=listing_id)
+    content = request.POST.get('content', None)
 
-        # this will only be set if editing an existing comment
-        comment_id = request.POST.get("comment_id", None)
-        if comment_id:
-            comment = Comment.objects.get(pk=comment_id)
-            comment.content = content
-            comment.save()
+    if listing and content:
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save()
+            return HttpResponseRedirect(reverse('view_listing', args=[listing_id]))
         else:
-            Comment.objects.create(
-                content=content,
-                listing=listing,
-                user=user,
-                replyTo=replyTo
-            )
-        
-        return HttpResponseRedirect(
-            reverse("view_listing", args=[request.POST["listing_id"]])
-            )
+            return render(request, "auctions/viewListing.html", {
+                'listing': listing,
+                'bid_form': NewBidForm(),
+                'comment_form': form,
+                'comment_edit_form': CommentEditForm(),
+                'comment_reply_form': CommentReplyForm()
+            })
 
 
 @login_required
@@ -340,11 +325,17 @@ def listing_page(request, listing_id):
 
     listing = get_object_or_404(Listing, pk=listing_id)
     bid_form = NewBidForm(initial={'user': request.user, 'listing': listing})
+    comment_form = CommentForm(initial={'user': request.user, 'listing': listing})
+    comment_edit_form = CommentEditForm(auto_id='edit_%s', initial={'user': request.user, 'listing': listing})
+    comment_reply_form = CommentReplyForm(auto_id='reply_%s', initial={'user': request.user, 'listing': listing})
     #listing_bundle = get_listing(request, listing_id)
     #comments = listing_bundle["listing"].listings_comments.all().order_by('-timestamp')
     return render(request, "auctions/viewListing.html", {
         'listing': listing,
         'bid_form': bid_form,
+        'comment_form': comment_form,
+        'comment_edit_form': comment_edit_form,
+        'comment_reply_form': comment_reply_form,
         'notifications': notifications
     })
 

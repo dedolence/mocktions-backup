@@ -101,7 +101,7 @@ class Category(models.Model):
 
 class Comment(models.Model):
     content = models.TextField(max_length=200, null=True, blank=False)
-    listing = models.ForeignKey('Listing', on_delete=CASCADE, blank=False, related_name="listings_comments")
+    listing = models.ForeignKey('Listing', on_delete=CASCADE, blank=False, related_name="comments")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=PROTECT, null=True, related_name="users_comments")
     replyTo = models.ForeignKey('Comment', on_delete=CASCADE, null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)

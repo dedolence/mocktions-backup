@@ -4,7 +4,7 @@
 <div id="comment-{{comment.id}}" class="card my-2 p-0">
     <div class="row p-0 m-0">
         <div class="col-md-2 col-xl-1 p-3 m-0 d-none d-md-block">
-            <img src="{{ request.user.profile_picture }}" class="img-fluid" style="border-radius: 50% 50%;" alt="User's profile image">
+            <img src="{{ comment.user.profile_pic.image.url }}" class="img-fluid" style="border-radius: 50% 50%;" alt="User's profile image">
         </div>
         <div class="col-md-10 col-xl-11 p-0 m-0">
             <div class="card-body">
@@ -22,14 +22,16 @@
                     {{ comment.content }}
                 </p>
                 <div class=" d-flex">
-                    <span class="flex-grow-1"><small class="text-muted border-none">Posted by <a href="{% url 'view_user' comment.user %}"><em>{{ comment.user }}</em></a> at {{ comment.timestamp }}</small></span>
-                    {% url 'ajax' 'reply_comment' comment.id as url %}
-                    <span class="me-3"><small><a href="#commentInput" onclick="ajax('{{url}}')"><i class="bi bi-arrow-return-right"></i> Reply</a></small></span>
+                    <span class="flex-grow-1">
+                        <small class="text-muted border-none">
+                            Posted by <a href="{% url 'view_user' comment.user %}"><em>{{ comment.user }}</em></a> at {{ comment.timestamp }}
+                        </small>
+                    </span>
+                    <button class="btn btn-sm btn-link" onclick="replyToComment('{{ comment.id }}')"><i class="bi bi-arrow-return-right"></i> Reply</button>
                     {% if request.user == comment.user %}
-                        {% url 'ajax' 'edit_comment' comment.id as url %}
-                        <span class="me-3"><small><a href="#commentInput" onclick="ajax('{{url}}')"><i class="bi bi-pencil-square"></i> Edit</a></small></span>
+                        <button class="btn btn-sm btn-link" onclick="editComment('{{ comment.id }}')"><i class="bi bi-pencil-square"></i> Edit</button>
                         {% url 'ajax' 'delete_comment' comment.id as url %}
-                        <span class="me-3"><small><a href="#commentInput" onclick="ajax('{{url}}')"><i class="bi bi-trash"></i> Delete</a></small></span>
+                        <button class="btn btn-sm btn-link" onclick="ajax('{{url}}')"><i class="bi bi-trash"></i> Delete</button>
                     {% endif %}
                 </div>
             </div>

@@ -9,44 +9,16 @@
         {% if request.user.is_authenticated %}
             <form id="newCommentForm" action="{% url 'comment' %}" method="POST">
                 {% csrf_token %}
-                {# Comment reply modal #}
-                <div class="modal fade" id="replyModal" tabindex="-1" aria-labelledby="replyModalLabel" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                                <div class="modal-header">
-                                <h5 class="modal-title" id="replyModalLabel"><i class="bi bi-chat-quote"></i> Reply</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="m-3 border-start border-end bg-light p-2">
-                                    <p class="small"><span id="originalCommentAuthor"></span> wrote:</p>
-                                    <p id="originalCommentContent"></p>
-                                </div>
-                                <div class="form-floating">
-                                    <textarea id="replyInput" name="reply_content" class="form-control" placeholder="Leave a reply here"></textarea>
-                                    <label for="replyInput" id="commentInputLabel"></label>
-                                </div>
-                                <input type="hidden" name="original_comment_id" id="originalCommentId">
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                <button type="submit" class="btn btn-primary">Reply</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {# /Comment reply modal #}
-
-                <input type="hidden" name="comment_id" id="commentId" autocomplete="off">
-                <input type="hidden" name="listing_id" value="{{ listing_id }}">
                 <div class="form-floating">
-                    <textarea id="commentInput" name="content" class="form-control" placeholder="Leave a comment here" autocomplete="off"></textarea>
-                    <label for="commentInput" id="commentInputLabel">Add a comment</label>
+                    {{ comment_form.content }}
+                    {{ comment_form.content.label_tag }}
+                    {{ comment_form.listing }}
+                    {{ comment_form.user }}
                 </div>
+                <div class="text-small text-danger">{{ comment_form.content.errors }}</div>
                 <div class="d-flex flex-row justify-content-between mt-2 mb-4">
                     <span>
-                        {% url 'ajax' 'generate_comment' 0 as ajax_url %}
-                        <input id="randomCommentButton" type="button" value="Generate a random comment" class="btn btn-outline-primary" onclick="ajax('{{ajax_url}}')">
+                        <input id="randomCommentButton" type="button" value="Generate a random comment" class="btn btn-outline-primary" data-click-action="{{ ajax.ajax_generate_comment.name }}">
                     </span>
                     <span>
                         <input id="commentSubmitButton" type="submit" class="btn btn-primary" value="Submit">
@@ -58,7 +30,7 @@
         {% endif %}
         <hr/>
 
-        {% for comment in comments %}
+        {% for comment in listing.comments.all %}
             {% include 'auctions/includes/comment_single.html' with comment=comment %}
         {% endfor %}
         
