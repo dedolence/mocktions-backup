@@ -55,7 +55,7 @@ function ajax_generate_comment(elementArray, url) {
 }
 
 
-function ajax_purge_media(elementArray, url) {
+/* function ajax_purge_media(elementArray, url) {
     let img_target = elementArray[0];
     const img_id = img_target.id.split('-')[1];
     const formData = new FormData();
@@ -74,9 +74,9 @@ function ajax_purge_media(elementArray, url) {
             }
         }
     })
-}
+} */
 
-// Upload an image an return its properties
+// Upload an image and return its properties
 async function ajax_upload_media(elementArray, url) {
     // check to see if we can upload any more images
     const formThumbnails = $("formThumbnails");

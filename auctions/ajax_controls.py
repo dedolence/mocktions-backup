@@ -1,11 +1,8 @@
-from multiprocessing import context
 import random
-import requests
 from django.core import serializers
 from django.http.response import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
-from django.urls import path
 from .models import *
 from .strings import *
 from .globals import *
@@ -32,15 +29,6 @@ def ajax_delete_comment(request):
     if comment_id:
         comment = get_object_or_404(Comment, pk=comment_id)
         if comment.user == request.user:
-            """ 
-            # problem: this comment may have replies. if it's deleted, that could be confusing.
-            # what i want is for any replies to indicate that they are responding to 
-            # a comment that has been deleted.
-            #
-            # solution:
-            # find all replies to this comment; point their replyTo foreignkey field to point
-            # instead to a generic comment with the content, "(Original message deleted by user)"
-            # """
             comment.delete()
             return JsonResponse({}, status=200)
         else:
@@ -65,21 +53,6 @@ def ajax_generate_comment(request):
         comment += GEN.sentence()
     response["comment"] = comment[0:200]
     return JsonResponse(response)
-
-
-def ajax_purge_media(request):
-    img_id = request.POST.get('img_id', None)
-    img_mod = UserImage.objects.get(pk=img_id)
-    """
-    If the auto-delete middleware doesn't do its job and delete
-    abandoned media, this will:
-        img_mod.image.close()
-        img_mod.image.delete()
-        img_mod.thumbnail.close()
-        img_mod.thumbnail.delete()
-    """
-    img_mod.delete()
-    return JsonResponse({'message': 'Image removed successfully.'})
 
 
 def ajax_reply_comment(request):
