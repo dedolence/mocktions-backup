@@ -1,0 +1,27 @@
+{# Comment reply modal #}
+<form action="{% url 'comment' %}" method="POST">
+    <div class="modal fade" id="replyModal" tabindex="-1" aria-labelledby="replyModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                    <div class="modal-header">
+                    <h5 class="modal-title" id="replyModalLabel"><i class="bi bi-chat-quote"></i> Reply</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="m-3 border-start border-end bg-light p-2">
+                        <p class="small"><span id="originalCommentAuthor"></span> wrote:</p>
+                        <p id="originalCommentContent" class="text-break"></p>
+                    </div>
+                    <div class="form-floating">
+                        {{ form }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Reply</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+{# /Comment reply modal #}

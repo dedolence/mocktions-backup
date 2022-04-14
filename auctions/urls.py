@@ -28,6 +28,7 @@ urlpatterns = [
     path("categories", views.categories, name="categories"),
     path("categories/<int:category_id>", views.category, name="category"),
     path("comment", views.comment, name="comment"),
+    path("comment/reply/<int:comment_id>", views.comment_reply, name="comment_reply"),
     path("create", views.create_listing, name="create_listing"),
     path("create/<int:listing_id>", views.create_listing, name="create_listing"),
     path("delete/<int:listing_id>", views.delete_listing, name="delete_listing"),

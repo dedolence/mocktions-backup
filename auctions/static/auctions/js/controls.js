@@ -65,6 +65,27 @@ function changeSlide(listingId, direction) {
 }
 
 
+function commentEdit(id) {
+    const modalElement = $('editModal');
+    const modal = new bootstrap.Modal(modalElement);
+
+    const textInputElement = $('edit_content');
+    const originalComment = $('commentText-' + id).innerHTML;
+    const originalIdInput = $('originalCommentId');
+    
+    textInputElement.innerHTML = originalComment;
+    originalIdInput.value = id;
+    
+    modal.show();
+}
+
+
+function commentReply(id) {}
+
+
+function commentDelete(id) {}
+
+
 function generateListingFormError(error) {
     let alertElement = document.createElement('div');
         alertElement.className = "alert alert-danger alert-dismissible";

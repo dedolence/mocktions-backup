@@ -27,11 +27,11 @@
                             Posted by <a href="{% url 'view_user' comment.user %}"><em>{{ comment.user }}</em></a> at {{ comment.timestamp }}
                         </small>
                     </span>
-                    <button class="btn btn-sm btn-link" onclick="replyToComment('{{ comment.id }}')"><i class="bi bi-arrow-return-right"></i> Reply</button>
+                    <button class="btn btn-sm btn-link" onclick="commentReply('{{ comment.id }}')"><i class="bi bi-arrow-return-right"></i> Reply</button>
                     {% if request.user == comment.user %}
-                        <button class="btn btn-sm btn-link" onclick="editComment('{{ comment.id }}')"><i class="bi bi-pencil-square"></i> Edit</button>
+                        <button class="btn btn-sm btn-link" onclick="commentEdit('{{ comment.id }}')"><i class="bi bi-pencil-square"></i> Edit</button>
                         {% url 'ajax' 'delete_comment' comment.id as url %}
-                        <button class="btn btn-sm btn-link" onclick="ajax('{{url}}')"><i class="bi bi-trash"></i> Delete</button>
+                        <button class="btn btn-sm btn-link" onclick="commentDelete('{{ comment.id }}')"><i class="bi bi-trash"></i> Delete</button>
                     {% endif %}
                 </div>
             </div>

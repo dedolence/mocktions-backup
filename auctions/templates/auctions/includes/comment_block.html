@@ -13,7 +13,6 @@
                     {{ comment_form.content }}
                     {{ comment_form.content.label_tag }}
                     {{ comment_form.listing }}
-                    {{ comment_form.user }}
                 </div>
                 <div class="text-small text-danger">{{ comment_form.content.errors }}</div>
                 <div class="d-flex flex-row justify-content-between mt-2 mb-4">
@@ -25,6 +24,11 @@
                     </span>
                 </div>
             </form>
+
+            {% include 'auctions/includes/replyCommentModal.html' with listing=listing form=comment_reply_form %}
+
+            {% include 'auctions/includes/editCommentModal.html' with listing=listing form=comment_edit_form %}
+
         {% else %}
             <p>Please <a href="{% url 'login' %}">login</a> to comment on this listing.</p>
         {% endif %}

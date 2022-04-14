@@ -29,14 +29,13 @@ class NewBidForm(forms.ModelForm):
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
-        fields = ['content', 'listing', 'user', 'replyTo']
+        fields = ['content', 'listing', 'replyTo']
         labels = {
             'content': 'Leave a comment here'
         }
         widgets = {
             'content': forms.Textarea(attrs={'class': 'form-control'}),
             'listing': forms.HiddenInput(),
-            'user': forms.HiddenInput(),
             'replyTo': forms.HiddenInput()
         }
 

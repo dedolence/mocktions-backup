@@ -143,8 +143,15 @@ def comment(request):
     listing = get_object_or_404(Listing, pk=listing_id)
     content = request.POST.get('content', None)
 
+    comment_id = request.POST.get('comment_id', None)
+
     if listing and content:
-        form = CommentForm(request.POST)
+        if comment_id:
+            comment = get_object_or_404(Comment, pk=comment_id)
+            form = CommentForm(request.POST, instance=comment)
+        else:
+            form = CommentForm(request.POST)
+        
         if form.is_valid():
             comment = form.save()
             return HttpResponseRedirect(reverse('view_listing', args=[listing_id]))
@@ -157,6 +164,15 @@ def comment(request):
                 'comment_reply_form': CommentReplyForm()
             })
 
+
+@require_http_methods(['POST'])
+def comment_edit(request):
+    pass
+
+
+@require_http_methods(['POST'])
+def comment_reply(request):
+    pass
 
 @login_required
 @require_http_methods(["GET", "POST"])
