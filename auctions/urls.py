@@ -1,6 +1,9 @@
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import include, path
+
+from auctions import testing
+from auctions.utility import stripe_webhook
 from . import ajax_controls, views
 
 
@@ -27,8 +30,8 @@ urlpatterns = [
     path("categories", views.categories, name="categories"),
     path("categories/<int:category_id>", views.category, name="category"),
     path("checkout/", views.checkout, name="checkout"),
-    path("checkout/success/", views.checkout_success, name="checkout_success"),
-    path("checkout/cancel", views.checkout_cancel, name="checkout_cancel"),
+    path("order/success/", views.checkout_success, name="checkout_success"),
+    path("order/cancel", views.checkout_cancel, name="checkout_cancel"),
     path("comment", views.comment, name="comment"),
     path("comment/reply/<int:comment_id>", views.comment_reply, name="comment_reply"),
     path("create", views.create_listing, name="create_listing"),
@@ -39,6 +42,7 @@ urlpatterns = [
     path("edit/<int:listing_id>", views.edit_listing, name="edit_listing"),
     path("listings/", views.listings, name="all_listings"),
     path("listings/view/<int:listing_id>", views.listing_page, name="view_listing"),
+    path("accounts/orders/", views.orders, name="orders"),
     #path("login", views.login_view, name="login"),
     #path("logout", views.logout_view, name="logout"),
     #path('preview/', views.preview_listing, name="preview_listing"), OBSOLETE
@@ -46,6 +50,7 @@ urlpatterns = [
     path("remove_image/<int:listing_id>/<int:image_id>", views.remove_image, name="remove_image"),
     path("search", views.search, name="search"),
     path("settings", views.settings, name="settings"),
+    path('stripe/', stripe_webhook, name="stripe_webhook"),
     path("submit/<int:listing_id>", views.submit_listing, name="submit_listing"),
     path("watchlist", views.watchlist, name="watchlist"),
     # for testing 
@@ -57,5 +62,6 @@ urlpatterns = [
     # path("ajax/request/", views.ajax_return, name="ajax_return"),
     # path("bidding/", views.test_bidding, name="test_bidding"),
     # path("testListing/", views.test_listing, name="test_listing")
+    path('test/order/success/', testing.test_order_success, name="test_order_success"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

@@ -4,13 +4,14 @@ import requests
 from datetime import timedelta
 from math import floor
 from django.utils import timezone
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.core.paginator import Paginator
+from django.views.decorators.csrf import csrf_exempt
 from .models import *
 from .notifications import *
 from .strings import *
 from .globals import *
-
+import json
 
 def get_highest_bid(listing) -> Bid:
     bids = Bid.objects.filter(listing=listing).order_by('-amount')
@@ -157,6 +158,32 @@ def purge_listings(request) -> None:
                 obj.delete()
             listing.active = False
             listing.save()
+
+
+@csrf_exempt
+def stripe_webhook(request):
+    payload = request.body
+    event = None
+
+    try:
+        event = stripe.Event.construct_from(
+            json.loads(payload), stripe.api_key
+        )
+    except ValueError as e:
+        return HttpResponse(status=400)
+
+    # handle the event
+    if event.type == 'payment_intent.succeeded':
+        payment_intent = event.data.object # contains a stripe.PaymentIntent
+        print('PaymentIntent was successful!')
+    elif event.type == 'payment_method.attached':
+        payment_method = event.data.object
+        print('PaymentMethod was attached to a customer!')
+    else:
+        print('Unhandled event type {}'.format(event.type))
+
+    return HttpResponse(status=200)
+
 
 
 def upload_images(request, files, listing=None) -> Array:    

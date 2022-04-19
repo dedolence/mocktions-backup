@@ -45,7 +45,7 @@ class NotificationTemplate():
 
 def get_notifications(user, page) -> list:
     # if these aren't added to a list, they will be deleted after
-    notifications_all = [i for i in Notification.objects.filter(user=user, page=page)]
+    notifications_all = list(Notification.objects.filter(user=user, page=page))
     # purge auto-delete notifications
     Notification.objects.filter(autodelete=True).delete()
     return notifications_all

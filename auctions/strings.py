@@ -65,6 +65,27 @@ MESSAGE_USER_PICTURE_UPLOAD_FAILURE = "Upload failed. Try a different picture ma
 MESSAGE_USER_PICTURE_UPLOAD_FORMAT = "Upload failed. File format must be .jpg/.jpeg, .gif, .png, or .tiff."
 MESSAGE_USER_PROFILE_UPDATE_SUCCESS = "Profile updated."
 
+# Order messages
+MESSAGE_ORDER_SUCCESSFUL = ("Your payment was successful and your order is now complete! "
+    + "Please <a href='{}' class='alert-link'>click here</a> to view order details.")
+MESSAGE_ORDER_FAILURE = """
+    There was an error completing your order. 
+    Please try again or contact the admin at <a href='mailto:nhahoyt@gmail.com' class='alert-link'>nhahoyt@gmail.com</a>.
+"""
+MESSAGE_ORDER_THANKS = """
+        <p>
+            Success! If you've made it this far that means everything more-or-less worked as intended. 
+            If you found any bugs or have requests/advice please let me know at <a href="mailto:nhahoyt@gmail.com" class="alert-link">nhahoyt@gmail.com</a>.
+        </p>
+        <p>
+            And finally, <strong>THANK YOU</strong> for taking the time to try it out. This is my first "big" project that I worked way too long on.
+            I feel like I have a pretty strong understanding of Django now, so if you know any jobs let me know ;)
+        </p>
+        <p>
+            With gratitude,
+            Nathaniel H.
+        </p>"""
+
 # Registration messages
 MESSAGE_REG_PASSWORD_MISMATCH = "Passwords must match."
 MESSAGE_REG_USERNAME_TAKEN = "That username has been taken already."

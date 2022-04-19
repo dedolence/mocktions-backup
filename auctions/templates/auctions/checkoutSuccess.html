@@ -1,0 +1,43 @@
+{% extends 'auctions/layout.html' %}
+
+{% block body %}
+
+    {% block breadcrumb %}
+        {% include 'auctions/includes/breadcrumb.html' with page="Order complete!" %}
+    {% endblock breadcrumb %}
+
+    <div class="alert alert-info">
+        <p>
+            <i class="bi bi-info-circle"></i>
+            Success! If you've made it this far that means everything more-or-less worked as intended. 
+            If you found any bugs or have requests/advice please let me know at <a href="mailto:nhahoyt@gmail.com" class="alert-link">nhahoyt@gmail.com</a>.
+        </p>
+        <p>
+            And finally, <strong>THANK YOU</strong> for taking the time to try it out. This is my first "big" project that I worked way too long on.
+            I feel like I have a pretty strong understanding of Django now, so if you know any jobs let me know ;)
+        </p>
+        <p>
+            With gratitude,
+            Nathaniel H.
+        </p>
+    </div>
+
+    <div class="alert alert-success"><i class="bi bi-check"></i> Your payment was successful and your order is now complete.</div>
+
+    <h3>Shipping information</h3>
+    <ul class="list-unstyled">
+    {% with session.shipping.address as address %}
+        <li><strong>{{ session.shipping.name }}</strong></li>
+        <li>{{ address.line1 }}</li>
+        <li>{{ address.line2 }}</li>
+        <li>{{ address.city }}, {{ address.state }}, {{ address.country }}</li>
+        <li>{{ address.postal_code }}</li>
+    {% endwith %}
+    </ul>
+
+    {{ session|json_script:"session_json" }}
+    <script>
+        session_json = document.getElementById('session_json').textContent;
+        console.log(JSON.parse(session_json));
+    </script>
+{% endblock body %}

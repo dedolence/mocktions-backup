@@ -20,9 +20,6 @@ from .notifications import *
 from .strings import *
 from .utility import *
 
-# for testing
-# from .testing import *
-
 
 # //////////////////////////////////////////////////////
 # URL PATH VIEWS
@@ -128,7 +125,7 @@ def categories(request):
 
 
 def checkout(request):
-    # serialize the items in the user's shopping cart
+
     line_items = []
     items = request.user.shopping_cart.all()
     for item in items:
@@ -144,11 +141,11 @@ def checkout(request):
         'quantity': 1,
         })
 
-    # setup shipping
     shipping_data = [{
         'shipping_rate_data': {
             'type': 'fixed_amount',
             'fixed_amount': {
+                # sum individual shipping costs, convert to pennies, cast to integer
                 'amount': int(sum([(item.shipping * 100) for item in items])),
                 'currency': 'usd',
             },
@@ -165,21 +162,62 @@ def checkout(request):
             }
         }
     }]
+
     session = stripe.checkout.Session.create(
         line_items=line_items,
         payment_method_types=['card'],
         shipping_address_collection=STRIPE_ALLOWED_SHIPPING_COUNTRIES,
         shipping_options=shipping_data,
         mode='payment',
-        success_url='http://127.0.0.1:8000'+reverse('checkout_success'),
+        # TODO: replace these with the actual host duh
+        success_url='http://127.0.0.1:8000/order/success?session_id={CHECKOUT_SESSION_ID}',
         cancel_url='http://127.0.0.1:8000'+reverse('checkout_cancel')
     )
 
     return HttpResponseRedirect(session.url)
 
 
+@require_http_methods(['GET'])
 def checkout_success(request):
-    return HttpResponseRedirect(reverse('index'))
+    """ Create a notification and redirect to index. """
+    session = stripe.checkout.Session.retrieve(request.GET.get('session_id', None))
+    notification = NotificationTemplate()
+    if session['payment_status'] == "paid":
+        thanks_notification = NotificationTemplate()
+        thanks_notification.build(
+            request.user,
+            TYPE_INFO,
+            ICON_GENERIC,
+            MESSAGE_ORDER_THANKS,
+            True,
+            reverse('index')
+        )
+        thanks_notification.save()
+
+        notification.build(
+            request.user,
+            TYPE_SUCCESS,
+            ICON_SUCCESS,
+            MESSAGE_ORDER_SUCCESSFUL.format(reverse('orders')),
+            False,
+            reverse('index')
+        )
+        notification.save()
+
+        return HttpResponseRedirect(reverse('index'))
+    else:
+        notification.build(
+            request.user,
+            TYPE_WARNING,
+            ICON_WARNING,
+            MESSAGE_ORDER_FAILURE,
+            True,
+            reverse('index')
+        )
+        notification.save()
+
+        return HttpResponseRedirect(reverse('index'))
+
 
 
 def checkout_cancel(request):
@@ -219,6 +257,7 @@ def comment(request):
 @require_http_methods(['POST'])
 def comment_reply(request):
     pass
+
 
 @login_required
 @require_http_methods(["GET", "POST"])
@@ -444,6 +483,10 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse('index'))
+
+
+def orders(request):
+    pass
 
 
 @login_required
