@@ -1,19 +1,9 @@
-import decimal
-from http.client import HTTPResponse
 import random
-from secrets import randbelow
-import tempfile
-from tkinter import image_names
-from urllib.request import HTTPRedirectHandler
-import uuid
-
 import requests
+import stripe
+
 from django.contrib.auth import authenticate, login, logout
-# from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
-from django.core import files
-from django.core.exceptions import ValidationError
-from django.db import IntegrityError
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
@@ -135,6 +125,65 @@ def categories(request):
     return render(request, "auctions/categories.html", {
         'categories': Category.objects.all()
     })
+
+
+def checkout(request):
+    # serialize the items in the user's shopping cart
+    line_items = []
+    items = request.user.shopping_cart.all()
+    for item in items:
+        # stripe requires all amounts to be in the smallest currency unit; i.e. pennies for USD
+        line_items.append({
+        'price_data': {
+            'currency': 'usd',
+            'product_data': {
+                'name': item.title,
+            },
+            'unit_amount': int(item.winning_bid * 100),
+        },
+        'quantity': 1,
+        })
+
+    # setup shipping
+    shipping_data = [{
+        'shipping_rate_data': {
+            'type': 'fixed_amount',
+            'fixed_amount': {
+                'amount': int(sum([(item.shipping * 100) for item in items])),
+                'currency': 'usd',
+            },
+            'display_name': 'Standard ground',
+            'delivery_estimate': {
+                'minimum': {
+                    'unit': 'business_day',
+                    'value': 7,
+                },
+                'maximum': {
+                    'unit': 'business_day',
+                    'value': 14,
+                },
+            }
+        }
+    }]
+    session = stripe.checkout.Session.create(
+        line_items=line_items,
+        payment_method_types=['card'],
+        shipping_address_collection=STRIPE_ALLOWED_SHIPPING_COUNTRIES,
+        shipping_options=shipping_data,
+        mode='payment',
+        success_url='http://127.0.0.1:8000'+reverse('checkout_success'),
+        cancel_url='http://127.0.0.1:8000'+reverse('checkout_cancel')
+    )
+
+    return HttpResponseRedirect(session.url)
+
+
+def checkout_success(request):
+    return HttpResponseRedirect(reverse('index'))
+
+
+def checkout_cancel(request):
+    return HttpResponseRedirect(reverse('index'))
 
 
 @require_http_methods(['POST'])
@@ -310,8 +359,6 @@ def edit_listing(request, listing_id):
     }
     return render(request, 'auctions/editListing.html', context)
         
-
-
 
 def index(request):
     if not request.user.is_authenticated:
@@ -717,7 +764,16 @@ def settings(request):
  """
 
 def shopping_cart(request):
-    return HttpResponseRedirect(reverse('index'))
+    listings = request.user.shopping_cart.all()
+    subtotal_items = sum([listing.winning_bid for listing in listings])
+    subtotal_shipping = sum([listing.shipping for listing in listings])
+    total = subtotal_items + subtotal_shipping
+    return render(request, 'auctions/cart.html', {
+        'listings': listings,
+        'subtotal_items': subtotal_items,
+        'subtotal_shipping': subtotal_shipping,
+        'total': total
+    })
 
 
 @login_required

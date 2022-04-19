@@ -147,8 +147,10 @@ def purge_listings(request) -> None:
     watchlist = request.user.watchlist.all()
 
     for listing in all_listings:
+        # find expired listings
         if listing.active and listing.expired:
             if listing.winner and listing.winning_bid:
+                listing.winning_user = listing.winner
                 notify_winner(listing.winner, listing)
             if listing in watchlist:
                 obj = request.user.watchlist.get(id=listing.id)

@@ -156,6 +156,7 @@ class Listing(models.Model):
         null=False,
         help_text="True = a posted listing; False = a temporary (draft) listing."
         )
+    winning_user = models.ForeignKey('User', on_delete=CASCADE, related_name="shopping_cart", blank=True, default=None, null=True)
     objects = models.Manager()
 
     @property
@@ -222,8 +223,6 @@ class Notification(models.Model):
 class User(AbstractUser):
     default_image = static('auctions/images/user_avatar.png')
     watchlist = models.ManyToManyField('Listing', blank=True)
-    #profile_picture = models.CharField(max_length=100, default=default_image)
-    #profile_picture = models.ForeignKey('UserImage', on_delete=PROTECT, blank=True)
     profile_pic = models.ForeignKey('UserImage', on_delete=PROTECT, blank=True, null=True)
     street = models.CharField(max_length=100, blank=True)
     city = models.CharField(max_length=100, blank=True)

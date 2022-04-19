@@ -12,5 +12,13 @@
         <li class="nav-item">
             <a class="nav-link{% if drafts_active %} active{% endif %}" href="{% url 'drafts' %}">Listing drafts</a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link{% if cart_active %} active{% endif %}" href="{% url 'shopping_cart' %}">
+                Shopping cart
+                {% if request.user.shopping_cart.all %}
+                    <span class="badge rounded-pill bg-primary">{{ request.user.shopping_cart.count }}</span>
+                {% endif %}
+            </a>
+        </li>
     </ul>
 </nav>

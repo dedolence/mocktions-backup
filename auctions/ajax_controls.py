@@ -39,9 +39,9 @@ def ajax_delete_comment(request):
 def ajax_dismiss_notification(request):
     notification_id = request.POST.get('notification_id', None)
     if notification_id:
-        notification = Notification.objects.get(pk=notification_id)
+        notification = get_object_or_404(Notification, pk=notification_id)
         notification.delete()
-        return JsonResponse({})
+        return JsonResponse({}, status=200)
     else:
         return JsonResponse({}, status=404)
 
@@ -50,7 +50,7 @@ def ajax_generate_comment(request):
     response = {}
     comment = ''
     for i in range(0, random.randint(1,5)):
-        comment += GEN.sentence()
+        comment += GEN.sentence().strip()
     response["comment"] = comment[0:200]
     return JsonResponse(response)
 
