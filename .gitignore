@@ -3,3 +3,4 @@ auctions/testing.py
 auctions/__pycache__/
 commerce/__pycache__/
 db.sqlite3
+stripe.exe
