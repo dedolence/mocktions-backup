@@ -3,7 +3,9 @@ from essential_generators import DocumentGenerator
 
 # STRIPE PAYMENT VALUES
 # stripe public key: 'pk_test_51KpzPvJhMiuLwzG6ikPeT4xruXBkU43RqykksSfTX5BlphCecxPl8JL9xt7mrfm1rmYip7T3m7VEOL09DMa5nZ3p001CjRiksn'
+# TODO: change these to live keys on deployment
 stripe.api_key = 'sk_test_51KpzPvJhMiuLwzG6CYjat9cTVFCWAjRopTymyPyH32XKY3JZb7wwkvoFpUnRlJn3gM8BHVwVFfrBWdEjE351u0Ta008sFt5jT1'
+STRIPE_ENDPOINT_SECRET = 'whsec_5f333f2eb76cb546166e92b6cd673a116de7a982a9b73679ea3bf0737bd64603'
 STRIPE_ALLOWED_SHIPPING_COUNTRIES = {'allowed_countries': ['US', 'CA']}
 
 

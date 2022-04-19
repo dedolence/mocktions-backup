@@ -163,24 +163,34 @@ def purge_listings(request) -> None:
 @csrf_exempt
 def stripe_webhook(request):
     payload = request.body
+    sig_header = request.META['HTTP_STRIPE_SIGNATURE']
     event = None
 
     try:
-        event = stripe.Event.construct_from(
-            json.loads(payload), stripe.api_key
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, STRIPE_ENDPOINT_SECRET
         )
     except ValueError as e:
         return HttpResponse(status=400)
+    except stripe.error.SignatureVerificationError as e:
+        return HttpResponse(status=400)
 
     # handle the event
-    if event.type == 'payment_intent.succeeded':
-        payment_intent = event.data.object # contains a stripe.PaymentIntent
-        print('PaymentIntent was successful!')
-    elif event.type == 'payment_method.attached':
-        payment_method = event.data.object
-        print('PaymentMethod was attached to a customer!')
+    if event['type'] == 'checkout.session.async_payment_failed':
+      session = event['data']['object']
+      print(session)
+    elif event['type'] == 'checkout.session.async_payment_succeeded':
+      session = event['data']['object']
+      print(session)
+    elif event['type'] == 'checkout.session.completed':
+      session = event['data']['object']
+      print(session)
+    elif event['type'] == 'checkout.session.expired':
+      session = event['data']['object']
+      print(session)
+    # ... handle other event types
     else:
-        print('Unhandled event type {}'.format(event.type))
+      print('Unhandled event type {}'.format(event['type']))
 
     return HttpResponse(status=200)
 
