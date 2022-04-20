@@ -169,3 +169,9 @@ So once again:
     Revamp creation process again:
     Preview and edit are identical: they both render a listing and a form for editing it, and lead to either posting it 
     or saving it as a draft. 
+
+4/20
+    Database is completely fucked.
+    Deleted all migrations and database. Createmigrations still returns error about a missing table.
+    manage.py flush returns same missing table error.
+    

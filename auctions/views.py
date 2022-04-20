@@ -1,4 +1,5 @@
 import random
+from tkinter import N
 import requests
 import stripe
 
@@ -174,38 +175,23 @@ def checkout(request):
         cancel_url='http://127.0.0.1:8000'+reverse('checkout_cancel')
     )
 
+    new_order = Order.objects.create(session_id=session.id, user=request.user)
+    for item in items:
+        new_order.items.add(item)
+    new_order.save()
+
     return HttpResponseRedirect(session.url)
 
 
 @require_http_methods(['GET'])
 def checkout_success(request):
     """ Create a notification and redirect to index. """
-    session = stripe.checkout.Session.retrieve(request.GET.get('session_id', None))
     notification = NotificationTemplate()
-    if session['payment_status'] == "paid":
-        thanks_notification = NotificationTemplate()
-        thanks_notification.build(
-            request.user,
-            TYPE_INFO,
-            ICON_GENERIC,
-            MESSAGE_ORDER_THANKS,
-            True,
-            reverse('index')
-        )
-        thanks_notification.save()
+    session_id = request.GET.get('session_id', None)
+    session = stripe.checkout.Session.retrieve(session_id)
 
-        notification.build(
-            request.user,
-            TYPE_SUCCESS,
-            ICON_SUCCESS,
-            MESSAGE_ORDER_SUCCESSFUL.format(reverse('orders')),
-            False,
-            reverse('index')
-        )
-        notification.save()
-
-        return HttpResponseRedirect(reverse('index'))
-    else:
+    order = get_object_or_404(Order, session_id=session_id)
+    if not order:
         notification.build(
             request.user,
             TYPE_WARNING,
@@ -215,6 +201,44 @@ def checkout_success(request):
             reverse('index')
         )
         notification.save()
+        return HttpResponseRedirect(reverse('index'))
+    else:
+        if session['payment_status'] == "paid":
+            order.status = session['payment_status']
+            order.save()
+
+            thanks_notification = NotificationTemplate()
+            thanks_notification.build(
+                request.user,
+                TYPE_INFO,
+                ICON_GENERIC,
+                MESSAGE_ORDER_THANKS,
+                True,
+                reverse('index')
+            )
+            thanks_notification.save()
+
+            notification.build(
+                request.user,
+                TYPE_SUCCESS,
+                ICON_SUCCESS,
+                MESSAGE_ORDER_SUCCESSFUL.format(reverse('orders')),
+                False,
+                reverse('index')
+            )
+            notification.save()
+
+            return HttpResponseRedirect(reverse('index'))
+        else:
+            notification.build(
+                request.user,
+                TYPE_WARNING,
+                ICON_WARNING,
+                MESSAGE_ORDER_FAILURE,
+                True,
+                reverse('index')
+            )
+            notification.save()
 
         return HttpResponseRedirect(reverse('index'))
 
