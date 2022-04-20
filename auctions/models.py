@@ -204,6 +204,13 @@ class Listing(models.Model):
             return None
 
 
+class Order(models.Model):
+    session_id = models.CharField(max_length=200, blank=False)
+    user = models.ForeignKey('User', on_delete=PROTECT, related_name='orders', blank=False)
+    items = models.ForeignKey(Listing, on_delete=CASCADE, related_name='order', blank=True)
+    status = models.CharField(max_length=200, blank=True)
+
+
 class Notification(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=CASCADE, related_name="notifications", blank=True)
     content = models.CharField(max_length=200, null=False, blank=False)
