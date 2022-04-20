@@ -48,6 +48,7 @@ urlpatterns = [
     #path('preview/', views.preview_listing, name="preview_listing"), OBSOLETE
     path("register", views.register, name="register"),
     path("remove_image/<int:listing_id>/<int:image_id>", views.remove_image, name="remove_image"),
+    path("remove_image/<int:image_id>", views.remove_image, name="remove_image"),
     path("search", views.search, name="search"),
     path("settings", views.settings, name="settings"),
     path('stripe/', stripe_webhook, name="stripe_webhook"),

@@ -84,15 +84,18 @@ async function ajax_upload_media(elementArray, url) {
     const currentImageCount = formThumbnails.children.length;
     const imageIdList = $('selectImageInput');
     const errorContainer = $('uploadImageError');
-    const listingId = $('listingId').value;
+
+    //const listingId = $('listingId').value? $('listingId').value : null;
     //const placeholder = $('imagesPlaceholder');
     let fileSourceElement;
     // allow multiple file uploads?
     let multiple = $('id_upload_image').multiple? true : false;
 
     let formData = new FormData();
-        formData.append('currentImageCount', currentImageCount);
-        formData.append('listing_id', listingId);
+    formData.append('currentImageCount', currentImageCount);
+    if ($('listingId')) {
+        formData.append('listing_id', listingId? listingId : null);
+    }
 
     // loading progress modal
     const loadingModalElement = $('loadingImageModal');
@@ -135,12 +138,6 @@ async function ajax_upload_media(elementArray, url) {
         if (r.paths.length > 0) {
             if (multiple) {
                 formThumbnails.innerHTML += r.html;
-                /* if (previewThumbnails) {
-                    if (placeholder) {
-                        placeholder.parentElement.removeChild(placeholder);
-                    }
-                    previewThumbnails.innerHTML += r.html;
-                } */
             } else {
                 formThumbnails.innerHTML = r.html;
                 imageIdList.innerHTML = '';

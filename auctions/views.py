@@ -593,10 +593,13 @@ def register(request):
         })
 
 
-def remove_image(request, listing_id, image_id):
+def remove_image(request, image_id, listing_id=None,):
     image = get_object_or_404(UserImage, pk=image_id)
     image.delete()
-    return HttpResponseRedirect(reverse('edit_listing', args=[listing_id]))
+    if listing_id:
+        return HttpResponseRedirect(reverse('edit_listing', args=[listing_id]))
+    else:
+        return
 
 
 def search(request):

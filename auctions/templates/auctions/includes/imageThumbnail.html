@@ -12,5 +12,10 @@
 
 <div class="card me-4 mb-4">
     <img src="{{ image.image.url }}" class="card-img-top" alt="A picture of the listing being sold">
-    <a href="{% url 'remove_image' listing.id image.id %}" class="btn btn-outline-secondary btn-sm m-2"><i class="bi bi-x-circle-fill"></i> Remove</a>
+    {% if listing.id %}
+        {% url 'remove_image' listing.id image.id as url %}
+    {% else %}
+        {% url 'remove_image' image.id as url %}
+    {% endif %}
+    <a href="{{ url }}" class="btn btn-outline-secondary btn-sm m-2"><i class="bi bi-x-circle-fill"></i> Remove</a>
 </div>

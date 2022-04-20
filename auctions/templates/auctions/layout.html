@@ -18,7 +18,11 @@
         {% endcomment %}
         <script>
             function $(id) {
-                return document.getElementById(id);
+                if (document.getElementById(id)) {
+                    return document.getElementById(id);
+                } else {
+                    return false;
+                }
             }
             
             const AJAX_URLS = {

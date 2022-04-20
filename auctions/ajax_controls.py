@@ -70,6 +70,7 @@ def ajax_upload_media(request):
     response = {}
     images = None
     current_image_count = request.POST.get('currentImageCount', None)
+    listing_id = request.POST.get('listing_id', None)
     if int(current_image_count) >= MAX_UPLOADS_PER_LISTING:
         response['error'] = MESSAGE_LISTING_MAX_UPLOADS_EXCEEDED
     else:
@@ -96,7 +97,7 @@ def ajax_upload_media(request):
                 image_instance = UserImage.objects.get(pk=id)
                 html_string += render_to_string('auctions/includes/imageThumbnail.html', {
                     'image': image_instance,
-                    'listing': Listing.objects.get(pk=request.POST.get('listing_id'))
+                    'listing': Listing.objects.get(pk=listing_id) if listing_id else None
                 })
             response['paths'] = [i.image.url for i in images]
             response['ids'] = image_ids
