@@ -43,6 +43,21 @@ function ajax_dismiss_notification(elementArray, url) {
         })
 }
 
+function dismissNotification(id) {
+    let notificationElement = $('notification-' + id);
+    let formData = new FormData();
+        formData.append('notification_id', id);
+    
+    const url = AJAX_URLS.ajax_dismiss_notification;
+    make_fetch(formData, url)
+    .then((r) => {
+        notificationElement.parentElement.removeChild(notificationElement);
+    })
+    .catch((error) => {
+        console.log(error);
+    })
+}
+
 
 function ajax_generate_comment(elementArray, url) {
     const textInputElement = $('id_content');
@@ -54,27 +69,6 @@ function ajax_generate_comment(elementArray, url) {
     })
 }
 
-
-/* function ajax_purge_media(elementArray, url) {
-    let img_target = elementArray[0];
-    const img_id = img_target.id.split('-')[1];
-    const formData = new FormData();
-    formData.append('img_id', img_id);
-    let request = make_fetch(formData, url);
-    request.then(() => {
-        // remove this from targets as it's no longer target-able
-        TARGETS.splice(TARGETS.indexOf(img_target), 1);
-        img_target.parentElement.removeChild(img_target);
-        let imageIdList = $('selectImageInput');
-        let i = 0; n = imageIdList.children.length;
-        for (i, n; i < n; i++) {
-            let child = imageIdList.children[i];
-            if (child.value === img_id) {
-                imageIdList.removeChild(child);
-            }
-        }
-    })
-} */
 
 // Upload an image and return its properties
 async function ajax_upload_media(elementArray, url) {

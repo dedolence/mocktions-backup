@@ -1,8 +1,8 @@
 {% for notification in notifications %}
         {% autoescape off %}
-            <div class="alert alert-{{notification.type}} alert-dismissible" role="alert" id="notification-{{notification.id}}" data-target="{{ ajax.ajax_dismiss_notification.name }}">
+            <div class="alert alert-{{notification.type}} alert-dismissible" role="alert" id="notification-{{notification.id}}">
                 {{notification.content}}
-                <input type="button" class="btn-close" aria-label="Close" data-click-action="{{ ajax.ajax_dismiss_notification.name }}">
+                <input type="button" class="btn-close" aria-label="Close" onclick="dismissNotification({{ notification.id }})">
             </div>
         {% endautoescape %}
 {% endfor %}
