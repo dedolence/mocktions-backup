@@ -210,6 +210,22 @@ class Invoice(models.Model):
     status = models.CharField(max_length=200, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True, null=True)
     user = models.ForeignKey('User', on_delete=DO_NOTHING, blank=True, null=True)
+    item_subtotal = models.DecimalField(
+        max_digits=8, 
+        decimal_places=2, 
+        null=True, 
+        blank=True)
+    shipping_subtotal = models.DecimalField(
+        max_digits=8, 
+        decimal_places=2, 
+        null=True, 
+        blank=True)
+    total = models.DecimalField(
+        max_digits=9, 
+        decimal_places=2, 
+        null=True, 
+        blank=True)
+    method = models.CharField(max_length=200, blank=True, default="card", null=True)
 
 
 class Notification(models.Model):

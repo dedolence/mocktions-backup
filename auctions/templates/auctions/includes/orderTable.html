@@ -22,9 +22,9 @@
     <tfoot>
         <tr class="bg-light">
             <td>Totals:</td>
-            <td>${{ subtotal_items }}</td>
-            <td><em>${{ subtotal_shipping }}</em></td>
-            <td><strong>${{ total }}</strong></td>
+            <td>${{ order.item_subtotal }}</td>
+            <td><em>${{ order.shipping_subtotal }}</em></td>
+            <td><strong>${{ order.total }}</strong></td>
         </tr>
     </tfoot>
 </table>

@@ -6,8 +6,9 @@
         {% include 'auctions/includes/breadcrumb.html' with page="Order complete!" %}
     {% endblock breadcrumb %}
 
-    {% for item in line_items %}
-        <p>{{ item }}</p>
-    {% endfor %}
+    {{ session|json_script:"session" }}
+    <script>
+        console.log(JSON.parse(session));
+    </script>
 
 {% endblock body %}

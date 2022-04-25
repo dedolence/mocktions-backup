@@ -7,8 +7,71 @@
 
     <div class="tab-content mt-5" id="indexTabContent">
 
-        {% include 'auctions/includes/orderTable.html' with listings=listings %}
+        <h5>Payment details</h5>
+        <table class="table mb-5">
+            <thead>
+                <tr class="fw-light">
+                    <td>Order #</td>
+                    <td>Date created:</td>
+                    <td>Payment method</td>
+                    <td>Payment status</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ order.id }}</td>
+                    <td>{{ order.timestamp }}</td>
+                    <td>{{ order.method }}</td>
+                    <td>{{ order.status }}</td>
+                </tr>
+            </tbody>
+        </table>
         
+        <h5>Item details</h5>
+        {% include 'auctions/includes/orderTable.html' with listings=listings %}
+
+        <h5>Shipping details</h5>
+        <table class="table table-striped d-inline">
+            <tbody>
+                <tr>
+                    <td class="fw-light">Ship to:</td>
+                    <td class="px-5">{{ session.shipping.name }}</td>
+                </tr>
+                <tr>
+                    <td class="fw-light">Street 1:</td>
+                    <td class="px-5">{{ session.shipping.address.line1 }}</td>
+                </tr>
+                <tr>
+                    <td class="fw-light">Street 2:</td>
+                    <td class="px-5">{{ session.shipping.address.line2 }}</td>
+                </tr>
+                <tr>
+                    <td class="fw-light">City/Town:</td>
+                    <td class="px-5">{{ session.shipping.address.city }}</td>
+                </tr>
+                <tr>
+                    <td class="fw-light">State/Province:</td>
+                    <td class="px-5">{{ session.shipping.address.state }}</td>
+                </tr>
+                <tr>
+                    <td class="fw-light">Postcode:</td>
+                    <td class="px-5">{{ session.shipping.address.postal_code }}</td>
+                </tr>
+                <tr>
+                    <td class="fw-light">Country:</td>
+                    <td class="px-5">{{ session.shipping.address.coutnry }}</td>
+                </tr>
+                <tr>
+                    <td class="fw-light">Phone:</td>
+                    <td class="px-5">{{ session.customer_details.phone }}</td>
+                </tr>
+                <tr>
+                    <td class="fw-light">Email:</td>
+                    <td class="px-5">{{ session.customer_details.email }}</td>
+                </tr>
+            </tbody>
+        </table>
+
     </div>
 
 {% endblock body %}

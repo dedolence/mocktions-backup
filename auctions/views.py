@@ -206,6 +206,10 @@ def checkout_success(request):
     else:
         if session['payment_status'] == "paid":
             invoice.status = session['payment_status']
+            invoice.method = session['payment_method_types'][0]
+            invoice.item_subtotal = sum(item['amount_total'] for item in session['line_items']['data'])/100
+            invoice.shipping_subtotal = session['shipping_options'][0]['shipping_amount']/100
+            invoice.total = session['amount_total']/100
             invoice.save()
 
             thanks_notification = NotificationTemplate()
@@ -228,8 +232,6 @@ def checkout_success(request):
                 reverse('index')
             )
             notification.save()
-
-            return HttpResponseRedirect(reverse('index'))
         else:
             notification.build(
                 request.user,
@@ -511,32 +513,7 @@ def logout_view(request):
 
 
 def orders(request):
-    raw_invoices = request.user.invoice_set.all()
-    invoices = []
-    for invoice in raw_invoices:
-        total = 0
-        subtotal = 0
-        ship_total = 0
-        inv = {}
-        items = []
-        for item in invoice.items.all():
-            items.append({
-                'item_id': item.id,
-                'item_title': item.title,
-                'item_winning_bid': item.winning_bid,
-                'item_shipping': item.shipping,
-                'item_total': item.winning_bid + item.shipping
-            })
-            total += item.winning_bid + item.shipping
-            subtotal += item.winning_bid
-            ship_total += item.shipping
-        inv['order_items'] = items
-        inv['order_id'] = invoice.id
-        inv['order_status'] = invoice.status
-        inv['order_total'] = total
-        inv['order_subtotal'] = subtotal
-        inv['order_ship_total'] = ship_total
-        invoices.append(inv)
+    invoices = request.user.invoice_set.all()
     return render(request, 'auctions/orders.html', {
         'orders': invoices
     })
@@ -690,9 +667,11 @@ def shopping_cart(request):
     total = subtotal_items + subtotal_shipping
     return render(request, 'auctions/cart.html', {
         'listings': listings,
-        'subtotal_items': subtotal_items,
-        'subtotal_shipping': subtotal_shipping,
-        'total': total
+        'order': {
+            'item_subtotal': subtotal_items,
+            'shipping_subtotal': subtotal_shipping,
+            'total': total 
+            }
     })
 
 
@@ -769,14 +748,11 @@ def view_all_users(request):
 def view_order(request, order_id):
     invoice = Invoice.objects.get(pk=order_id)
     listings = invoice.items.all()
-    subtotal_items = sum([listing.winning_bid for listing in listings])
-    subtotal_shipping = sum([listing.shipping for listing in listings])
-    total = subtotal_items + subtotal_shipping
+    session = stripe.checkout.Session.retrieve(invoice.session_id)
     return render(request, 'auctions/orderDetail.html', {
         'listings': listings,
-        'subtotal_items': subtotal_items,
-        'subtotal_shipping': subtotal_shipping,
-        'total': total
+        'order': invoice,
+        'session': session
     })
 
 

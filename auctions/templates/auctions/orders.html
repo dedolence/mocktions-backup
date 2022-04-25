@@ -4,7 +4,7 @@
 
     {% include 'auctions/includes/userNavTab.html' with orders_active=True %}
 
-    <p class="my-5">Click on an order ID to see more details.</p>
+    <p class="my-5">Click on an order # to see more details.</p>
     <table class="table">
         <thead>
             <tr>
@@ -18,11 +18,11 @@
         <tbody>
             {% for order in orders %}
                 <tr>
-                    <td><a href="{% url 'view_order' order.order_id %}">{{ order.order_id }}</a></td>
-                    <td>{{ order.order_status }}</td>
-                    <td>${{ order.order_subtotal }}</td>
-                    <td>${{ order.order_ship_total }}</td>
-                    <td class="fw-bold">${{ order.order_total }}</td>
+                    <td><a href="{% url 'view_order' order.id %}">{{ order.id }}</a></td>
+                    <td>{{ order.status }}</td>
+                    <td>${{ order.item_subtotal }}</td>
+                    <td>${{ order.shipping_subtotal }}</td>
+                    <td class="fw-bold">${{ order.total }}</td>
                 </tr>
             {% endfor %}
         </tbody>
