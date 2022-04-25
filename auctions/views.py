@@ -212,6 +212,11 @@ def checkout_success(request):
             invoice.total = session['amount_total']/100
             invoice.save()
 
+            # clear user's shopping cart
+            user = invoice.user
+            for item in invoice.items.all():
+                user.shopping_cart.remove(item)
+
             thanks_notification = NotificationTemplate()
             thanks_notification.build(
                 request.user,
