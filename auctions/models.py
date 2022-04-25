@@ -3,7 +3,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models.deletion import CASCADE, PROTECT, SET
+from django.db.models.deletion import CASCADE, PROTECT, SET, SET_NULL, DO_NOTHING
 from django.templatetags.static import static
 
 from .globals import THUMBNAIL_SIZE, LISTING_DRAFT_EXPIRATION_DAYS
@@ -156,7 +156,8 @@ class Listing(models.Model):
         null=False,
         help_text="True = a posted listing; False = a temporary (draft) listing."
         )
-    winning_user = models.ForeignKey('User', on_delete=CASCADE, related_name="shopping_cart", blank=True, default=None, null=True)
+    winning_user = models.ForeignKey('User', on_delete=PROTECT, related_name="shopping_cart", blank=True, default=None, null=True)
+    invoice = models.ForeignKey('Invoice', on_delete=SET_NULL, blank=True, null=True, related_name="items")
     objects = models.Manager()
 
     @property
@@ -204,11 +205,11 @@ class Listing(models.Model):
             return None
 
 
-class Order(models.Model):
+class Invoice(models.Model):
     session_id = models.CharField(max_length=200, blank=False)
-    user = models.ForeignKey('User', on_delete=PROTECT, related_name='orders', blank=False)
-    items = models.ForeignKey(Listing, on_delete=CASCADE, related_name='order', blank=True)
     status = models.CharField(max_length=200, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True, null=True)
+    user = models.ForeignKey('User', on_delete=DO_NOTHING, blank=True, null=True)
 
 
 class Notification(models.Model):
@@ -225,6 +226,9 @@ class Notification(models.Model):
     page = models.CharField(max_length=50, 
         default="index", 
         help_text="Defines on which page the notification should appear.")
+
+    class Meta:
+        ordering = ['id']
 
 
 class User(AbstractUser):

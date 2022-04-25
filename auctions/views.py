@@ -1,3 +1,4 @@
+from importlib import metadata
 import random
 from tkinter import N
 import requests
@@ -16,7 +17,7 @@ from . import namelist, wordlist
 from .ajax_controls import *
 from .forms import BioForm, CommentEditForm, CommentForm, CommentReplyForm, NewBidForm, NewListingCreateForm, NewListingSubmitForm, RegistrationForm
 from .globals import *
-from .models import Bid, Category, Comment, UserImage, Listing, User
+from .models import *
 from .notifications import *
 from .strings import *
 from .utility import *
@@ -126,7 +127,6 @@ def categories(request):
 
 
 def checkout(request):
-
     line_items = []
     items = request.user.shopping_cart.all()
     for item in items:
@@ -164,6 +164,7 @@ def checkout(request):
         }
     }]
 
+
     session = stripe.checkout.Session.create(
         line_items=line_items,
         payment_method_types=['card'],
@@ -175,7 +176,7 @@ def checkout(request):
         cancel_url='http://127.0.0.1:8000'+reverse('checkout_cancel')
     )
 
-    new_order = Order.objects.create(session_id=session.id, user=request.user)
+    new_order = Invoice.objects.create(session_id=session.id, user=request.user)
     for item in items:
         new_order.items.add(item)
     new_order.save()
@@ -188,10 +189,10 @@ def checkout_success(request):
     """ Create a notification and redirect to index. """
     notification = NotificationTemplate()
     session_id = request.GET.get('session_id', None)
-    session = stripe.checkout.Session.retrieve(session_id)
+    session = stripe.checkout.Session.retrieve(session_id, expand=['line_items'])
 
-    order = get_object_or_404(Order, session_id=session_id)
-    if not order:
+    invoice = get_object_or_404(Invoice, session_id=session_id)
+    if not invoice:
         notification.build(
             request.user,
             TYPE_WARNING,
@@ -204,8 +205,8 @@ def checkout_success(request):
         return HttpResponseRedirect(reverse('index'))
     else:
         if session['payment_status'] == "paid":
-            order.status = session['payment_status']
-            order.save()
+            invoice.status = session['payment_status']
+            invoice.save()
 
             thanks_notification = NotificationTemplate()
             thanks_notification.build(
@@ -222,7 +223,7 @@ def checkout_success(request):
                 request.user,
                 TYPE_SUCCESS,
                 ICON_SUCCESS,
-                MESSAGE_ORDER_SUCCESSFUL.format(reverse('orders')),
+                MESSAGE_ORDER_SUCCESSFUL.format(reverse('view_order', args=[invoice.id])),
                 False,
                 reverse('index')
             )
@@ -510,7 +511,35 @@ def logout_view(request):
 
 
 def orders(request):
-    pass
+    raw_invoices = request.user.invoice_set.all()
+    invoices = []
+    for invoice in raw_invoices:
+        total = 0
+        subtotal = 0
+        ship_total = 0
+        inv = {}
+        items = []
+        for item in invoice.items.all():
+            items.append({
+                'item_id': item.id,
+                'item_title': item.title,
+                'item_winning_bid': item.winning_bid,
+                'item_shipping': item.shipping,
+                'item_total': item.winning_bid + item.shipping
+            })
+            total += item.winning_bid + item.shipping
+            subtotal += item.winning_bid
+            ship_total += item.shipping
+        inv['order_items'] = items
+        inv['order_id'] = invoice.id
+        inv['order_status'] = invoice.status
+        inv['order_total'] = total
+        inv['order_subtotal'] = subtotal
+        inv['order_ship_total'] = ship_total
+        invoices.append(inv)
+    return render(request, 'auctions/orders.html', {
+        'orders': invoices
+    })
 
 
 @login_required
@@ -652,186 +681,7 @@ def settings(request):
             )
             notification.save()
             return HttpResponseRedirect(reverse('settings'))
-    """ if not request.user.is_authenticated:
-        return render(request, reverse("index"))
-    else:
-        profile_picture_form = NewImageForm()
-        contact_form = ContactForm({
-            'first_name': request.user.first_name,
-            'last_name': request.user.last_name,
-            'email': request.user.email,
-            'phone': request.user.phone
-        })
-        shipping_form = ShippingInformation({
-            'street': request.user.street,
-            'city': request.user.city,
-            'state': request.user.state,
-            'postcode': request.user.postcode,
-            'country': request.user.country
-        })
-        
-        # create a generic notification
-        notification = NotificationTemplate()
-
-        if request.method == "POST":
-            # instantiate forms
-            profile_picture_form = NewImageForm(request.POST, request.FILES)
-            contact_form = ContactForm(request.POST)
-            shipping_form = ShippingInformation(request.POST)
-
-            # see what, if anything, has changed.
-            img_upload = request.FILES.get('image', None)
-            img_url = request.POST.get('image_url', None)
-            random_img = request.POST.get('random_image', None)
-            first_name = request.POST.get('first_name', None)
-            last_name = request.POST.get('last_name', None)
-            email = request.POST.get('email', None)
-            phone = request.POST.get('phone', None)
-            street = request.POST.get('street', None)
-            city = request.POST.get('city', None)
-            state = request.POST.get('state', None)
-            postcode = request.POST.get('postcode', None)
-            country = request.POST.get('country', None)
-
-            # validate form data
-            if not contact_form.is_valid() or not shipping_form.is_valid():
-                return render(request, "auctions/settings.html", {
-                        'profile_picture_form': profile_picture_form,
-                        'contact_form': contact_form,
-                        'shipping_form': shipping_form,
-                        'notifications': get_notifications(
-                            request.user, 
-                            reverse('settings')
-                            )
-                    })
-
-            user = request.user
-            user.first_name = first_name
-            user.last_name = last_name
-            user.email = email
-            user.phone = phone
-            user.street = street
-            user.city = city
-            user.state = state
-            user.postcode = postcode
-            user.country = country
-            user.save()
-            
-            # check for profile image
-            if img_upload or img_url or random_img:
-
-                if profile_picture_form.is_valid():
-                    
-                    if img_upload:
-                        img_source = img_upload
-                    else:
-                        if img_url:
-                            src_url = img_url
-                            filename = img_url.split('/')[-1].split('.')[0] + ".jpg"
-                        else:
-                            src_url = 'https://picsum.photos/200'
-                            filename = uuid.uuid4().hex     # random filename
-                        
-                        res = requests.get(src_url, stream=True)
-
-                        # make sure it's an image
-                        content_types = 'image/gif', 'image/jpeg', 'image/png', 'image/tiff'
-                        if res.headers['content-type'] not in content_types:
-                            notification.build(
-                                request.user,
-                                TYPE_WARNING,
-                                ICON_WARNING,
-                                MESSAGE_USER_PICTURE_UPLOAD_FORMAT,
-                                True,
-                                reverse('settings')
-                            )
-                            notification.save()
-                            return HttpResponseRedirect(reverse('settings'))
-                        
-                        # source for saving image to temp file:
-                        # Mayank Jain https://medium.com/@jainmickey
-                        img_temp = tempfile.NamedTemporaryFile(delete=True)
-                        for block in res.iter_content(1024 * 8):
-                            if not block:
-                                break
-                            img_temp.write(block)
-                        img_source = files.images.ImageFile(
-                            img_temp, 
-                            name=filename
-                            )
-
-                    img_mod = UserImage(
-                        owner=request.user,
-                        image=img_source
-                    )
-                    img_mod.save_thumbnail()
-                    img_mod.save()
-
-                    # replace the user's profile picture
-                    request.user.profile_picture = img_mod.thumbnail.url
-                    request.user.save()
-
-                    notification.build(
-                        request.user,
-                        TYPE_SUCCESS,
-                        ICON_SUCCESS,
-                        MESSAGE_USER_PICTURE_UPLOAD_SUCCESS,
-                        True,
-                        reverse('settings')
-                    )
-                    notification.save()
-
-                    return render(request, "auctions/settings.html", {
-                        'profile_picture_form': profile_picture_form,
-                        'contact_form': contact_form,
-                        'shipping_form': shipping_form,
-                        'img': img_mod.thumbnail.url,
-                        'notifications': get_notifications(
-                            request.user, 
-                            reverse('settings')
-                            )
-                    })
-                else:
-                    notification.build(
-                        request.user,
-                        TYPE_WARNING,
-                        ICON_WARNING,
-                        MESSAGE_USER_PICTURE_UPLOAD_FAILURE,
-                        True,
-                        reverse('settings')
-                    )
-                    notification.save()
-                    return render(request, "auctions/settings.html", {
-                        'profile_picture_form': profile_picture_form,
-                        'contact_form': contact_form,
-                        'shipping_form': shipping_form,
-                        'notifications': get_notifications(
-                            request.user, 
-                            reverse('settings')
-                            )
-                    })
-            # no changes were made
-            else:
-                return render(request, "auctions/settings.html", {
-                    'profile_picture_form': profile_picture_form,
-                    'contact_form': contact_form,
-                    'shipping_form': shipping_form,
-                    'notifications': get_notifications(
-                        request.user, reverse('settings')
-                        )
-                })
-
-        # request = GET
-        else:
-            return render(request, "auctions/settings.html", {
-                'profile_picture_form': profile_picture_form,
-                'contact_form': contact_form,
-                'shipping_form': shipping_form,
-                'notifications': get_notifications(
-                    request.user, reverse('settings')
-                    )
-            })
- """
+    
 
 def shopping_cart(request):
     listings = request.user.shopping_cart.all()
@@ -914,6 +764,20 @@ def submit_listing(request, listing_id):
 
 def view_all_users(request):
     return HttpResponseRedirect(reverse('index'))
+
+
+def view_order(request, order_id):
+    invoice = Invoice.objects.get(pk=order_id)
+    listings = invoice.items.all()
+    subtotal_items = sum([listing.winning_bid for listing in listings])
+    subtotal_shipping = sum([listing.shipping for listing in listings])
+    total = subtotal_items + subtotal_shipping
+    return render(request, 'auctions/orderDetail.html', {
+        'listings': listings,
+        'subtotal_items': subtotal_items,
+        'subtotal_shipping': subtotal_shipping,
+        'total': total
+    })
 
 
 def view_user(request, username):

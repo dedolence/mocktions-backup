@@ -70,7 +70,7 @@ def notify_winner(user, listing) -> None:
         TYPE_SUCCESS,
         ICON_SUCCESS,
         message,
-        False,
+        True,
         reverse('index')
     )
     notification.save()

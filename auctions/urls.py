@@ -43,6 +43,7 @@ urlpatterns = [
     path("listings/", views.listings, name="all_listings"),
     path("listings/view/<int:listing_id>", views.listing_page, name="view_listing"),
     path("accounts/orders/", views.orders, name="orders"),
+    path("accounts/orders/<int:order_id>/", views.view_order, name="view_order"),
     #path("login", views.login_view, name="login"),
     #path("logout", views.logout_view, name="logout"),
     #path('preview/', views.preview_listing, name="preview_listing"), OBSOLETE
@@ -63,6 +64,6 @@ urlpatterns = [
     # path("ajax/request/", views.ajax_return, name="ajax_return"),
     # path("bidding/", views.test_bidding, name="test_bidding"),
     # path("testListing/", views.test_listing, name="test_listing")
-    path('test/order/success/', testing.test_order_success, name="test_order_success"),
+    # path('test/order/success/', testing.test_order_success, name="test_order_success"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

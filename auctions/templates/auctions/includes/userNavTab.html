@@ -1,4 +1,4 @@
-<nav>
+<nav role="navigation">
     <ul class="nav nav-tabs">
         <li class="nav-item">
             <a class="nav-link{% if index_active %} active{% endif %}" aria-current="page" href="{% url 'index' %}">Your Listings</a>
@@ -12,6 +12,10 @@
         <li class="nav-item">
             <a class="nav-link{% if drafts_active %} active{% endif %}" href="{% url 'drafts' %}">Listing drafts</a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link{% if orders_active %} active{% endif %}" href="{% url 'orders' %}">Your orders</a>
+        </li>
+        <li class="flex-grow-1"></li>
         <li class="nav-item">
             <a class="nav-link{% if cart_active %} active{% endif %}" href="{% url 'shopping_cart' %}">
                 Shopping cart

@@ -1,0 +1,30 @@
+<table class="table mb-5">
+    <thead>
+        <tr class="fw-light">
+            <td>Item</td>
+            <td><small>Your bid</small></td>
+            <td><small>Shipping</small></td>
+            <td><small>Total</small></td>
+        </tr>
+    </thead>
+    <tbody>
+    {% for listing in listings %}
+        <tr class="align-middle">
+            <td class="w-50">
+                <a href="{% url 'view_listing' listing.id %}" class="lead">{{ listing.title }}</a>
+            </td>
+            <td class="w-25">${{ listing.winning_bid }}</td>
+            <td class="w-25"><small>${{ listing.shipping }}</small></td>
+            <td>${{ listing.winning_bid|add:listing.shipping }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr class="bg-light">
+            <td>Totals:</td>
+            <td>${{ subtotal_items }}</td>
+            <td><em>${{ subtotal_shipping }}</em></td>
+            <td><strong>${{ total }}</strong></td>
+        </tr>
+    </tfoot>
+</table>

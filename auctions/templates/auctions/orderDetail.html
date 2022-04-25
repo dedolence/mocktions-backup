@@ -1,0 +1,14 @@
+{% extends 'auctions/layout.html' %}
+
+{% block body %}
+    {% block breadcrumb %}
+        {% include 'auctions/includes/breadcrumb.html' with page='Order detail' %}
+    {% endblock breadcrumb %}
+
+    <div class="tab-content mt-5" id="indexTabContent">
+
+        {% include 'auctions/includes/orderTable.html' with listings=listings %}
+        
+    </div>
+
+{% endblock body %}

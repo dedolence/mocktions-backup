@@ -7,43 +7,14 @@
     <div class="tab-content mt-5" id="indexTabContent">
 
         <p class="lead">Order details</p>
-        <table class="table mb-5">
-            <thead>
-                <tr>
-                    <td>{# Listing title #}</td>
-                    <td><small>Your bid</small></td>
-                    <td><small>Shipping</small></td>
-                    <td><small>Total</small></td>
-                </tr>
-            </thead>
-            <tbody>
-            {% for listing in listings %}
-                <tr class="align-middle">
-                    <td class="w-50">
-                        <a href="{% url 'view_listing' listing.id %}" class="lead">{{ listing.title }}</a>
-                    </td>
-                    <td class="w-25">${{ listing.winning_bid }}</td>
-                    <td class="w-25"><small>${{ listing.shipping }}</small></td>
-                    <td>${{ listing.winning_bid|add:listing.shipping }}</td>
-                </tr>
-            {% endfor %}
-            </tbody>
-            <tfoot>
-                <tr class="bg-light">
-                    <td>Totals:</td>
-                    <td>${{ subtotal_items }}</td>
-                    <td><em>${{ subtotal_shipping }}</em></td>
-                    <td><strong>${{ total }}</strong></td>
-                </tr>
-            </tfoot>
-        </table>
+        {% include 'auctions/includes/orderTable.html' with listings=listings %}
 
         <p class="lead">Ready to pay?</p>
         <div class="alert alert-info">
             <p>
                 <i class="bi bi-info-circle"></i>
-                Payments is a working feature so please try it out! It is
-                configured to use testing values for the API keys and therefore cannot process any real payments.
+                Payments is a working feature so please try it out! It is set up with generic API keys for testing. I don't know what will 
+                happen if you enter your real CC, probably nothing, but just in case, use one of the test cards below.
             </p>
             <p>
                 Use the following test card numbers to try out a successful transaction or a failed transaction. Use any random future expiration date and 3-digit security code.
@@ -54,7 +25,7 @@
             </ul>
         </div>
         <p>Click the button below to be transferred to a secure payment processor via Stripe.</p>
-        <a href="{% url 'checkout' %}" class="btn btn-lg btn-primary my-3">Checkout</a>
+        <a href="{% url 'checkout' %}" class="btn btn-lg btn-primary my-3 {% if not listings %}disabled " disabled="true{% endif %}">Checkout</a>
         
     </div>
 {% endblock tabcontent %}

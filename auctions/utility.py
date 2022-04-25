@@ -154,8 +154,7 @@ def purge_listings(request) -> None:
                 listing.winning_user = listing.winner
                 notify_winner(listing.winner, listing)
             if listing in watchlist:
-                obj = request.user.watchlist.get(id=listing.id)
-                obj.delete()
+                request.user.watchlist.remove(listing)
             listing.active = False
             listing.save()
 
