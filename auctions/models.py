@@ -73,6 +73,11 @@ def get_expiration(listing) -> dict:
     }
 
 
+class PostedListingManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(draft=False)
+
+
 
 # //////////////////////////////////////////////////////
 # MODELS
@@ -165,6 +170,7 @@ class Listing(models.Model):
     winning_user = models.ForeignKey('User', on_delete=PROTECT, related_name="shopping_cart", blank=True, default=None, null=True)
     invoice = models.ForeignKey('Invoice', on_delete=SET_NULL, blank=True, null=True, related_name="items")
     objects = models.Manager()
+    posted_listings = PostedListingManager()
 
     @property
     def expired(self):

@@ -110,7 +110,7 @@ def add_image(request, listing_id):
 
 def category(request, category_id):
     category_title = Category.objects.get(id=category_id)
-    category_listings_raw = Listing.objects.filter(category_id=category_id)
+    category_listings_raw = Listing.posted_listings.filter(category_id=category_id)
     page_tuple = get_page(request, category_listings_raw)
     return render(request, "auctions/category.html", {
         'category_id': category_id,
@@ -300,7 +300,7 @@ def create_listing(request):
     """
     notification = NotificationTemplate()
     # check to see if this user has reached the cap on listing drafts
-    temps = Listing.objects.filter(owner=request.user, active=False).count()
+    temps = Listing.posted_listings.filter(owner=request.user, active=False).count()
     if temps >= LISTING_DRAFT_CAP:
         notification.build(
             request.user,
@@ -379,7 +379,7 @@ def delete_listing(request, listing_id):
 @login_required
 def drafts(request):
     notifications = get_notifications(request.user, reverse('drafts'))
-    results = Listing.objects.filter(owner=request.user, active=False)
+    results = Listing.objects.filter(owner=request.user, active=False, draft=True)
     drafts = [listing for listing in results if listing.expired == False]
     return render(request, 'auctions/drafts.html', {
         'drafts': drafts,
@@ -438,7 +438,7 @@ def index(request):
         # purge listings that have expired
         purge_listings(request)
         notifications = get_notifications(request.user, reverse('index'))
-        active_listings_raw = Listing.objects.filter(owner=request.user)
+        active_listings_raw = Listing.posted_listings.filter(owner=request.user)
         listing_page_tuple = get_page(request, active_listings_raw)
         return render(request, "auctions/index.html", {
             'listing_controls': listing_page_tuple[0],
@@ -483,7 +483,7 @@ def listing_page(request, listing_id):
 
 @csrf_exempt
 def listings(request):
-    all_listings = Listing.objects.all()
+    all_listings = Listing.posted_listings.all()
     page_tuple = get_page(request, all_listings)
     return render(request, "auctions/listings.html", {
         'controls_dict': page_tuple[0],
@@ -617,15 +617,15 @@ def search(request):
     page = {}
     query = request.GET.get("search_query", '')
     if query is not None:
-        res_titles = Listing.objects.filter(title__icontains=query)
-        res_descr = Listing.objects.filter(description__icontains=query)
+        res_titles = Listing.posted_listings.filter(title__icontains=query)
+        res_descr = Listing.posted_listings.filter(description__icontains=query)
         full_res = res_titles.union(res_descr)
         # cannot immediately call get_page because it uses a filter and 
         # that is "not supported" after usion union() >__<
         # so what follows is some obnoxious gymnastics to make this work.
         # i do not like this.
         ids = [listing.id for listing in full_res]
-        raw_listings = Listing.objects.filter(pk__in=ids)
+        raw_listings = Listing.posted_listings.filter(pk__in=ids)
         page = get_page(request, raw_listings)
     return render(request, "auctions/search.html", {
         'controls_dict': page[0],
@@ -764,7 +764,7 @@ def view_order(request, order_id):
 
 def view_user(request, username):
     user = User.objects.get(username=username)
-    listings = Listing.objects.filter(owner=user)
+    listings = Listing.posted_listings.filter(owner=user)
     page_tuple = get_page(request, listings)
     return render(request, "auctions/user.html", {
         'listings': page_tuple[1],
@@ -803,7 +803,7 @@ def watchlist(request):
 
 
 def generate_listing(request):
-    listing = Listing.objects.create(
+    listing = Listing.posted_listings.create(
         owner = request.user,
         category = random.choice(Category.objects.all()),
         title = generate_title(),
