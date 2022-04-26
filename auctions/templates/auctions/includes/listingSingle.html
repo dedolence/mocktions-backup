@@ -22,7 +22,7 @@
         {% else %}
             {% url 'categories' as cat_url %}
         {% endif %}
-        <span class="px-0"><a href="{{ cat_url }}" class="text-decoration-none">{{ listing.category|default:"Uncategorized" }}</a></span>
+        <span class="px-0">Category: <a href="{{ cat_url }}" class="text-decoration-none">{{ listing.category|default:"Uncategorized" }}</a></span>
     </div>
     <div class="row mb-3 px-0">
         <a href="{% url 'view_listing' listing.id %}" class="fs-2 lead text-decoration-none px-0">

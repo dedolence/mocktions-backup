@@ -102,7 +102,7 @@ class Bid(models.Model):
 class Category(models.Model):
     content = models.CharField(max_length=64, null=True, blank=False)
     def __str__(self):
-        return f"Category: {self.content}"
+        return f"{self.content}"
 
 
 class Comment(models.Model):
