@@ -7,19 +7,7 @@
         {% include 'auctions/includes/breadcrumb.html' with page='User profile: ' listing_title=user.username %}
     {% endblock breadcrumb %}
 
-    <div class="container">
-        <div class="row mb-5">
-            <div class="col-md-2">
-                <img src="{{ user.profile_pic.image.url }}" class="img-fluid">
-            </div>
-            <div class="col-md-10 d-flex align-items-center">
-                <div>
-                    <h1>{{ user.username }}</h1>
-                    <p class="text-muted">User since {{ user.date_joined }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
+    {% include 'auctions/includes/userHeader.html' with user=user %}
     <div class="container">
         {% url 'view_user' user as control_url %}
         {% include 'auctions/includes/listingControls.html' with controls=page_controls control_url=control_url %}

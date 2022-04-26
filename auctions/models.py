@@ -154,6 +154,12 @@ class Listing(models.Model):
         default=False, 
         blank=False, 
         null=False,
+        help_text="True = a posted listing; False = inactive (draft, expired, won, etc.)."
+        )
+    draft = models.BooleanField(
+        default=True, 
+        blank=False, 
+        null=False,
         help_text="True = a posted listing; False = a temporary (draft) listing."
         )
     winning_user = models.ForeignKey('User', on_delete=PROTECT, related_name="shopping_cart", blank=True, default=None, null=True)

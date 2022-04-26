@@ -334,6 +334,7 @@ def create_listing(request):
                 
             listing.owner = request.user
             listing.active = False
+            listing.draft = True
             listing.save()
 
         return HttpResponseRedirect(reverse('edit_listing', args=[listing.id]))
@@ -388,9 +389,8 @@ def drafts(request):
 
 @login_required
 def edit_listing(request, listing_id):
-    """Edit a listing; functions as a preview as well. If routed
-    to via create_listing, a Listing must be generated. Otherwise,
-    get the Listing that already exists."""
+    """Edit a listing; functions as a preview for new 
+    listings as well."""
     notification = NotificationTemplate()
 
     listing = get_object_or_404(Listing, pk=listing_id)
@@ -740,6 +740,7 @@ def submit_listing(request, listing_id):
     else:
         active_listing = form.save(commit=False)
         active_listing.active = True
+        active_listing.draft = False
         active_listing.save()
         return HttpResponseRedirect(
             reverse("view_listing", args=[active_listing.id])

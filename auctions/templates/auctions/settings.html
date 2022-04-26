@@ -8,22 +8,7 @@
 
     <div class="tab-content mt-5" id="indexTabContent">
         <div class="row mb-5">
-            <div class="col-md-2">
-                {% if request.user.profile_pic %}
-                    <img src="{{ request.user.profile_pic.image.url }}" class="img-fluid" style="border-radius: 50% 50%;" alt="Profile picture">
-                {% else %}
-                    <img src="{% static 'auctions/images/user_avatar.png' %}" class="img-fluid" style="border-radius: 50% 50%;" alt="Profile picture">
-                {% endif %}
-            </div>
-            <div class="col-md-10 d-flex align-items-center">
-                <div>
-                    <h1>{{ request.user }}</h1>
-                    <p class="text-muted">User since {{ request.user.date_joined }}</p>
-                    <p>First name: <strong>{{ request.user.first_name }}</strong></p>
-                    <p>Last name: <strong>{{ request.user.last_name }}</strong></p>
-                    <p>Email address: <strong>{{ request.user.email }}</strong></p>
-                </div>
-            </div>
+            {% include 'auctions/includes/userHeader.html' with user=request.user %}
         </div>
         <div class="row">
             {% include 'auctions/includes/profileForm.html' with form=form form_action='settings' %}
