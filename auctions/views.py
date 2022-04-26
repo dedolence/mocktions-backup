@@ -747,10 +747,6 @@ def submit_listing(request, listing_id):
         )
 
 
-def view_all_users(request):
-    return HttpResponseRedirect(reverse('index'))
-
-
 def view_order(request, order_id):
     invoice = Invoice.objects.get(pk=order_id)
     listings = invoice.items.all()

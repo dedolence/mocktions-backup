@@ -22,7 +22,6 @@ urlpatterns = [
     path("", views.index, name="index"),
     path("accounts/", include('django.contrib.auth.urls')),
     path("accounts/profile/<str:username>/", views.view_user, name="view_user"),
-    path("accounts/profile/", views.view_all_users, name="view_all_users"),
     path("add_image/", views.add_image, name="add_image"),
     path("ajax/", include(ajax_urls_include)),
     path("bid/<int:listing_id>", views.place_bid, name="place_bid"),
