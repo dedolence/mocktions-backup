@@ -763,10 +763,11 @@ def view_order(request, order_id):
 
 def view_user(request, username):
     user = User.objects.get(username=username)
-    raw_listings = Listing.objects.filter(owner=user)
-    listings = [get_listing(listing) for listing in raw_listings]
+    listings = Listing.objects.filter(owner=user)
+    page_tuple = get_page(request, listings)
     return render(request, "auctions/user.html", {
-        "listings": listings,
+        'listings': page_tuple[1],
+        'page_controls': page_tuple[0], 
         'user': user
     })
 

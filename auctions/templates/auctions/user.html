@@ -4,19 +4,28 @@
 {% block body %}
 
     {% block breadcrumb %}
-        {% include 'auctions/includes/breadcrumb.html' with page='User profile: ' listing_title=request.user %}
+        {% include 'auctions/includes/breadcrumb.html' with page='User profile: ' listing_title=user.username %}
     {% endblock breadcrumb %}
 
     <div class="container">
         <div class="row mb-5">
             <div class="col-md-2">
-                <img src="{% static 'auctions/images/user_avatar.png' %}" class="img-fluid">
+                <img src="{{ user.profile_pic.image.url }}" class="img-fluid">
             </div>
             <div class="col-md-10 d-flex align-items-center">
                 <div>
-                    <h1>{{ request.user }}</h1>
-                    <p class="text-muted">User since {{ request.user.date_joined }}</p>
+                    <h1>{{ user.username }}</h1>
+                    <p class="text-muted">User since {{ user.date_joined }}</p>
                 </div>
             </div>
         </div>
+    </div>
+    <div class="container">
+        {% url 'view_user' user as control_url %}
+        {% include 'auctions/includes/listingControls.html' with controls=page_controls control_url=control_url %}
+        {% for listing in listings %}
+            {% include 'auctions/includes/listingSingle.html' with listing=listing %}
+        {% endfor %}
+        {% include 'auctions/includes/listingControls.html' with controls=page_controls control_url=control_url numbers_only=True %}
+    </div>
 {% endblock %}

@@ -1,23 +1,21 @@
 {% load static %}
 
 <div id="{{ listing.id }}" class="container border border-secondary px-5 h-100 mb-3">
-    {% if listing.active == True %}
-        <div class="row mb-2 text-center">
-                <span class="my-2 fw-light h6 flex-item">
-                {% if listing.expired == True %}
-                    Listing is expired
-                {% else %}
-                    {% if listing.active == True %}
-                        Listing expires in
-                        {{ listing.expiration.days }} days,
-                        {{ listing.expiration.minutes }} minutes,
-                        {{ listing.expiration.seconds }} seconds
-                    {% endif %}
+    <div class="row mb-2 text-center">
+            <span class="my-2 fw-light h6 flex-item">
+            {% if listing.expired == True %}
+                Listing is expired
+            {% else %}
+                {% if listing.active == True %}
+                    Listing expires in
+                    {{ listing.expiration.days }} days,
+                    {{ listing.expiration.minutes }} minutes,
+                    {{ listing.expiration.seconds }} seconds
                 {% endif %}
-                </span>
-            <hr/>
-        </div>
-    {% endif %}
+            {% endif %}
+            </span>
+        <hr/>
+    </div>
     <div class="row mb-2">
         {% if listing.category.id %}
             {% url 'category' listing.category.id as cat_url %}
