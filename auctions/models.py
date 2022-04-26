@@ -249,7 +249,7 @@ class Notification(models.Model):
 
 class User(AbstractUser):
     default_image = static('auctions/images/user_avatar.png')
-    watchlist = models.ManyToManyField('Listing', blank=True)
+    watchlist = models.ManyToManyField('Listing', blank=True, related_name='watchers')
     profile_pic = models.ForeignKey('UserImage', on_delete=PROTECT, blank=True, null=True)
     street = models.CharField(max_length=100, blank=True)
     city = models.CharField(max_length=100, blank=True)

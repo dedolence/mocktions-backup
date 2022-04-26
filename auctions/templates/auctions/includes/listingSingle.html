@@ -2,21 +2,20 @@
 
 <div id="{{ listing.id }}" class="container border border-secondary px-5 h-100 mb-3">
     {% if listing.active == True %}
-        <div class="row text-center mb-2">
-            <span class="my-2 fw-light h6">
-            {% if listing.expired == True %}
-                Listing is expired
-                <hr/>
-            {% else %}
-                {% if listing.active == True %}
-                    Listing expires in
-                    {{ listing.expiration.days }} days,
-                    {{ listing.expiration.minutes }} minutes,
-                    {{ listing.expiration.seconds }} seconds
-                    <hr/>
+        <div class="row mb-2 text-center">
+                <span class="my-2 fw-light h6 flex-item">
+                {% if listing.expired == True %}
+                    Listing is expired
+                {% else %}
+                    {% if listing.active == True %}
+                        Listing expires in
+                        {{ listing.expiration.days }} days,
+                        {{ listing.expiration.minutes }} minutes,
+                        {{ listing.expiration.seconds }} seconds
+                    {% endif %}
                 {% endif %}
-            {% endif %}
-            </span>
+                </span>
+            <hr/>
         </div>
     {% endif %}
     <div class="row mb-2">
@@ -41,6 +40,10 @@
     </div>
     <div class="row mb-2">
         <p class="px-0">{{ listing.description|truncatewords:200 }}</p>
+    </div>
+    <div class="row mb-2">
+        <p class="lead mx-0 px-0">Current bid: ${{ listing.current_bid|default:listing.starting_bid }}</p>
+        <p class="fw-light px-0">Being watched by {{ listing.watchers.count }} users.
     </div>
     {% if listing.active == True %}
         <div class="row mb-2">
