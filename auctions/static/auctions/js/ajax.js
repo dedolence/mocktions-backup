@@ -59,8 +59,9 @@ function dismissNotification(id) {
 }
 
 
-function ajax_generate_comment(elementArray, url) {
+function generateComment() {
     const textInputElement = $('id_content');
+    const url = AJAX_URLS.ajax_generate_comment;
     make_fetch(null, url)
     .then((r) => {
         const comment = r.comment;
