@@ -109,6 +109,42 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 ] """
 
 
+# Logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+
+    'formatters': {
+        'Simple_Format': {
+            'format': '{levelname} {message}',
+            'style': '{'
+        }
+    },
+
+    'handlers': {
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR + '/logs/errors.log',
+            'formatter': 'Simple_Format',
+        },
+        'console': {
+            'level': 'ERROR',
+            'class': 'logging.StreamHandler'
+        }
+    },
+
+    'filters': {},
+
+    'loggers': {
+        'django': {
+            'handlers': ['file', 'console'],
+            'level': 'DEBUG'
+        }
+    },
+}
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 

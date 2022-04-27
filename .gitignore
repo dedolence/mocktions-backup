@@ -6,3 +6,4 @@ db.sqlite3
 stripe.exe
 notes.txt
 auctions/notes.txt
+logs/*

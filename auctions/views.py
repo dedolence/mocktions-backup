@@ -1,4 +1,4 @@
-from importlib import metadata
+import logging
 import random
 from tkinter import N
 import requests
@@ -21,6 +21,9 @@ from .models import *
 from .notifications import *
 from .strings import *
 from .utility import *
+
+
+logger = logging.getLogger(__name__)
 
 
 # //////////////////////////////////////////////////////
@@ -433,6 +436,8 @@ def edit_listing(request, listing_id):
         
 
 def index(request):
+    logging.info('>>>>>>>>>>>>>>>>>INDEX ACCESSED, LOG SUCCESSFUL<<<<<<<<<<<<<<<<<<<')
+    logging.critical("ERROR MESSAGE")
     if not request.user.is_authenticated:
         return HttpResponseRedirect(reverse("login"))
     else:
