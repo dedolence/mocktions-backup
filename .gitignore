@@ -5,3 +5,4 @@ commerce/__pycache__/
 db.sqlite3
 stripe.exe
 notes.txt
+auctions/notes.txt
