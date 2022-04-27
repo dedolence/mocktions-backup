@@ -13,6 +13,7 @@ from io import BytesIO
 from datetime import timedelta
 from math import floor
 from django.utils import timezone
+from .strings import COMMENT_DELETION_PLACEHOLDER
 
 
 
@@ -109,17 +110,15 @@ class Comment(models.Model):
     content = models.TextField(max_length=200, null=True, blank=False)
     listing = models.ForeignKey('Listing', on_delete=CASCADE, blank=False, related_name="comments")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=PROTECT, null=True, related_name="users_comments")
-    replyTo = models.ForeignKey('Comment', on_delete=SET(1), null=True, blank=True)
+    replyTo = models.ForeignKey('Comment', on_delete=DO_NOTHING, null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def delete(self, *args, **kwargs):
-        """ Prevent deleting the generic "Message deleted" comment that replaces
-        deleted comments to preserve comment threads.
+        """Deleting the comment would break comment reply-threads; so
+        simply set content to a generic placeholder.
         """
-        if self.id == 1:
-            return
-        else:
-            super().delete(*args, **kwargs)
+        self.content = COMMENT_DELETION_PLACEHOLDER
+        self.save()
 
 
 class Listing(models.Model):

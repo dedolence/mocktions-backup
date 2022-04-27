@@ -9,6 +9,10 @@ MESSAGE_GENERIC_LOGIN_REQUIRED = "You must be logged in to do that."
 MESSAGE_GENERIC_ERROR = "An error occurred, please try again or email me about it at nhahoyt+mocktions@gmail.com"
 MESSAGE_GENERIC_PERMISSIONS = "You don't have permission to perform that action. Try bribery. Venmo: @Nathaniel_Hoyt"
 
+
+COMMENT_DELETION_PLACEHOLDER = "(This message has been deleted.)"
+
+
 # Splash message
 MESSAGE_SPLASH_WELCOME = ("<p><strong>Welcome to Mocktions!</strong></p>"
     + "<p>While you're here, I'd appreciate it if you could try out some of the features. "
