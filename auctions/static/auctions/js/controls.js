@@ -85,7 +85,7 @@ function commentReply(id) {
     const formData = new FormData();
           formData.append('comment_id', id);
 
-    make_fetch(formData, url)
+    makeFetch(formData, url)
     .then((r) => {
         const modalElement = $('replyModal');
         const modal = new bootstrap.Modal(modalElement);
@@ -120,7 +120,7 @@ function commentDelete(id) {
         const url = AJAX_URLS.ajax_delete_comment;
         const formData = new FormData();
               formData.append('comment_id', id);
-        make_fetch(formData, url)
+        makeFetch(formData, url)
         .then((r) => {
             const originalComment = $('comment-' + id);
             originalComment.parentElement.removeChild(originalComment);
@@ -162,7 +162,7 @@ function generateUser() {
     const countryField = $('id_country');
     const phoneField = $('id_phone');
     
-    make_fetch(null, url, "GET")
+    makeFetch(null, url, "GET")
     .then((r) => {
         const res = r.results[0];
         console.log(res);
@@ -207,7 +207,7 @@ function watchListing(listingId) {
     let formData = new FormData();
         formData.append('listing_id', listingId)
     
-    make_fetch(formData, url)
+    makeFetch(formData, url)
     .then((r) => {
         // find/replace the watchlist button group with the rendered html
         let buttonContainer = $('watchButton-' + listingId);

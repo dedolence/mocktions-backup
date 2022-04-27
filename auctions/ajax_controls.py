@@ -93,13 +93,22 @@ def ajax_upload_media(request):
         if images:
             image_ids = [i.id for i in images]
             html_string = ''
+            
             # generate HTML for these images to be displayed
             for id in image_ids:
                 image_instance = UserImage.objects.get(pk=id)
+
+                # Since JS uses "null" instead of None...
+                if listing_id != 'null':
+                    listing = get_object_or_404(Listing, pk=listing_id)
+                else:
+                    listing = None
+                
                 html_string += render_to_string('auctions/includes/imageThumbnail.html', {
                     'image': image_instance,
-                    'listing': Listing.objects.get(pk=listing_id) if listing_id else None
+                    'listing': listing
                 })
+            
             response['paths'] = [i.image.url for i in images]
             response['ids'] = image_ids
             response['html'] = html_string

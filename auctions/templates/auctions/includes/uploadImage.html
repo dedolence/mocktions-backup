@@ -1,4 +1,6 @@
-<div class="row" id="uploadImageError"></div>
+<div class="row">
+    <div id="uploadImageError" class="alert alert-warning" style="display: none;"></div>
+</div>
 <div class="row">
     <div class="col-md-4"></div>
     <div class="col-md-8">
@@ -21,7 +23,7 @@
             {% endfor %}
         </select>
 
-        {% include 'auctions/includes/addImageModal.html' with multiple=multiple %}
+        {% include 'auctions/includes/addImageModal.html' with multiple=multiple listing_id=listing.id %}
 
         <div id="loadingImageModal" class="modal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="loadingImageModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-center">

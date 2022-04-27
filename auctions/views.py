@@ -324,6 +324,7 @@ def create_listing(request):
             listing = generate_listing(request)
         else:
             listing = form.save(commit=False)
+            listing.save()
             # set image foreign keys to point to this listing.
             image_ids = request.POST.getlist('images', None)
             if image_ids and len(image_ids) > 0:

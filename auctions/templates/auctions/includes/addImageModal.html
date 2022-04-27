@@ -13,11 +13,11 @@
                         </li>
                         <li class="list-group-item mb-3 pb-4">
                             <label class="lead mb-3" for="id_upload_image">Or, upload an image from your computer.</label>
-                            <input type="file" id="id_upload_image" name="upload_image" class="form-control" data-target="{{ ajax.ajax_upload_media.name }}" {{ multiple }}>
+                            <input type="file" id="id_upload_image" name="upload_image" class="form-control" {{ multiple }}>
                         </li>
                         <li class="list-group-item mb-3 pb-4">
                             <label class="lead mb-3" for="id_url_image">Or, add an image from the internet.</label>
-                            <input type="url" id="id_url_image" name="url_image" class="form-control" data-target="{{ ajax.ajax_upload_media.name }}" placeholder="URL of image">
+                            <input type="url" id="id_url_image" name="url_image" class="form-control" placeholder="URL of image">
                         </li>
                     </ul>
                 </div>
@@ -25,7 +25,7 @@
             <div class="modal-footer">
                 <button type="reset" class="btn btn-outline-secondary">Clear form</button>
                 <button type="reset" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" data-click-action="{{ ajax.ajax_upload_media.name }}">Save</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="uploadMedia({{ listing_id }})">Save</button>
             </div>
         </div>
     </div>

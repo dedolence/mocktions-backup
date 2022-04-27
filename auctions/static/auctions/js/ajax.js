@@ -2,7 +2,7 @@
 AJAX_URLS
 
 
-async function make_fetch(formData, url, method="POST") {
+async function makeFetch(formData, url, method="POST") {
     // need some way to timeout a request
     const csrf_token = document.querySelector('[name=csrfmiddlewaretoken]').value;
     return fetch(url, {
@@ -28,28 +28,13 @@ async function make_fetch(formData, url, method="POST") {
 }
 
 
-function ajax_dismiss_notification(elementArray, url) {
-    let notificationElement = elementArray[0];
-    let notificationId = notificationElement.id.split('-')[1]
-    let formData = new FormData()
-        formData.append('notification_id', notificationId)
-    
-        make_fetch(formData, url)
-        .then((r) => {
-            notificationElement.parentElement.removeChild(notificationElement);
-        })
-        .catch((error) => {
-            console.log(error);
-        })
-}
-
 function dismissNotification(id) {
     let notificationElement = $('notification-' + id);
     let formData = new FormData();
         formData.append('notification_id', id);
     
     const url = AJAX_URLS.ajax_dismiss_notification;
-    make_fetch(formData, url)
+    makeFetch(formData, url)
     .then((r) => {
         notificationElement.parentElement.removeChild(notificationElement);
     })
@@ -62,7 +47,7 @@ function dismissNotification(id) {
 function generateComment() {
     const textInputElement = $('id_content');
     const url = AJAX_URLS.ajax_generate_comment;
-    make_fetch(null, url)
+    makeFetch(null, url)
     .then((r) => {
         const comment = r.comment;
         textInputElement.innerHTML = comment;
@@ -71,25 +56,36 @@ function generateComment() {
 }
 
 
-// Upload an image and return its properties
-async function ajax_upload_media(elementArray, url) {
-    // check to see if we can upload any more images
-    const formThumbnails = $("formThumbnails");
-    //const previewThumbnails = $("previewThumbnails");
-    const currentImageCount = formThumbnails.children.length;
-    const imageIdList = $('selectImageInput');
-    const errorContainer = $('uploadImageError');
+function uploadMedia(id=null) {
+    // - Close the modal.
+    // - Gather the images to upload:
+    //      - Either an image was uploaded,
+    //      - An image URL was entered,
+    //      - Or neither (server will provide a random image)
+    // - Send request to server with relevant form data
+    // - Receive response:
+    //      - (Success) Formatted HTML to append to a thumbnail container element
+    //      - (Failure) An error message
+    // - Append formatted HTML or display error message
+    // - Add ID of new image(s) to a placeholder select list
 
-    //const listingId = $('listingId').value? $('listingId').value : null;
-    //const placeholder = $('imagesPlaceholder');
-    let fileSourceElement;
-    // allow multiple file uploads?
-    let multiple = $('id_upload_image').multiple? true : false;
-
-    let formData = new FormData();
+    // get required elements and information\
+    const errorContainerElement = $('uploadImageError');
+    const thumbnailContainer = $('formThumbnails');
+    const currentImageCount = thumbnailContainer.children.length;
+    const url = AJAX_URLS.ajax_upload_media;
+    const uploadElement = $('id_upload_image');
+    const formData = new FormData();
+    const multiple = uploadElement.multiple? true : false;
+    const selectElement = $('selectImageInput');
+    
+    // set up the form data
+    formData.append('listing_id', id);
+    formData.append('url', $('id_url_image').value);
     formData.append('currentImageCount', currentImageCount);
-    if ($('listingId')) {
-        formData.append('listing_id', listingId? listingId : null);
+    // obnoxiously, files must be appended to form data individually
+    for (let i = 0, n = uploadElement.files.length; i < n; i++) {
+            formData.append('files', uploadElement.files[i]);
     }
 
     // loading progress modal
@@ -97,69 +93,38 @@ async function ajax_upload_media(elementArray, url) {
     const loadingModal = new bootstrap.Modal(loadingModalElement);
     loadingModal.show();
 
-    // iterate through the elements and see which type of image we're fetching:
-    // user can choose to add an image from a URL or upload from their computer.
-    elementArray.forEach(function(e) {
-        if (e.value && !fileSourceElement) {
-            fileSourceElement = e;
-            switch (e.type) {
-                case "file":
-                    let i = 0;
-                    let n = fileSourceElement.files.length;
-                    for (i, n; i < n; i++) {
-                        formData.append('files', fileSourceElement.files[i]);
-                    }
-                    break;
-                case "url":
-                    formData.append('url', fileSourceElement.value);
-                    break;
-                default:
-                    break;
-            }
-        }
-        else {
-            return;
-        }
-    });
+    // clear out any other errors
+    errorContainerElement.innerHTML = '';
+    errorContainerElement.style.display = "none";
 
-    // send the file/url to the server, receive formatted HTMl in response
-    make_fetch(formData, url)
+    makeFetch(formData, url)
     .then((r) => {
-        // r = {
-        //  paths: [source paths for images], 
-        //  ids: [primary keys], 
-        //  html: "html string for appending to DOM"
-        // }
-        if (r.paths.length > 0) {
+        // success
+        if (r.html && r.ids && r.paths) {
+            // check to see if multiple images can be appended, or if one image only
             if (multiple) {
-                formThumbnails.innerHTML += r.html;
-            } else {
-                formThumbnails.innerHTML = r.html;
-                imageIdList.innerHTML = '';
+                thumbnailContainer.innerHTML += r.html;
             }
-            // add image ids to a list that will be sent to server to be referenced by the listing
-            let i = 0, n = r.ids.length;
-            for (i, n; i < n; i++) {
-                let optionElement = document.createElement('option');
-                    optionElement.value = r.ids[i];
-                    optionElement.defaultSelected = true;
-                    imageIdList.append(optionElement);
+            else {
+                thumbnailContainer.innerHTML = r.html;
+            }
+            // append new IDs to a select field for inclusion with new listing
+            for (let id of r.ids) {
+                if (!multiple) {
+                    selectElement.innerHTML = '';
+                }
+                const optionElement = document.createElement('option');
+                optionElement.value = id;
+                optionElement.defaultSelected = true;
+                selectElement.appendChild(optionElement);
             }
         }
-
-        // add new elements to list of targets
-        populateTargets();
-        
-        loadingModal.hide();
-        // hide() doesn't always work when users upload images. No idea why.
-        // So, set a timer (arbitrarily for one second) just to manually hide
-        // the modal if it's still being displayed. 
-        window.setTimeout(() => { loadingModal.hide(); }, 1000);
+        // failure
+        else {
+            errorContainerElement.style.display = "block";
+            errorContainerElement.innerHTML = r.error;
+        }
     })
-    .catch((error) => {
-        let errorDiv = generateListingFormError(error);
-        errorContainer.appendChild(errorDiv);;
-        loadingModal.hide();
-    });
-    
+
+    loadingModal.hide();
 }
