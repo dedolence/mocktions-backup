@@ -138,7 +138,7 @@ function generateUser() {
         countryField.value = res.location.country;
         phoneField.value = res.phone;
 
-        ajax_upload_media([], AJAX_URLS.ajax_upload_media);
+        uploadMedia();
     })
 }
 
