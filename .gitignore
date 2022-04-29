@@ -8,3 +8,5 @@ notes.txt
 auctions/notes.txt
 logs/*
 tests/
+venv/
+Procfile.windows
