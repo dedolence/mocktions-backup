@@ -81,8 +81,12 @@ WSGI_APPLICATION = 'commerce.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'django',
+        'USER': 'dedolence',
+        'PASSWORD': 'default',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
@@ -116,30 +120,36 @@ LOGGING = {
 
     'formatters': {
         'Simple_Format': {
-            'format': '{levelname} {message}',
+            'format': '({levelname}): "{message}"',
             'style': '{'
+        },
+        'verbose': {
+            'format': '({levelname}) Raised at {asctime} from {module}: "{message}"\nFull path: {pathname}\n',
+            'style': '{',
         }
     },
 
     'handlers': {
-        'file': {
+        'error_file': {
             'level': 'ERROR',
             'class': 'logging.FileHandler',
             'filename': BASE_DIR + '/logs/errors.log',
+            'formatter': 'verbose',
+        },
+        'general_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR + '/logs/general.log',
             'formatter': 'Simple_Format',
         },
-        'console': {
-            'level': 'ERROR',
-            'class': 'logging.StreamHandler'
-        }
     },
 
     'filters': {},
 
     'loggers': {
-        'django': {
-            'handlers': ['file', 'console'],
-            'level': 'DEBUG'
+        '': {
+            'handlers': ['general_file', 'error_file'],
+            'level': 'INFO',
         }
     },
 }

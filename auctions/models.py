@@ -241,7 +241,7 @@ class Invoice(models.Model):
 
 class Notification(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=CASCADE, related_name="notifications", blank=True)
-    content = models.CharField(max_length=200, null=False, blank=False)
+    content = models.CharField(max_length=1000, null=False, blank=False)
     timestamp = models.DateTimeField(auto_now_add=True)
     type = models.CharField(max_length=50, blank=True, null=False, default='primary', 
         help_text='the Bootstrap alert type')
