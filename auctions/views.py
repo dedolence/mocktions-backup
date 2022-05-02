@@ -436,8 +436,6 @@ def edit_listing(request, listing_id):
         
 
 def index(request):
-    logger.info('>>>>>>>>>>>>>>>>>INDEX ACCESSED, LOG SUCCESSFUL<<<<<<<<<<<<<<<<<<<')
-    logger.error("An error of some sort has occurred, or it hasn't.")
     if not request.user.is_authenticated:
         return HttpResponseRedirect(reverse("login"))
     else:
