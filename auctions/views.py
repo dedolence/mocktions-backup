@@ -1,7 +1,5 @@
 import logging
-import random
 from tkinter import N
-import requests
 import stripe
 
 from django.contrib.auth import authenticate, login, logout
@@ -13,7 +11,8 @@ from django.views.decorators.csrf import \
     csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from . import namelist, wordlist
+from auctions.testing import generate_listing
+
 from .ajax_controls import *
 from .forms import BioForm, CommentEditForm, CommentForm, CommentReplyForm, NewBidForm, NewListingCreateForm, NewListingSubmitForm, RegistrationForm
 from .globals import *
@@ -324,7 +323,12 @@ def create_listing(request):
     else:
         form = NewListingCreateForm(request.POST)
         if 'randomize' in request.POST:
-            listing = generate_listing(request)
+            value = request.POST.get('randomize-value', None)
+            if value == 'multiple':
+                n = request.POST.get('randomize_n', 1)
+                return render(request, 'auctions/generateListings.html', {'n': n})
+            else:
+                listing = generate_listing(request)
         else:
             listing = form.save(commit=False)
             listing.save()
@@ -433,7 +437,7 @@ def edit_listing(request, listing_id):
         'form': form
     }
     return render(request, 'auctions/editListing.html', context)
-        
+
 
 def index(request):
     if not request.user.is_authenticated:
@@ -796,59 +800,3 @@ def watchlist(request):
 
 
 
-
-# //////////////////////////////////////////////////////
-# RANDOM OBJECT GENERATION
-# //////////////////////////////////////////////////////
-
-
-def generate_listing(request):
-    listing = Listing.posted_listings.create(
-        owner = request.user,
-        category = random.choice(Category.objects.all()),
-        title = generate_title(),
-        description = generate_description()[0:400],
-        starting_bid = random.randint(1,9999),
-        shipping = random.randint(5, 50),
-        lifespan = random.randint(1, 30)
-    )
-    
-    for i in range(0, random.randint(1, MAX_UPLOADS_PER_LISTING)):
-        image = get_image(request, None)
-        image.listing = listing
-        image.save()
-    
-    return listing
-
-
-def generate_title():
-    adj = random.choice(wordlist.adjectives)
-    noun = random.choice(wordlist.nouns)
-    return f"{adj.capitalize()} {noun}"
-
-
-def generate_image():
-    # sorta inefficient because the api loads a random image but only looks at the response headers for the id to generate a static URL,
-    # so the image is ultimately served twice, first here and again when its absolute URL is called :(
-    # but since this is only for testing purposes really it doesn't matter so much, and it's only 200px square images
-    image_api = requests.get('https://picsum.photos/200')
-    image_id = image_api.headers['picsum-id']
-    return f'https://picsum.photos/id/{image_id}/200'
-
-
-def generate_description():
-    return GEN.paragraph()
-
-
-def picsum(request):
-    image_api = requests.get('https://picsum.photos/200')
-    image_id = image_api.headers['picsum-id']
-    image_url = f'https://picsum.photos/id/{image_id}/200'
-    return render(request, 'auctions/tests/picsum.html', {
-        'url': image_url
-    })
-
-def generate_name():
-    firstname = random.choice(namelist.firstnames)
-    lastname = random.choice(namelist.lastnames)
-    return (firstname, lastname)

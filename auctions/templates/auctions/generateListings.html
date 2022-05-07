@@ -1,0 +1,68 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+
+    {% block breadcrumb %}
+        {% include 'auctions/includes/breadcrumb.html' with page='Create Listing' %}
+    {% endblock breadcrumb %}
+
+    <div class="alert alert-info visually-hidden" id="loadingElement">
+        <h3 class="alert-heading">Generating listings</h3>
+        This can take a while as the server has to make multiple 3rd-party API calls, so hang tight.
+        <div class="d-flex justify-content-center my-5">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="alert alert-success d-none" id="successElement">
+        <h3 class="alert-heading">Success!</h3>
+        Here are the generated listings. They've already been posted, so click a title to go to the listing's page,
+        or <a href="{% url 'index' %}" class="alert-link">return home</a>.
+    </div>
+
+    <div class="container" id="listingContainer">
+    </div>
+    
+    {% csrf_token %}
+    <script>
+        let i = 0;
+        const n = {{n}};
+        const url = AJAX_URLS.ajax_generate_listing;
+        const csrf_token = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const listingContainer = $("listingContainer");
+        const loadingElement = $('loadingElement');
+        const successElement = $('successElement');
+        const promises = [];
+
+        loadingElement.classList.remove('visually-hidden');
+        for (i, n; i < n; i++) {
+            promises.push(fetch(url, {
+                method: 'POST',
+                headers: {'X-CSRFToken': csrf_token}
+            }));
+        }
+
+        Promise.all(promises)
+        .then((r) => {
+            responses = []
+            for (promise of r) {
+                responses.push(promise.json());
+            }
+            return responses;
+        })
+        .then((r) => {
+            // I don't like this nested promise here...
+            Promise.all(r)
+            .then((r) => {
+                for (response of r) {
+                    listingContainer.innerHTML += response.html;
+                }
+                loadingElement.classList.add('visually-hidden');
+                successElement.classList.remove('d-none');
+            })
+        })
+    </script>
+
+{% endblock body %}

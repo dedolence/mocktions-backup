@@ -3,6 +3,8 @@ from django.core import serializers
 from django.http.response import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
+from auctions.testing import generate_bulk_listings, generate_listing
+
 from .models import *
 from .strings import *
 from .globals import *
@@ -54,6 +56,17 @@ def ajax_generate_comment(request):
         comment += GEN.sentence().strip()
     response["comment"] = comment[0:200]
     return JsonResponse(response)
+
+
+def ajax_generate_listing(request):
+    listing = generate_listing(request)
+    listing.draft = False
+    listing.active = True
+    listing.save()
+    html = render_to_string('auctions/includes/listingDraft.html', {
+        'listing': listing
+    })
+    return JsonResponse({'html': html})
 
 
 def ajax_reply_comment(request):

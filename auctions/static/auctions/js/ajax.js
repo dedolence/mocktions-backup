@@ -125,7 +125,6 @@ function generateUser() {
     makeFetch(null, url, "GET")
     .then((r) => {
         const res = r.results[0];
-        console.log(res);
         usernameField.value = res.login.username;
         password1Field.value = password2Field.value = res.login.password;
         firstNameField.value = res.name.first;

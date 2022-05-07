@@ -14,7 +14,8 @@ ajax_urls_include = [
     path('comment/generate/', ajax_controls.ajax_generate_comment, name='ajax_generate_comment'),
     path('comment/reply/', ajax_controls.ajax_reply_comment, name='ajax_reply_comment'),
     path('media/upload/', ajax_controls.ajax_upload_media, name='ajax_upload_media'),
-    path('listing/watch/', ajax_controls.ajax_watch_listing, name='ajax_watch_listing')
+    path('listing/generate/', ajax_controls.ajax_generate_listing, name="ajax_generate_listing"),
+    path('listing/watch/', ajax_controls.ajax_watch_listing, name='ajax_watch_listing'),
 ]
 
 

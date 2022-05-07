@@ -120,11 +120,11 @@ LOGGING = {
 
     'formatters': {
         'Simple_Format': {
-            'format': '({levelname}): "{message}"',
+            'format': '{levelname}: {message}',
             'style': '{'
         },
         'verbose': {
-            'format': '({levelname}) Raised at {asctime} from {module}: "{message}"\nFull path: {pathname}\n',
+            'format': '({levelname}) Raised at {asctime} from {module}:\n"{message}"\nFull path: {pathname}\n',
             'style': '{',
         }
     },
