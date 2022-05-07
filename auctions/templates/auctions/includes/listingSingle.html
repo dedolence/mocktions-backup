@@ -1,4 +1,5 @@
 {% load static %}
+{% load l10n %}
 
 <div id="{{ listing.id }}" class="container border border-secondary px-5 h-100 mb-3">
     <div class="row mb-2 text-center">
@@ -40,7 +41,8 @@
         <p class="px-0">{{ listing.description|truncatewords:200 }}</p>
     </div>
     <div class="row mb-2">
-        <p class="lead mx-0 px-0">Current bid: ${{ listing.current_bid|default:listing.starting_bid }}</p>
+        <p class="lead mx-0 px-0">Current bid: ${{ listing.current_bid|default:listing.starting_bid|localize }}</p>
+        <p class="fw-light mx-0 px-0">Shipping: ${{ listing.shipping|localize }}</p>
         <p class="fw-light px-0">Being watched by {{ listing.watchers.count }} users.
     </div>
     {% if listing.active == True %}
@@ -49,7 +51,7 @@
             <div class="d-flex flex-row px-0 my-2 fw-light justify-content-between">
                 {% if listing.owner != request.user %}
                     <div class="text-start flex-item fw-light me-5">
-                        Posted by <a href="{% url 'view_user' listing.owner %}">{{ listing.owner }}</a> at {{ listing.timestamp }}
+                        Posted by <a href="{% url 'view_user' listing.owner %}">{{ listing.owner }}</a> at {{ listing.timestamp|localize }}
                     </div>
                     {% if listing.expired == False and request.user.is_authenticated %}
                         <div class="text-end flex-item fw-light" id="watchButton-{{ listing.id }}">
@@ -61,7 +63,7 @@
                         </div>
                     {% endif %}
                 {% else %}
-                        <div class="flex-grow-1 text-muted">You posted this on {{ listing.timestamp }}</div>
+                        <div class="flex-grow-1 text-muted">You posted this on {{ listing.timestamp|localize }}</div>
                         <div class="me-2 mb-2 mb-sm-0"><a href="{% url 'edit_listing' listing.id %}" class="btn btn-outline-primary btn-sm">Edit listing <i class="bi bi-pencil-square"></i></a></div>
                         <div><a href="{% url 'delete_listing' listing.id %}" class="btn btn-outline-danger btn-sm">Delete listing <i class="bi bi-trash"></i></a></div>
                 {% endif %}
