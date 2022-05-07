@@ -10,3 +10,4 @@ logs/*
 tests/
 venv/
 Procfile.windows
+stripe.exe
